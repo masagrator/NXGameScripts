@@ -82,3 +82,4 @@ for i in range (0, line_count-1):
     offset = offset + 1
 
 paramnew.close()
+param.close()
