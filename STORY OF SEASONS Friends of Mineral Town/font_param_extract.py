@@ -1,6 +1,6 @@
 # STORY OF SEASONS: Friends of Mineral Town font's character table data extractor from *param.bin files
 # Generated file is compliant with tsv format which you can import to any program using sheets like Google Sheets or LibreOffice Calc
-# For bigger fonts it can take more than 5 minutes to finish
+# For fonts with thousands of characters it can take more than 5 minutes to finish
 # Python 3 script
 
 import numpy
