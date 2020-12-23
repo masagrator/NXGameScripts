@@ -2,6 +2,7 @@
 # Generated file is compliant with tsv format which you can import to any program using sheets like Google Sheets or LibreOffice Calc
 # For fonts with thousands of characters it can take more than 5 minutes to finish
 # Python 3 script
+# Author: MasaGratoR @ 2020
 
 import numpy
 
