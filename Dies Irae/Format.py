@@ -9,7 +9,6 @@ data = data.replace("\x00「", "\x22);「")
 data = data.replace("\x00『","\x22);『")
 data = data.replace("", "<Romaji-over-Kanji>")
 data = data.replace("", "<pause>")
-data
 
 for i in range(0x3001, 0x30FE):
     data = data.replace("\x0A %s" % (chr(i)), "<Romaji-over-Kanji_start> %s" % (chr(i)))
