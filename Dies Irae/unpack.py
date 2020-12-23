@@ -1,3 +1,5 @@
+# Python 3 script
+
 import numpy
 
 text = open("extract.txt", "w", encoding='shift-jis')
