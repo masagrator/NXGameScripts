@@ -1,4 +1,5 @@
 # STORY OF SEASONS: Friends of Mineral Town font's character table data generator from *.tsv file (use font_param_extract.py to generate tsv example file)
+# It generates file with filename based on `mainfile` string that adds "_new" to name
 # Python 3 script
 
 import numpy
@@ -6,7 +7,6 @@ import platform
 
 mainfile = 'FOT-UDMarugo_LargePro-B_param.bin'
 
-param = open(mainfile, 'rb')
 paramnew = open("%s_new.bin" % (mainfile[:-4]), "wb")
 
 with open("%s.tsv" % (mainfile), 'r', encoding='utf-16-le') as f:
@@ -82,4 +82,3 @@ for i in range (0, line_count-1):
     offset = offset + 1
 
 paramnew.close()
-param.close()
