@@ -1,5 +1,3 @@
-# Python 3 script
-
 extracted = open("extract.txt", "r", encoding='shift-jis')
 
 data = extracted.read()
@@ -30,6 +28,9 @@ data = data.replace("", "_voiceover();")
 
 for i in range(0, 9999):
     data = data.replace("%s<NULL>" % (str(i).zfill(4)), "%s\x22);" % (str(i).zfill(4)))
+
+
+data = data.replace("\n<Romaji-over-Kanji_start>", "\n\n")
 
 new = open("new.txt", "w", encoding='shift-jis')
 new.write(data)
