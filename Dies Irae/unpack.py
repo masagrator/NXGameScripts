@@ -19,7 +19,6 @@ for i in range(0, 0xA0AC):
     hard_offset = text_offset + relative_offset
     size = table_array[i*2+1]
     og.seek(hard_offset, 0)
-    text.write("subtitle = {\n")
     validation = numpy.fromfile(og, dtype=numpy.uint8, count=size)
     temp_size = size
     for x in range(0, size-1):
@@ -119,6 +118,6 @@ for i in range(0, 0xA0AC):
         og.seek(current_offset, 0)
         text.write(og.read(temp_size).decode('shift-jis'))
         exception = 0
-    text.write("\n}\n")
+    text.write("\n\n>-NEW LINE-<\n\n")
 
 text.close()
