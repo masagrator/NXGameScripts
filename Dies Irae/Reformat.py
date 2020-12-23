@@ -1,3 +1,5 @@
+#Python 3 script
+
 extracted = open("extract.txt", "r", encoding='shift-jis')
 
 data = extracted.read()
