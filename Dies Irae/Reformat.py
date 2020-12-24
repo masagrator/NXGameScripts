@@ -4,26 +4,17 @@ new.close()
 
 data = data.replace("<SPECIAL_CASE_3>", "")
 
-for i in range(0, 9999):
-    data = data.replace("%sb\x22);" % (str(i).zfill(4)), "%s<NULL>" % (str(i).zfill(4)))
-    data = data.replace("%sa\x22);" % (str(i).zfill(4)), "%s<NULL>" % (str(i).zfill(4)))
-    data = data.replace("%s\x22);" % (str(i).zfill(4)), "%s<NULL>" % (str(i).zfill(4)))
+for i in range(0, 99):
+    data = data.replace("%sb\x22);" % (str(i).zfill(2)), "%sb<NULL>" % (str(i).zfill(2)))
+    data = data.replace("%sa\x22);" % (str(i).zfill(2)), "%sa<NULL>" % (str(i).zfill(2)))
+    data = data.replace("%s\x22);" % (str(i).zfill(2)), "%s<NULL>" % (str(i).zfill(2)))
+    data = data.replace("%s_ef\x22);" % (str(i).zfill(2)), "%s_ef<NULL>" % (str(i).zfill(2)))
+    data = data.replace("%s_a\x22);" % (str(i).zfill(2)), "%s_a<NULL>" % (str(i).zfill(2)))
 
 data = data.replace("_voiceover();","")
 data = data.replace("<Break Line>","")
 data = data.replace("<NULL>","\x00")
-
-for i in range(0xFF65, 0xFF9F):
-    data = data.replace("<Romaji-over-Kanji_start>%s" % (chr(i)), "\x0A%s" % (chr(i)))
-    data = data.replace("<Romaji-over-Kanji_start> %s" % (chr(i)), "\x0A %s" % (chr(i)))
-    
-for i in range(0x32D0, 0x32FE):
-    data = data.replace("<Romaji-over-Kanji_start>%s" % (chr(i)), "\x0A%s" % (chr(i)))
-    data = data.replace("<Romaji-over-Kanji_start> %s" % (chr(i)), "\x0A %s" % (chr(i)))
-
-for i in range(0x3001, 0x30FE):
-    data = data.replace("<Romaji-over-Kanji_start>%s" % (chr(i)), "\x0A%s" % (chr(i)))
-    data = data.replace("<Romaji-over-Kanji_start> %s" % (chr(i)), "\x0A %s" % (chr(i)))
+data = data.replace("<Romaji-over-Kanji_start>", "\x0A")
 
 data = data.replace("<pause>", "")
 data = data.replace("<Romaji-over-Kanji>", "")
