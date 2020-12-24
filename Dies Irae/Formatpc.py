@@ -9,7 +9,7 @@ data = data.replace("\x07\x08", "_voice(\x22")
 data = data.replace("", "<pause>")
 
 data = data.replace("\x00", "<NULL>")
-data = data.replace("","<Break Line>")
+data = data.replace("","<Break Line>")
 data = data.replace("", "<Romaji-over-Kanji>")
 data = data.replace("", "<i>")
 data = data.replace("", "</i>")

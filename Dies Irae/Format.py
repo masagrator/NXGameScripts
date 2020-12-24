@@ -24,7 +24,7 @@ for i in range(0xFF65, 0xFF9F):
     data = data.replace("\x0A%s" % (chr(i)), "<Romaji-over-Kanji_start>%s" % (chr(i)))
 
 data = data.replace("\x00", "<NULL>")
-data = data.replace("","<Break Line>")
+data = data.replace("","<Break Line>")
 data = data.replace("", "_voiceover();")
 
 for i in range(0, 99):
