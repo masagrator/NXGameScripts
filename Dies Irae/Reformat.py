@@ -5,6 +5,8 @@ new.close()
 data = data.replace("<SPECIAL_CASE_3>", "")
 
 for i in range(0, 9999):
+    data = data.replace("%sb\x22);" % (str(i).zfill(4)), "%s<NULL>" % (str(i).zfill(4)))
+    data = data.replace("%sa\x22);" % (str(i).zfill(4)), "%s<NULL>" % (str(i).zfill(4)))
     data = data.replace("%s\x22);" % (str(i).zfill(4)), "%s<NULL>" % (str(i).zfill(4)))
 
 data = data.replace("_voiceover();","")
