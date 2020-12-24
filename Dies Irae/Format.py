@@ -3,6 +3,7 @@ extracted = open("extract.txt", "r", encoding='shift-jis', newline='')
 data = extracted.read()
 extracted.close()
 
+data = data.replace("", "<SPECIAL_CASE_2>")
 data = data.replace("\r", "<SPECIAL CASE>")
 data = data.replace("\x07\x08", "_voice(\x22")
 data = data.replace("\x00「", "\x22);「")
@@ -31,6 +32,8 @@ for i in range(0, 9999):
 
 
 data = data.replace("\n<Romaji-over-Kanji_start>", "\n\n")
+
+data = data.replace("", "<SPECIAL_CASE_3>")
 
 new = open("new.txt", "w", encoding='shift-jis', newline='')
 new.write(data)
