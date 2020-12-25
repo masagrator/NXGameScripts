@@ -11,7 +11,7 @@ for i in range(0, 99):
     data = data.replace("%s_ef\x22);" % (str(i).zfill(2)), "%s_ef<NULL>" % (str(i).zfill(2)))
     data = data.replace("%s_a\x22);" % (str(i).zfill(2)), "%s_a<NULL>" % (str(i).zfill(2)))
 
-data = data.replace("_voiceover();","")
+data = data.replace("_voiceover();","	")
 data = data.replace("<i>", "《")
 data = data.replace("</i>", "》")
 data = data.replace("<Break Line>","")

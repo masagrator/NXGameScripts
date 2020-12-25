@@ -13,7 +13,7 @@ data = data.replace("","<Break Line>")
 data = data.replace("", "<Romaji-over-Kanji>")
 data = data.replace("", "<i>")
 data = data.replace("", "</i>")
-data = data.replace("", "_voiceover();")
+data = data.replace("	", "_voiceover();")
 data = data.replace("—", "－")
 
 for i in range(0, 99):
