@@ -26,8 +26,12 @@ text_table = open("temp2.txt", "wb")
 
 exception = 0
 
+if (len(texts) != 41133): 
+    raise ValueError("Wrong count of texts file. Expected: 41133. Counted: %d" % (len(texts)))
+    
+print(len(texts))
+
 for i in range(0, len(texts)-1):
-    if (offset == 0x2C927B): print (texts[i])
     offset_table.write(numpy.uint32(offset))
     tempbuffer = texts[i]
     temp_size = len(tempbuffer)

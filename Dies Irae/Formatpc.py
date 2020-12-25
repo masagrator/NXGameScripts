@@ -14,6 +14,7 @@ data = data.replace("", "<Romaji-over-Kanji>")
 data = data.replace("", "<i>")
 data = data.replace("", "</i>")
 data = data.replace("", "_voiceover();")
+data = data.replace("—", "－")
 
 for i in range(0, 99):
     data = data.replace("%s<NULL>" % (str(i).zfill(2)), "%s\x22);" % (str(i).zfill(2)))
