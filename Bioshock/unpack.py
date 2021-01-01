@@ -6,7 +6,7 @@ if (os.path.isdir("output") == False):
 
 text = open("Localizedint.lbf", "rb")
 
-for i in range(0,99):
+for i in range(0, 101):
     size = numpy.fromfile(text, dtype=numpy.uint8, count=1)
     buffer = text.read((size[0] * 2)-2)
     output = open("output/%s" % (buffer.decode('utf-16')), "wb")

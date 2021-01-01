@@ -10,13 +10,16 @@ with open("dir.txt", 'r') as f:
 
 output = open("output.lbf", "wb")
 
-for i in range(0, 99):
+for i in range(0, 101):
     size1 = len(filenames[i])
-    text = open("output/%s" % (filenames[i]), 'r', encoding='utf-16', newline='')
+    text = open("output/%s" % (filenames[i]), 'rb')
+    text.seek(0, 2)
+    size2 = text.tell()
+    text.seek(0, 0)
     buffer = text.read()
     text.close()
     output.write(numpy.uint8(size1+1))
     output.write(filenames[i].encode('utf-16')[2:])
     output.write(numpy.uint16(0x0))
-    output.write(numpy.uint32(len(buffer.encode('utf-16'))))
-    output.write(buffer.encode('utf-16'))
+    output.write(numpy.uint32(size2))
+    output.write(buffer)
