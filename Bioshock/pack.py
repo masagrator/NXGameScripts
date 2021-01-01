@@ -23,3 +23,5 @@ for i in range(0, 101):
     output.write(numpy.uint16(0x0))
     output.write(numpy.uint32(size2))
     output.write(buffer)
+    
+output.close()
