@@ -39,6 +39,7 @@ ID_now = 0
 for i in range (0, 0x10000):
     
     if (offset != len(IDs)):
+        print(offset)
         if (i == int(UTF16chars[offset], 16)): 
             paramnew.write(numpy.uint16(IDs[offset]))
             offset = offset + 1
