@@ -6,7 +6,7 @@
 
 import numpy
 
-mainfile = 'FOT-UDMarugo_LargePro-B_param.bin'
+mainfile = 'SHORHB___param.bin'
 
 param = open(mainfile, 'rb')
 paramtxt = open('%s.tsv' % (mainfile), 'w', encoding='utf-16-le')
@@ -18,7 +18,7 @@ param.seek(0,2)
 size = param.tell()
 table_offset = size - (size - 0x20000)
 
-for i in range (0, 0xFFFF):
+for i in range (0, len(buffer)):
     if (buffer[i] != 0xFFFF):
         paramtxt.write(str(buffer[i]))
         paramtxt.write('\t')
@@ -57,6 +57,7 @@ for i in range (0, 0xFFFF):
         elif (i == 34): string = "Quotation mark"
         elif (i == 36): string = "Dollar sign"
         else: string = chr(i)
+        print(string)
         paramtxt.write(string)
         paramtxt.write('\t')
         paramtxt.write('0x%x' % (i))
@@ -95,5 +96,4 @@ for i in range (0, 0xFFFF):
             unk4 = numpy.fromfile(param, dtype=numpy.uint8, count=1)
             paramtxt.write('%d' % (unk4[0]))  
             paramtxt.write('\n')
-
 paramtxt.close()
