@@ -10,7 +10,7 @@ mainfile = 'SHORHB___param.bin'
 
 param = open(mainfile, 'rb')
 paramtxt = open('%s.tsv' % (mainfile), 'w', encoding='utf-16-le')
-paramtxt.write('ID\tsign\tUTF-16 hex\tpos x\tpos y\twidth\theight\tunk1\ty shift\tright margin\n')
+paramtxt.write('ID\tsign\tUTF-16 hex\tpos x\tpos y\twidth\theight\tx shift\ty shift\tright margin\n')
 
 buffer = numpy.fromfile(param, dtype=numpy.uint16, count=0x10000)
 
@@ -87,10 +87,10 @@ for i in range (0, len(buffer)):
             unk1 = numpy.fromfile(param, dtype=numpy.int8, count=1)
             paramtxt.write('%d' % (unk1[0]))  
             paramtxt.write('\t')
-            unk2 = numpy.fromfile(param, dtype=numpy.uint8, count=1)
+            unk2 = numpy.fromfile(param, dtype=numpy.int8, count=1)
             paramtxt.write('%d' % (unk2[0]))  
             paramtxt.write('\t')
-            unk3 = numpy.fromfile(param, dtype=numpy.uint16, count=1)
+            unk3 = numpy.fromfile(param, dtype=numpy.int16, count=1)
             paramtxt.write('%d' % (unk3[0]))  
             paramtxt.write('\n')
 paramtxt.close()
