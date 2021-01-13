@@ -10,7 +10,7 @@ mainfile = 'SHORHB___param.bin'
 
 param = open(mainfile, 'rb')
 paramtxt = open('%s.tsv' % (mainfile), 'w', encoding='utf-16-le')
-paramtxt.write('ID\tsign\tUTF-16 hex\tpos x\tpos y\twidth\theight\tunk1\tunk2\tunk3\tunk4\n')
+paramtxt.write('ID\tsign\tUTF-16 hex\tpos x\tpos y\twidth\theight\tunk1\ty shift\tright margin\n')
 
 buffer = numpy.fromfile(param, dtype=numpy.uint16, count=0x10000)
 
@@ -64,7 +64,7 @@ for i in range (0, len(buffer)):
         paramtxt.write('\t')
         compare = 0
         table_offset_temp = table_offset - 0xC
-        if (i == 0): paramtxt.write('NULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n')
+        if (i == 0): paramtxt.write('NULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\n')
         else:
             while (compare != i):
                 table_offset_temp = table_offset_temp + 0xC
@@ -90,10 +90,7 @@ for i in range (0, len(buffer)):
             unk2 = numpy.fromfile(param, dtype=numpy.uint8, count=1)
             paramtxt.write('%d' % (unk2[0]))  
             paramtxt.write('\t')
-            unk3 = numpy.fromfile(param, dtype=numpy.uint8, count=1)
+            unk3 = numpy.fromfile(param, dtype=numpy.uint16, count=1)
             paramtxt.write('%d' % (unk3[0]))  
-            paramtxt.write('\t')
-            unk4 = numpy.fromfile(param, dtype=numpy.uint8, count=1)
-            paramtxt.write('%d' % (unk4[0]))  
             paramtxt.write('\n')
 paramtxt.close()
