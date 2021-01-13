@@ -23,7 +23,7 @@ with open("%s.tsv" % (mainfile), 'r', encoding='utf-16-le') as f:
     f.seek(0,0)
     height = [line.split("\t", -1)[6] for line in f]
     f.seek(0,0)
-    unk1 = [line.split("\t", -1)[7] for line in f]
+    x_shift = [line.split("\t", -1)[7] for line in f]
     f.seek(0,0)
     y_shift = [line.split("\t", -1)[8] for line in f]
     f.seek(0,0)
@@ -54,9 +54,9 @@ for i in range (1, len(IDs)):
             paramnew.write(numpy.uint16(posy[x]))
             paramnew.write(numpy.uint8(width[x]))
             paramnew.write(numpy.uint8(height[x]))
-            paramnew.write(numpy.int8(unk1[x]))
-            paramnew.write(numpy.uint8(y_shift[x]))
-            paramnew.write(numpy.uint16(right_margin[x]))
+            paramnew.write(numpy.int8(x_shift[x]))
+            paramnew.write(numpy.int8(y_shift[x]))
+            paramnew.write(numpy.int16(right_margin[x]))
             ID_now = ID_now + 1
 
 paramnew.close()
