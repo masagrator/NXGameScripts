@@ -1,5 +1,6 @@
 # STORY OF SEASONS: Friends of Mineral Town font's character table data generator from *.tsv file (use font_param_extract.py to generate tsv example file)
 # It generates file with filename based on `mainfile` string that adds "_new" to name
+# TSV FILE MUST BE SORTED BY 'UTF-16 HEX' COLUMN FROM LOWEST TO HIGHEST
 # Python 3 script
 # Author: MasaGratoR @ 2020
 
