@@ -39,6 +39,8 @@ if ((len(Pallette) * 4) < 0x400):
 
 for i in range(0, len(buffer)):
     for x in range(0, len(Pallette)):
-        if (buffer[i] == Pallette[x]): write.write(numpy.uint8(x))
+        if (buffer[i] == Pallette[x]): 
+            write.write(numpy.uint8(x))
+            break
     
 write.close()
