@@ -30,7 +30,7 @@ for i in range(0, len(Pixels)):
         if (Pixels[i] == Pallette[x]): 
             number = x
             break
-        elif (Pixels[i] < 0xFFFFFF):
+        elif (Pixels[i] < 0x1000000):
             number = transparent_index
             break
     if (number < 257): 
