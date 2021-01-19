@@ -5,39 +5,38 @@ f = open(sys.argv[1], 'rb')
 
 f.seek(0x80, 0)
 
-Pixels = numpy.fromfile(f, dtype=numpy.uint32)
-
-RAW = open("%s.raw" % (sys.argv[1][:-4]), "rb")
-
-Pallette = numpy.fromfile(RAW, dtype=numpy.uint32, count=256)
-
-transparent_index = 0
-
-for i in range(0, len(Pallette)):
-    if (Pallette[i] < 0x1000000):
-        print("Transparent_index = %d" % (i))
-        transparent_index = i
-        break
-
-output = open("new.raw", "wb")
-
-output.write(Pallette)
-
-number = 257
-
-for i in range(0, len(Pixels)):
-    for x in range(0, len(Pallette)):
-        if (Pixels[i] == Pallette[x]): 
-            number = x
-            break
-        elif (Pixels[i] < 0x1000000):
-            number = transparent_index
-            break
-    if (number < 257): 
-        output.write(numpy.uint8(number))
-        number = 257
-    else: print("Wrong color. %x" % (Pixels[i]))
+buffer = numpy.fromfile(f, dtype=numpy.uint32)
 
 f.close()
-RAW.close()
-output.close()
+
+Pallette = []
+
+flag = 0
+
+offset = 1
+
+print(len(buffer))
+for i in range(0, len(buffer)):
+    if (i == 0): Pallette.append(numpy.uint32(buffer[i]))
+    else:
+        for x in range(0, len(Pallette)):
+            if (buffer[i] == Pallette[x]): break
+            elif (x == len(Pallette) - 1): Pallette.append(buffer[i])
+
+if (len(Pallette) > 0x400): raise ValueError("Pallette too big")
+
+
+write = open("result.dat", "wb")
+for i in range(0, len(Pallette)):
+    write.write(Pallette[i])
+
+if ((len(Pallette) * 4) < 0x400):
+    print("Not complete pallette. Filling nulls")
+    for i in range(0, (0x400 - (len(Pallette) * 4))):
+        write.write(numpy.uint8(0x0))
+
+for i in range(0, len(buffer)):
+    for x in range(0, len(Pallette)):
+        if (buffer[i] == Pallette[x]): write.write(numpy.uint8(x))
+    
+write.close()
