@@ -1,4 +1,4 @@
-# Requirements: DDS must be RGBA8 and not have more than 256 different colors.
+# Requirements: DDS must be RGBA8, have header size 0x80 and not have more than 256 different colors.
 
 import sys
 import numpy
