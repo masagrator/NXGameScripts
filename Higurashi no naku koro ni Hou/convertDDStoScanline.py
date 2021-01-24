@@ -38,5 +38,5 @@ for i in range(0, scanlines*4):
     f.write(block_scanline[i])
 
 for i in range(0, len(new)):
-    f.write(numpy.uint8(new[i]))
+    f.write(new[i])
 f.close()
