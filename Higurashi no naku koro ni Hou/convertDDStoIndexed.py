@@ -28,7 +28,7 @@ for i in range(0, len(buffer)):
 if (len(Pallette) > 0x400): raise ValueError("Pallette too big")
 
 
-write = open("result.dat", "wb")
+write = open("result_indexed.dat", "wb")
 for i in range(0, len(Pallette)):
     write.write(Pallette[i])
 
