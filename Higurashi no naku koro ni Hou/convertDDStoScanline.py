@@ -3,6 +3,9 @@
 import sys
 import numpy
 
+new = []
+block_scanline = []
+
 def adjust_scanline(data, w, scanlines):
     scanlines_size = scanlines * 4
     for i in range(0, scanlines):
@@ -27,8 +30,6 @@ buffer = bytearray(f.read())
 f.close()
 
 scanlines = (((width)+3)&0xfffc)
-new = []
-block_scanline = []
 
 adjust_scanline(buffer, width, scanlines)
 
