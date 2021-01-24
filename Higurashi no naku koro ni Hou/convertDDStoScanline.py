@@ -16,7 +16,7 @@ def adjust_scanline(data, w, scanlines):
     
     for i in range(scanlines_size, len(data)):   
         temp = numpy.uint8((numpy.int16(block_scanline[i]) - numpy.int16(block_scanline[i - scanlines_size])) % 256)
-        new.append(numpy.uint8(temp))
+        new.append(temp)
 
 f = open(sys.argv[1], 'rb')
 
