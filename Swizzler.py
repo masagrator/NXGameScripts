@@ -201,7 +201,8 @@ if (len(sys.argv) == 8):
     file.seek(start_offset)
     size = int(sys.argv[7])
     if (size == 0): buffer = file.read()
-    else: file.read(size)
+    else: buffer = file.read(size)
+    file.close()
 
 if (sys.argv[1] == "swizzle"):
     data = swizzle(int(sys.argv[3]), int(sys.argv[4]), FORMATS[sys.argv[5]], buffer)
