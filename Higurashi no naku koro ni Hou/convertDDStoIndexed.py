@@ -25,7 +25,7 @@ for i in range(0, len(buffer)):
             if (buffer[i] == Pallette[x]): break
             elif (x == len(Pallette) - 1): Pallette.append(buffer[i])
 
-if (len(Pallette) > 0x400): raise ValueError("Pallette too big")
+if (len(Pallette) * 4 > 0x400): raise ValueError("Pallette too big")
 
 
 write = open("result_indexed.dat", "wb")
