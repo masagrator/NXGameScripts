@@ -3,23 +3,17 @@ import numpy
 Columns = []
 
 with open("Extracted.tsv", 'r', encoding='utf-8') as f:
-    Columns.append([line.split("\t", -1)[0] for line in f])
+    Column_count = len([line.strip("\n").split("\t", -1) for line in f][0])
     f.seek(0,0)
-    Columns.append([line.split("\t", -1)[1] for line in f])
-    f.seek(0,0)
-    Columns.append([line.split("\t", -1)[2] for line in f])
-    f.seek(0,0)
-    Columns.append([line.split("\t", -1)[3] for line in f])
-    f.seek(0,0)
-    Columns.append([line.split("\t", -1)[4] for line in f])
-    f.seek(0,0)
-    Columns.append([line.split("\t", -1)[5] for line in f])
-    f.seek(0,0)
-    Columns.append([line.split("\t", -1)[6] for line in f])
+    for i in range(0, Column_count):
+        Columns.append([line.strip("\n").split("\t", -1)[i] for line in f])
+        f.seek(0,0)
+
+print(Columns[0])
 
 with open("localization_new.bin", "wb") as f:
     f.write(numpy.uint32(7))
-    for i in range(0, 7):
+    for i in range(0, len(Columns)):
         f.write(numpy.uint32(i))
         f.write(numpy.uint32(len(Columns[i][0])))
         f.write(bytes(Columns[i][0].encode("UTF-8")))

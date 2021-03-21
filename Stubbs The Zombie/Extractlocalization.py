@@ -33,10 +33,10 @@ for i in range(0, Columns_count):
 f.close()
 
 f = open("Extracted.tsv", "w", encoding="UTF-8")
-for i in range(0, row_count):
+for i in range(0, row_count+1):
     for x in range(0, Columns_count):
         f.write(Column[x][i])
         if (x < Columns_count-1): f.write("\t")
-    if (i < row_count-1): f.write("\n")
+    f.write("\n")
 
 f.close()
