@@ -17,8 +17,6 @@ with open("Extracted.tsv", 'r', encoding='utf-8') as f:
     f.seek(0,0)
     Columns.append([line.split("\t", -1)[6] for line in f])
 
-print(Columns[0])
-
 with open("localization_new.bin", "wb") as f:
     f.write(numpy.uint32(7))
     for i in range(0, 7):
