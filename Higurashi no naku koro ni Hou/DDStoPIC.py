@@ -1,4 +1,5 @@
 # Dedicated only to DDS RGBA8 with header size 0x80 and <= 256 colors
+# It is necessary that fully transparent pixels are always 0x00000000 in DDS, otherwise picture may not show at all or show colors wrong. GIMP when saving to PNG has option to not save separate data for fully transparent pixels which changes all of them to 0x00000000
 
 import sys
 import numpy
