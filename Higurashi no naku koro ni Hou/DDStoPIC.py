@@ -1,4 +1,5 @@
 # Dedicated only to DDS RGBA8 with header size 0x80 and <= 256 colors
+# PIC cannot be bigger than 30 000 000 B, otherwise game won't show it.
 
 import sys
 import numpy
