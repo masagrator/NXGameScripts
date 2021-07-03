@@ -49,14 +49,13 @@ for x in range(0, len(filelist)):
 
     listing = []
 
-    while (((file.tell() + 0x10) & 0xFFFFFF0) < text_block_offset + text_block_size + 0x20):
+    while (file.tell() < text_block_offset + text_block_size):
         text = readString(file)
         if (text != ""): listing.append(text)
-
     file.close()
 
     new_file = open("tsv\%s.tsv" % (filelist[x][:-4]), "w", encoding="UTF-8")
-    for i in range(0, len(listing)-1):
+    for i in range(0, len(listing)):
         new_file.write(listing[i])
         new_file.write("\n")
     new_file.close()
