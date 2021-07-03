@@ -20,6 +20,11 @@ for s in os.listdir():
         elif (s.startswith("b") and not s.endswith("_newgame.bin")): filelist.append(s)
         elif s.startswith("c"): filelist.append(s)
 
+try:
+    os.mkdir("tsv")
+except:
+    print("tsv already exists")
+
 for x in range(0, len(filelist)):
     file = open(filelist[x], "rb")
 
@@ -44,13 +49,13 @@ for x in range(0, len(filelist)):
 
     listing = []
 
-    while (((file.tell() + 0x10) & 0xFFFFFF0) < text_block_offset + text_block_size):
+    while (((file.tell() + 0x10) & 0xFFFFFF0) < text_block_offset + text_block_size + 0x20):
         text = readString(file)
         if (text != ""): listing.append(text)
 
     file.close()
 
-    new_file = open("%s.tsv" % (filelist[x][:-4]), "w", encoding="UTF-8")
+    new_file = open("tsv\%s.tsv" % (filelist[x][:-4]), "w", encoding="UTF-8")
     for i in range(0, len(listing)-1):
         new_file.write(listing[i])
         new_file.write("\n")
