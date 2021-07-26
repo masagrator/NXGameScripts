@@ -53,12 +53,7 @@ for i in range(0, len(Filenames)):
                         file.seek(2, 1)
                     else:
                         string = file.read(abs(string_size))
-                        try:
-                            entry['ENG'] = string.decode("UTF-8")
-                        except Exception as err:
-                            raise Exception("Something went wrong. String:\n%s\nError: %s" % (string, err))
-                            input("Press ENTER")
-                            sys.exit()
+                        entry['ENG'] = string.decode("UTF-8")
                         file.seek(1, 1)   
                     Dump['Main'].append(entry)
                 else: raise Exception("Something went horribly wrong.")
