@@ -171,8 +171,30 @@ def ONGOTO(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "ONGOTO"
-    entry['SUBCMD'] = SUBCMD
-    entry['Args'] = "%s" % (file.read(argsize))
+    entry['Function'] = Commands(SUBCMD).name
+    entry['Fun_ARGS'] = "%s" % (file.read(2))
+    string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
+    entry['Variable'] = "%s" % (file.read(abs(string_size)).decode("ascii").strip("\x00"))
+    file.seek(8 - abs(string_size), 1)
+    entry['GOTO_LABEL_0'] = "0x%s" % (file.read(4)[::-1].hex())
+    argsize -= 16
+    if (argsize > 0):
+        entry['Args1'] = "%s" % (file.read(2))
+        entry['GOTO_LABEL_1'] = "0x%s" % (file.read(4)[::-1].hex())
+        argsize -= 6
+        if (argsize > 0):
+            entry['Args2'] = "%s" % (file.read(2))
+            entry['GOTO_LABEL_2'] = "0x%s" % (file.read(4)[::-1].hex())
+            argsize -= 6
+            if (argsize > 0):
+                entry['Args3'] = "%s" % (file.read(2))
+                entry['GOTO_LABEL_3'] = "0x%s" % (file.read(4)[::-1].hex())
+                argsize -= 6
+                if (argsize > 0):
+                    print("WHAAAT")
+                    input("ENTER")
+                    sys.exit()
+    print(entry)
     MAIN_ENTRY.append(entry)
 
 def IFN(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -189,7 +211,17 @@ def JUMP(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "JUMP"
     entry['SUBCMD'] = SUBCMD
-    entry['Args'] = "%s" % (file.read(argsize))
+    if (SUBCMD == 1): entry['Args'] = "%s" % (file.read(2))
+    string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
+    try:
+        entry['Name'] = file.read(abs(string_size)).decode("ascii")
+    except BaseException as err:
+        print("offset: %x" % (file.tell()))
+        sys.exit()
+    file.seek(1, 1)
+    if (SUBCMD == 1): entry['Args2'] = "%s" % (file.read(argsize - (abs(string_size)+1+4)))
+    elif (SUBCMD == 0): entry['Args2'] = "%s" % (file.read(argsize - (abs(string_size)+1+2)))
+    print(entry)
     MAIN_ENTRY.append(entry)
 
 def JUMPPOINT(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -274,7 +306,7 @@ def MESSAGE_CLEAR(SUBCMD, MAIN_ENTRY, file, argsize):
 def SELECT(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
-    entry['Type'] = "CLOSE_WINDOW"
+    entry['Type'] = "SELECT"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
