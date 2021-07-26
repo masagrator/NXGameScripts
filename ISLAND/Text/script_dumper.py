@@ -194,7 +194,6 @@ def ONGOTO(SUBCMD, MAIN_ENTRY, file, argsize):
                     print("WHAAAT")
                     input("ENTER")
                     sys.exit()
-    print(entry)
     MAIN_ENTRY.append(entry)
 
 def IFN(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -213,15 +212,10 @@ def JUMP(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['SUBCMD'] = SUBCMD
     if (SUBCMD == 1): entry['Args'] = "%s" % (file.read(2))
     string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
-    try:
-        entry['Name'] = file.read(abs(string_size)).decode("ascii")
-    except BaseException as err:
-        print("offset: %x" % (file.tell()))
-        sys.exit()
+    entry['Name'] = file.read(abs(string_size)).decode("ascii")
     file.seek(1, 1)
     if (SUBCMD == 1): entry['Args2'] = "%s" % (file.read(argsize - (abs(string_size)+1+4)))
     elif (SUBCMD == 0): entry['Args2'] = "%s" % (file.read(argsize - (abs(string_size)+1+2)))
-    print(entry)
     MAIN_ENTRY.append(entry)
 
 def JUMPPOINT(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -303,20 +297,44 @@ def MESSAGE_CLEAR(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
 
-def SELECT(SUBCMD, MAIN_ENTRY, file, argsize):
-    entry = {}
-    entry['LABEL'] = "%s" % (hex(file.tell()-4))
-    entry['Type'] = "SELECT"
-    entry['SUBCMD'] = SUBCMD
-    entry['Args'] = "%s" % (file.read(argsize))
-    MAIN_ENTRY.append(entry)
-
 def CLOSE_WINDOW(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "CLOSE_WINDOW"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def SELECT(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "SELECT"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(9))
+    temp_size = 0
+    if (file.read(1) == b"@"):
+        string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
+        if (string_size > 0): 
+            string_size = string_size * 2
+            entry['JPN'] = file.read(string_size).decode("UTF-16-LE").split("$d", -1)
+            file.seek(2, 1)
+            temp_size += string_size + 2
+        else:
+            entry['JPN'] = file.read(string_size).decode("UTF-8").split("$d", -1)
+            file.seek(1, 1)
+            temp_size += string_size + 1
+        string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
+        if (string_size > 0): 
+            string_size = string_size * 2
+            entry['ENG'] = file.read(string_size).decode("UTF-16-LE").split("$d", -1)
+            file.seek(2, 1)
+            temp_size += string_size + 2
+        else:
+            entry['ENG'] = file.read(string_size).decode("UTF-8").split("$d", -1)
+            file.seek(1, 1) 
+            temp_size += string_size + 1       
+    entry['Args2'] = "%s" % (file.read(argsize - 14 - temp_size))
+    print(entry)
     MAIN_ENTRY.append(entry)
 
 def FFSTOP(SUBCMD, MAIN_ENTRY, file, argsize):
