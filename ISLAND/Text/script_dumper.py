@@ -171,7 +171,7 @@ def ONGOTO(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "ONGOTO"
-    entry['Function'] = Commands(SUBCMD).name
+    entry['SUBCMD'] = SUBCMD
     entry['Fun_ARGS'] = "%s" % (file.read(2))
     string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
     entry['Variable'] = "%s" % (file.read(abs(string_size)).decode("ascii").strip("\x00"))
