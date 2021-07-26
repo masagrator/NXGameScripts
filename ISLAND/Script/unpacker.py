@@ -31,25 +31,23 @@ flag3 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 offset_start_file_names = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 
 file_table = {}
-file_table['unk0'] = []
+file_table['offset'] = []
 file_table['size'] = []
 
 for i in range(0, file_count):
-    file_table['unk0'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
+    file_table['offset'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]*4)
     file_table['size'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
 
 filename_table = []
 
 for i in range(0, file_count):
     filename_table.append(readString(file))
-    
-file.seek(header_size, 0)
 
 chapter_names = open("chapternames.txt", "w", encoding="ascii")
 
 for i in range(0, file_count):
+    file.seek(file_table['offset'][i], 0)
     file_new = open("new\%s.dat" % (filename_table[i]), "wb")
     file_new.write(file.read(file_table['size'][i]))
-    file.seek((4 * round((file_table['size'][i]+1) / 4)) - file_table['size'][i], 1)
-    chapter_names.write("%s\t%d\n" % (filename_table[i], int(file_table['unk0'][i])))
+    chapter_names.write("%s\n" % (filename_table[i]))
     file_new.close()

@@ -7,8 +7,6 @@ unk0 = []
 
 with open("chapternames.txt", 'r', encoding="ascii") as f:
     Filenames = [line.strip("\r\n").strip("\n").split("\t", -1)[0] for line in f]
-    f.seek(0,0)
-    unk0 = [line.strip("\r\n").strip("\n").split("\t", -1)[1] for line in f]
 
 file = open(sys.argv[1], "rb")
 header_size = numpy.fromfile(file, dtype=numpy.int32, count=1)[0]
@@ -30,9 +28,12 @@ for i in range(0, file_count):
     scripts_size.append(script.tell())
     script.close()
 
+offset = header_size / 4
+
 for i in range(0, file_count):
-    new_file.write(numpy.uint32(int(unk0[i], 10)))
+    new_file.write(numpy.uint32(offset))
     new_file.write(numpy.uint32(scripts_size[i]))
+    offset += int(round((scripts_size[i]+1) / 4))
 
 for i in range(0, file_count):
     new_file.write(Filenames[i].encode("ascii"))
