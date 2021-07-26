@@ -92,7 +92,7 @@ class Commands(Enum):
     SIZE = 0x51
     SPLINE = 0x52
     DISP = 0x53
-    MASK = 0x53
+    MASK = 0x54
     FACE = 0x55
     SEPIA = 0x56
     SEPIA_COLOR = 0x57
@@ -192,6 +192,14 @@ def JUMP(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
 
+def JUMPPOINT(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "JUMPPOINT"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
 def END(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
@@ -232,7 +240,6 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
             entry['Args'] = "%s" % (file.read(argsize-2))
         else:
             temp_size = 0
-            print("String: %x, size: %x" % (file.tell(), string_size))
             if (string_size > 0):
                 string_size = string_size * 2
                 entry['JPN'] = file.read(string_size).decode("UTF-16-LE")
@@ -243,7 +250,6 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
                 file.seek(1, 1)
                 temp_size += abs(string_size) + 1
             string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
-            print("String: %x, size: %x" % (file.tell(), string_size))
             if (string_size > 0): 
                 string_size = string_size * 2
                 entry['ENG'] = file.read(string_size).decode("UTF-16-LE")
@@ -254,8 +260,15 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
                 entry['ENG'] = string.decode("UTF-8")
                 file.seek(1, 1)
                 temp_size += abs(string_size) + 1
-            print("after string: %x, %x" % (file.tell(), argsize - temp_size - 9))
             entry['Args'] = "%s" % (file.read(argsize - temp_size - 10))
+    MAIN_ENTRY.append(entry)
+
+def MESSAGE_CLEAR(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "MESSAGE_CLEAR"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
 
 def SELECT(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -270,6 +283,14 @@ def CLOSE_WINDOW(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "CLOSE_WINDOW"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def FFSTOP(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "FFSTOP"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -322,6 +343,14 @@ def MOVE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
 
+def ROT(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "ROT"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
 def SCALE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
@@ -334,6 +363,22 @@ def SHAKE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "SHAKE"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def SHAKELIST(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "SHAKELIST"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def MCMOVE(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "MCMOVE"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -358,6 +403,14 @@ def MCFADE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "MCFADE"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def MCARC(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "MCARC"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -426,10 +479,58 @@ def WIPE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
 
+def SCISSOR(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "SCISSOR"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def DELAY(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "DELAY"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def TONE(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "TONE"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def SCALECOSSIN(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "SCALECOSSIN"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def BMODE(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "BMODE"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
 def SIZE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "SIZE"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def DISP(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "DISP"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -450,10 +551,26 @@ def SEPIA_COLOR(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
 
+def SATURATION(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "SATURATION"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
 def UVWH(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "UVWH"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def NEGA(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "NEGA"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -514,10 +631,26 @@ def MOVIE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
 
+def EX(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "EX"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
 def TASK(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "TASK"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def VIB_PLAY(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "VIB_PLAY"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -539,38 +672,55 @@ def GOTO_COMMANDS(CMD, SUBCMD, file,cmdsize):
     elif (CMD == Commands.ONGOTO.value): ONGOTO(SUBCMD, Dump['Main'], file, cmdsize-4) #0x10
     elif (CMD == Commands.IFN.value): IFN(SUBCMD, Dump['Main'], file, cmdsize-4) #0x13
     elif (CMD == Commands.JUMP.value): JUMP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x15
+    elif (CMD == Commands.JUMPPOINT.value): JUMPPOINT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x18
     elif (CMD == Commands.END.value): END(SUBCMD, Dump['Main'], file, cmdsize-4) #0x19
     elif (CMD == Commands.STARTUP_BETGIN.value): STARTUP_BETGIN(Dump['Main']) #0x1B
     elif (CMD == Commands.STARTUP_END.value): STARTUP_END(Dump['Main']) #0x1C
     elif (CMD == Commands.MESSAGE.value): MESSAGE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x23
+    elif (CMD == Commands.MESSAGE_CLEAR.value): MESSAGE_CLEAR(SUBCMD, Dump['Main'], file, cmdsize-4) #0x24
     elif (CMD == Commands.SELECT.value): SELECT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x26
     elif (CMD == Commands.CLOSE_WINDOW.value): CLOSE_WINDOW(SUBCMD, Dump['Main'], file, cmdsize-4) #0x27
+    elif (CMD == Commands.FFSTOP.value): FFSTOP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x31
     elif (CMD == Commands.INIT.value): INIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x32
     elif (CMD == Commands.STOP.value): STOP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x33
     elif (CMD == Commands.IMAGELOAD.value): IMAGELOAD(SUBCMD, Dump['Main'], file, cmdsize-4) #0x34
     elif (CMD == Commands.IMAGEUPDATE.value): IMAGEUPDATE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x35
     elif (CMD == Commands.ARC.value): ARC(SUBCMD, Dump['Main'], file, cmdsize-4) #0x36
     elif (CMD == Commands.MOVE.value): MOVE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x37
+    elif (CMD == Commands.ROT.value): ROT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x38
     elif (CMD == Commands.FADE.value): FADE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3A
     elif (CMD == Commands.SCALE.value): SCALE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3B
     elif (CMD == Commands.SHAKE.value): SHAKE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3C
+    elif (CMD == Commands.SHAKELIST.value): SHAKELIST(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3D
     elif (CMD == Commands.BASE.value): BASE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3E
+    elif (CMD == Commands.MCMOVE.value): MCMOVE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3F
+    elif (CMD == Commands.MCARC.value): MCARC(SUBCMD, Dump['Main'], file, cmdsize-4) #0x40
     elif (CMD == Commands.MCSHAKE.value): MCSHAKE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x42
     elif (CMD == Commands.MCFADE.value): MCFADE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x43
     elif (CMD == Commands.WAIT.value): WAIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x44
     elif (CMD == Commands.DRAW.value): DRAW(SUBCMD, Dump['Main'], file, cmdsize-4) #0x46
     elif (CMD == Commands.WIPE.value): WIPE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x47
+    elif (CMD == Commands.SCISSOR.value): SCISSOR(SUBCMD, Dump['Main'], file, cmdsize-4) #0x4B
+    elif (CMD == Commands.DELAY.value): DELAY(SUBCMD, Dump['Main'], file, cmdsize-4) #0x4C
+    elif (CMD == Commands.TONE.value): SCISSOR(SUBCMD, Dump['Main'], file, cmdsize-4) #0x4E
+    elif (CMD == Commands.SCALECOSSIN.value): SCALECOSSIN(SUBCMD, Dump['Main'], file, cmdsize-4) #0x4F
+    elif (CMD == Commands.BMODE.value): BMODE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x50
     elif (CMD == Commands.SIZE.value): SIZE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x51
+    elif (CMD == Commands.DISP.value): DISP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x53
     elif (CMD == Commands.SEPIA.value): SEPIA(SUBCMD, Dump['Main'], file, cmdsize-4) #0x57
     elif (CMD == Commands.SEPIA_COLOR.value): SEPIA_COLOR(SUBCMD, Dump['Main'], file, cmdsize-4) #0x57
+    elif (CMD == Commands.SATURATION.value): SATURATION(SUBCMD, Dump['Main'], file, cmdsize-4) #0x5C
     elif (CMD == Commands.UVWH.value): UVWH(SUBCMD, Dump['Main'], file, cmdsize-4) #0x5f
+    elif (CMD == Commands.NEGA.value): NEGA(SUBCMD, Dump['Main'], file, cmdsize-4) #0x62
     elif (CMD == Commands.BGM.value): BGM(SUBCMD, Dump['Main'], file, cmdsize-4) #0x65
     elif (CMD == Commands.SE.value): SE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x6A
     elif (CMD == Commands.VOLUME.value): VOLUME(SUBCMD, Dump['Main'], file, cmdsize-4) #0x6E
     elif (CMD == Commands.MOVIE.value): MOVIE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x6E
     elif (CMD == Commands.SETBGMFLAG.value): SETBGMFLAG(SUBCMD, Dump['Main'], file, cmdsize-4) #0x6E
     elif (CMD == Commands.SETCGFLAG.value): SETCGFLAG(SUBCMD, Dump['Main'], file, cmdsize-4) #0x70
+    elif (CMD == Commands.EX.value): EX(SUBCMD, Dump['Main'], file, cmdsize-4) #0x71
     elif (CMD == Commands.TASK.value): TASK(SUBCMD, Dump['Main'], file, cmdsize-4) #0x74
+    elif (CMD == Commands.VIB_PLAY.value): VIB_PLAY(SUBCMD, Dump['Main'], file, cmdsize-4) #0x76
     elif (CMD == Commands.MANPU.value): MANPU(SUBCMD, Dump['Main'], file, cmdsize-4) #0x79
     else: 
         print("Not implemented command: 0x%x, offset: %x" % (CMD, file.tell()-2))
@@ -597,7 +747,6 @@ for i in range(0, len(Filenames)):
     file_size = file.tell()
     file.seek(0, 0)
     while (file.tell() < file_size):
-        print("%x" % (file.tell()))
         command_size = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
         GOTO_COMMANDS(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0], numpy.fromfile(file, dtype=numpy.uint8, count=1)[0], file, command_size)
         end = file.tell()
@@ -607,3 +756,4 @@ for i in range(0, len(Filenames)):
     new_file = open("json\%s.json" % (Filenames[i]), "w", encoding="UTF-8")
     json.dump(Dump, new_file, indent=4, ensure_ascii=False)
     new_file.close()
+    Dump['Main'] = []
