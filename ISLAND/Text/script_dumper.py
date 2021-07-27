@@ -782,9 +782,6 @@ try:
 except:
     pass
 
-SUBCMD_EXCEPTIONS = [0x14, 0xB, 0x3]
-
-
 Filenames = []
 
 with open("chapternames.txt", 'r', encoding="ascii") as f:
