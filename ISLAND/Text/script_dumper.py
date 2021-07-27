@@ -264,9 +264,9 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
         if (string_size == 0):
             file.seek(-6, 1)
             entry['Args'] = "%s" % (file.read(argsize-2))
-        entry['MSGID'] = MSGID
-        if (temp_numb != 0): entry['VOICEID'] = temp_numb
         else:
+            entry['MSGID'] = MSGID
+            if (temp_numb != 0): entry['VOICEID'] = temp_numb
             temp_size = 0
             if (string_size > 0):
                 string_size = string_size * 2
