@@ -164,7 +164,8 @@ def GOTO(SUBCMD, MAIN_ENTRY, file, argsize):
     if (SUBCMD == 1): 
         entry['Args'] = (file.read(2)[::-1].hex())
         entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize-2)[::-1].hex())
-    else: entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize)[::-1].hex())
+    elif (SUBCMD == 0): entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize)[::-1].hex())
+    else: print("Unknown SUBCMD GOTO: %x" % (SUBCMD))
     MAIN_ENTRY.append(entry)
 
 def ONGOTO(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -257,13 +258,14 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
     if ((SUBCMD2 >= 0xFF00) or (SUBCMD2 in SUBCMD2_EXCEPTIONS)):
         entry['Args'] = "%s" % (file.read(argsize-2))
     else:
-        entry['MSGID'] = int(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0])
+        MSGID = int(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0])
         temp_numb = int(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0])
-        if (temp_numb != 0): entry['VOICEID'] = temp_numb
         string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
         if (string_size == 0):
             file.seek(-6, 1)
             entry['Args'] = "%s" % (file.read(argsize-2))
+        entry['MSGID'] = MSGID
+        if (temp_numb != 0): entry['VOICEID'] = temp_numb
         else:
             temp_size = 0
             if (string_size > 0):
