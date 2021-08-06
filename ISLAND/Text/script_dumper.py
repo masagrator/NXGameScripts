@@ -710,7 +710,7 @@ def VIB_PLAY(SUBCMD, MAIN_ENTRY, file, argsize):
 def MANPU(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
-    entry['Type'] = "TASK"
+    entry['Type'] = "MANPU"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
