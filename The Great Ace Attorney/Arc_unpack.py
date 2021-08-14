@@ -7,6 +7,7 @@ import numpy
 import os
 import json
 
+header_factor = 0x8000
 file_entry_size = 0x90
 filename_max_size = 0x80
 
