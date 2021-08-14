@@ -1,5 +1,6 @@
 # Python 3
 # First argument is a filename
+# It's compatible only with Windows as filenames are using backslashes. To be compatible with linux this needs to be replaced in runtime
 
 import sys
 import zlib
