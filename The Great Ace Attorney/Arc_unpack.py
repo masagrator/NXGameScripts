@@ -56,10 +56,10 @@ for i in range(0, file_count):
     Data = file.read(Dict['Main'][i]['compressed_size'])
     decompressed_data = zlib.decompress(Data)
     if (len(decompressed_data) != Dict['Main'][i]['uncompressed_size']):
-        print("Wrong uncompressed size!")
+        print("Wrong uncompressed size! Filename: %s" % (Dict['Main'][i]['Filename']))
         input("Press ENTER")
         exit()
-    file2 = open("%s\%s.%s" % (sys.argv[1][:-4], Dict['Main'][i]['Filename'], decompressed_data[0:3].decode("ascii")), "wb")
+    file2 = open("%s\%s.%s" % (sys.argv[1][:-4], Dict['Main'][i]['Filename'], decompressed_data[0:3].decode("ascii").lower()), "wb")
     file2.write(decompressed_data)
     file2.close()
 
