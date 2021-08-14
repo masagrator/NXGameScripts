@@ -5,6 +5,7 @@ import sys
 import zlib
 import numpy
 import os
+import json
 
 file_entry_size = 0x90
 filename_max_size = 0x80
@@ -39,12 +40,12 @@ for i in range(0, file_count):
     offset = file.tell()
     entry['Filename'] = readString(file)
     file.seek(offset + filename_max_size, 0)
-    entry['MAGIC'] = file.read(4)
-    entry['compressed_size'] = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    entry['uncompressed_size'] = numpy.uint32(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0])
-    entry['uncompressed_size'] = entry['uncompressed_size'] + (numpy.fromfile(file, dtype=numpy.uint8, count=1)[0] * 0x10000)
-    entry['unk4'] = numpy.fromfile(file, dtype=numpy.uint8, count=1)[0]
-    entry['file_offset'] = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+    entry['MAGIC'] = "%s" % (file.read(4))
+    entry['compressed_size'] = int(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
+    entry['uncompressed_size'] = int(numpy.uint32(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]))
+    entry['uncompressed_size'] = entry['uncompressed_size'] + int(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0] * 0x10000)
+    entry['unk4'] = int(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0])
+    entry['file_offset'] = int(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
     Dict['Main'].append(entry)
 
 for i in range(0, file_count):
@@ -59,3 +60,7 @@ for i in range(0, file_count):
     file2 = open("unpacked\%s.%s" % (Dict['Main'][i]['Filename'], decompressed_data[0:3].decode("ascii")), "wb")
     file2.write(decompressed_data)
     file2.close()
+
+file2 = open("unpacked\%s.json" % (sys.argv[1][:-4]), "w", encoding="UTF-8")
+json.dump(Dict, file2, indent=4, ensure_ascii=False)
+file2.close()
