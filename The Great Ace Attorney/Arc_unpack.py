@@ -44,9 +44,7 @@ for i in range(0, file_count):
     file.seek(offset + filename_max_size, 0)
     entry['MAGIC'] = "%s" % (file.read(4))
     entry['compressed_size'] = int(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
-    entry['uncompressed_size'] = int(numpy.uint32(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]))
-    entry['uncompressed_size'] = entry['uncompressed_size'] + int(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0] * 0x10000)
-    entry['unk4'] = int(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0])
+    entry['uncompressed_size'] = int(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0] - 0x40000000)
     entry['file_offset'] = int(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
     Dict['Main'].append(entry)
 
@@ -56,7 +54,7 @@ for i in range(0, file_count):
     Data = file.read(Dict['Main'][i]['compressed_size'])
     decompressed_data = zlib.decompress(Data)
     if (len(decompressed_data) != Dict['Main'][i]['uncompressed_size']):
-        print("Wrong uncompressed size! Filename: %s" % (Dict['Main'][i]['Filename']))
+        print("Wrong uncompressed size! Filename: %s, MAGIC: %s" % (Dict['Main'][i]['Filename'], Dict['Main'][i]['MAGIC']))
         input("Press ENTER")
         exit()
     file2 = open("%s\%s.%s" % (sys.argv[1][:-4], Dict['Main'][i]['Filename'], decompressed_data[0:3].decode("ascii").lower()), "wb")
