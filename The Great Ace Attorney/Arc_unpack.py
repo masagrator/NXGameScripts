@@ -49,7 +49,7 @@ for i in range(0, file_count):
     Dict['Main'].append(entry)
 
 for i in range(0, file_count):
-    os.makedirs(os.path.dirname("unpacked\%s.dat" % (Dict['Main'][i]['Filename'])), exist_ok=True)
+    os.makedirs(os.path.dirname("%s\%s.dat" % (sys.argv[1][:-4], Dict['Main'][i]['Filename'])), exist_ok=True)
     file.seek(Dict['Main'][i]['file_offset'], 0)
     Data = file.read(Dict['Main'][i]['compressed_size'])
     decompressed_data = zlib.decompress(Data)
@@ -57,10 +57,10 @@ for i in range(0, file_count):
         print("Wrong uncompressed size!")
         input("Press ENTER")
         exit()
-    file2 = open("unpacked\%s.%s" % (Dict['Main'][i]['Filename'], decompressed_data[0:3].decode("ascii")), "wb")
+    file2 = open("%s\%s.%s" % (sys.argv[1][:-4], Dict['Main'][i]['Filename'], decompressed_data[0:3].decode("ascii")), "wb")
     file2.write(decompressed_data)
     file2.close()
 
-file2 = open("unpacked\%s.json" % (sys.argv[1][:-4]), "w", encoding="UTF-8")
+file2 = open("%s\%s.json" % (sys.argv[1][:-4], sys.argv[1][:-4]), "w", encoding="UTF-8")
 json.dump(Dict, file2, indent=4, ensure_ascii=False)
 file2.close()
