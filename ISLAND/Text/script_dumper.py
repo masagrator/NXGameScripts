@@ -164,8 +164,7 @@ def GOTO(SUBCMD, MAIN_ENTRY, file, argsize):
     if (SUBCMD == 1): 
         entry['Args'] = (file.read(2)[::-1].hex())
         entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize-2)[::-1].hex())
-    elif (SUBCMD == 0): entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize)[::-1].hex())
-    else: print("Unknown SUBCMD GOTO: %x" % (SUBCMD))
+    else: entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize)[::-1].hex())
     MAIN_ENTRY.append(entry)
 
 def ONGOTO(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -230,7 +229,7 @@ def JUMPPOINT(SUBCMD, MAIN_ENTRY, file, argsize):
 def END(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
-    entry['Type'] = "IFN"
+    entry['Type'] = "END"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -247,6 +246,40 @@ def STARTUP_END(MAIN_ENTRY):
     entry['Type'] = "STARTUP_END"
     MAIN_ENTRY.append(entry)
 
+def VARSTR_SET(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "VARSTR_SET"
+    entry['SUBCMD'] = SUBCMD
+    entry["Metadata"] = "%s" % (file.read(4))
+    string_size = (numpy.fromfile(file, dtype=numpy.uint16, count=1)[0] + 1) * 2
+    entry["String"] = file.read(string_size)[:-2].decode("UTF-16-LE")
+    MAIN_ENTRY.append(entry)
+
+def ARFLAGSET(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "ARFLAGSET"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def COLORBG_SET(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "COLORBG_SET"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
+def SHAKELIST_SET(SUBCMD, MAIN_ENTRY, file, argsize):
+    entry = {}
+    entry['LABEL'] = "%s" % (hex(file.tell()-4))
+    entry['Type'] = "SHAKELIST_SET"
+    entry['SUBCMD'] = SUBCMD
+    entry['Args'] = "%s" % (file.read(argsize))
+    MAIN_ENTRY.append(entry)
+
 def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
     SUBCMD2_EXCEPTIONS = [0x14, 0xB, 0x3]
     entry = {}
@@ -258,15 +291,14 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
     if ((SUBCMD2 >= 0xFF00) or (SUBCMD2 in SUBCMD2_EXCEPTIONS)):
         entry['Args'] = "%s" % (file.read(argsize-2))
     else:
-        MSGID = int(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0])
+        entry['MSGID'] = int(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0])
         temp_numb = int(numpy.fromfile(file, dtype=numpy.uint16, count=1)[0])
+        if (temp_numb != 0): entry['VOICEID'] = temp_numb
         string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
         if (string_size == 0):
             file.seek(-6, 1)
             entry['Args'] = "%s" % (file.read(argsize-2))
         else:
-            entry['MSGID'] = MSGID
-            if (temp_numb != 0): entry['VOICEID'] = temp_numb
             temp_size = 0
             if (string_size > 0):
                 string_size = string_size * 2
@@ -336,7 +368,6 @@ def SELECT(SUBCMD, MAIN_ENTRY, file, argsize):
             file.seek(1, 1) 
             temp_size += string_size + 1       
     entry['Args2'] = "%s" % (file.read(argsize - 14 - temp_size))
-    print(entry)
     MAIN_ENTRY.append(entry)
 
 def FFSTOP(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -470,7 +501,7 @@ def MCARC(SUBCMD, MAIN_ENTRY, file, argsize):
 def MCSHAKE(SUBCMD, MAIN_ENTRY, file, argsize):
     entry = {}
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
-    entry['Type'] = "MCFADE"
+    entry['Type'] = "MCSHAKE"
     entry['SUBCMD'] = SUBCMD
     entry['Args'] = "%s" % (file.read(argsize))
     MAIN_ENTRY.append(entry)
@@ -726,8 +757,12 @@ def GOTO_COMMANDS(CMD, SUBCMD, file,cmdsize):
     elif (CMD == Commands.JUMP.value): JUMP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x15
     elif (CMD == Commands.JUMPPOINT.value): JUMPPOINT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x18
     elif (CMD == Commands.END.value): END(SUBCMD, Dump['Main'], file, cmdsize-4) #0x19
-    elif (CMD == Commands.STARTUP_BETGIN.value): STARTUP_BETGIN(Dump['Main']) #0x1B
-    elif (CMD == Commands.STARTUP_END.value): STARTUP_END(Dump['Main']) #0x1C
+    elif (CMD == Commands.STARTUP_BETGIN.value): STARTUP_BETGIN(Dump['Main']) #0x1A
+    elif (CMD == Commands.STARTUP_END.value): STARTUP_END(Dump['Main']) #0x1B
+    elif (CMD == Commands.VARSTR_SET.value): VARSTR_SET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1C
+    elif (CMD == Commands.ARFLAGSET.value): ARFLAGSET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1E
+    elif (CMD == Commands.COLORBG_SET.value): COLORBG_SET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1F
+    elif (CMD == Commands.SHAKELIST_SET.value): SHAKELIST_SET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x21
     elif (CMD == Commands.MESSAGE.value): MESSAGE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x23
     elif (CMD == Commands.MESSAGE_CLEAR.value): MESSAGE_CLEAR(SUBCMD, Dump['Main'], file, cmdsize-4) #0x24
     elif (CMD == Commands.SELECT.value): SELECT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x26
@@ -790,7 +825,12 @@ with open("chapternames.txt", 'r', encoding="ascii") as f:
     Filenames = [line.strip("\r\n").strip("\n").split("\t", -1)[0] for line in f]
 
 for i in range(0, len(Filenames)):
-    if (Filenames[i][0] == "_"): continue
+    EXCEPTIONS = ["_varstr", "_arflag", "_colorbg", "_shakelist"]
+    if (Filenames[i][0] == "_"): 
+        if (Filenames[i] not in EXCEPTIONS):
+            print("%s not in EXCEPTIONS. Ignoring..." % (Filenames[i]))
+            continue
+    print(Filenames[i])
     file = open("new\%s.dat" % (Filenames[i]), "rb")
     file.seek(0, 2)
     file_size = file.tell()
