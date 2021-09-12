@@ -451,45 +451,6 @@ def DEL_CALLSTACK(entry):
     array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
     return b''.join(array)
 
-def Calculate_size(entry):
-    if (entry['Type'] == "EQU"): return len(EQU(entry))
-    elif (entry['Type'] == "EQUN"): return len(EQUN(entry))
-    elif (entry['Type'] == "VARSTR"): return len(VARSTR(entry))
-    elif (entry['Type'] == "GOTO"): return len(GOTO(entry))
-    elif (entry['Type'] == "IFN"): return len(IFN(entry))
-    elif (entry['Type'] == "JUMP"): return len(JUMP(entry))
-    elif (entry['Type'] == "JUMPPOINT"): return len(JUMPPOINT(entry))
-    elif (entry['Type'] == "END"): return len(END(entry))
-    elif (entry['Type'] == "STARTUP_BETGIN"): return len(STARTUP_BETGIN(entry))
-    elif (entry['Type'] == "STARTUP_END"): return len(STARTUP_END(entry))
-    elif (entry['Type'] == "VARSTR_SET"): return len(VARSTR_SET(entry))
-    elif (entry['Type'] == "ARFLAGSET"): return len(ARFLAGSET(entry))
-    elif (entry['Type'] == "SHAKELIST_SET"): return len(SHAKELIST_SET(entry))
-    elif (entry['Type'] == "MESSAGE"): return len(MESSAGE(entry))
-    elif (entry['Type'] == "SELECT"): return len(SELECT(entry))
-    elif (entry['Type'] == "CLOSE_WINDOW"): return len(CLOSE_WINDOW(entry))
-    elif (entry['Type'] == "LOG"): return len(LOG(entry))
-    elif (entry['Type'] == "LOG_END"): return len(LOG_END(entry))
-    elif (entry['Type'] == "FFSTOP"): return len(FFSTOP(entry))
-    elif (entry['Type'] == "INIT"): return len(INIT(entry))
-    elif (entry['Type'] == "STOP"): return len(STOP(entry))
-    elif (entry['Type'] == "IMAGELOAD"): return len(IMAGELOAD(entry))
-    elif (entry['Type'] == "MOVE"): return len(MOVE(entry))
-    elif (entry['Type'] == "FADE"): return len(FADE(entry))
-    elif (entry['Type'] == "SHAKELIST"): return len(SHAKELIST(entry))
-    elif (entry['Type'] == "WAIT"): return len(WAIT(entry))
-    elif (entry['Type'] == "DRAW"): return len(DRAW(entry))
-    elif (entry['Type'] == "BGM_WAITFADE"): return len(BGM_WAITFADE(entry))
-    elif (entry['Type'] == "BGM_POP"): return len(BGM_POP(entry))
-    elif (entry['Type'] == "SE_WAIT"): return len(SE_WAIT(entry))
-    elif (entry['Type'] == "EX"): return len(EX(entry))
-    elif (entry['Type'] == "PRINTF"): return len(PRINTF(entry))
-    elif (entry['Type'] == "VIB_PLAY"): return len(VIB_PLAY(entry))
-    elif (entry['Type'] == "DEL_CALLSTACK"): return len(DEL_CALLSTACK(entry))
-    else:
-        print("Type not supported: %s" % (entry['Type']))
-        sys.exit()
-
 def Make_command(entry):
     if (entry['Type'] == "EQU"): return EQU(entry)
     elif (entry['Type'] == "EQUN"): return EQUN(entry)
@@ -529,6 +490,12 @@ def Make_command(entry):
         print("Type not supported: %s" % (entry['Type']))
         sys.exit()
 
+def Process(string, entry):
+    _COM = Make_command(entry)
+    if (string == "SIZE"): return len(_COM)
+    elif (string == "COMMAND"): return _COM
+
+
 try:
     os.mkdir("Compiled")
 except:
@@ -560,12 +527,12 @@ for i in range(0, len(Filenames)):
     COMMAND_OUTPUT_SIZE = []
     file.close()
     for x in range(0, len(DUMP)):
-        Size = Calculate_size(DUMP[x])
+        Size = Process("SIZE", DUMP[x])
         if (Size % 2 != 0): Size += 1
         COMMAND_OUTPUT_SIZE.append(Size)
     file = open("Compiled\%s.dat" % (Filenames[i]), "wb")
     for x in range(0, len(DUMP)):
-        COM = Make_command(DUMP[x])
+        COM = Process("COMMAND", DUMP[x])
         file.write((len(COM)+2).to_bytes(2, byteorder='little'))
         file.write(COM)
         if (len(COM) % 2 != 0): file.write(b"\x00")
