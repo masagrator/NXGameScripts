@@ -270,7 +270,7 @@ def MESSAGE(entry):
     Name = b''
     try:
         if (ENG == False): Name = ("@%s@" % (entry['NameJPN'])).encode("UTF-16-LE")
-        else: Name = ("@%s@" % (entry['NameJPN'])).encode("UTF-16-LE")
+        else: Name = ("@%s@" % (entry['NameENG'])).encode("UTF-16-LE")
     except:
         pass
     try:
