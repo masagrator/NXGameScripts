@@ -279,6 +279,7 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
                         break
                 entry['NameJPN'] = text[1:char_count]
                 entry['JPN'] = text[char_count+1:]
+                entry['NameENG'] = ""
             else:    
                 entry['JPN'] = text
             file.seek(2, 1)
@@ -293,11 +294,11 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
                         break
                 entry['NameJPN'] = text[1:char_count]
                 entry['JPN'] = text[char_count+1:]
+                entry['NameENG'] = ""
             else:    
                 entry['JPN'] = text
             file.seek(1, 1)
             temp_size += abs(string_size) + 1
-        entry['NameENG'] = ""
         entry['ENG'] = ""
         try:
             entry['Args'] = file.read(argsize - temp_size - 8).hex()
