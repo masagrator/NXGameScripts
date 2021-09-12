@@ -169,8 +169,8 @@ def GOTO(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['SUBCMD'] = SUBCMD
     if (SUBCMD == 1): 
         entry['Args'] = (file.read(2).hex())
-        entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize-2)[::-1].hex())
-    else: entry['GOTO_LABEL'] = "0x%s" % (file.read(argsize)[::-1].hex())
+        entry['GOTO_LABEL'] = "%s" % hex(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
+    else: entry['GOTO_LABEL'] = "%s" % hex(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
     MAIN_ENTRY.append(entry)
 
 def IFN(SUBCMD, MAIN_ENTRY, file, argsize):

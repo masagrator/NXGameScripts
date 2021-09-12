@@ -8,6 +8,7 @@ import sys
 from enum import Enum
 
 ENG = False
+LABELS = {}
 
 class Commands(Enum):
     EQU = 0x0
@@ -159,14 +160,21 @@ def VARSTR(entry):
     array.append(bytes.fromhex(entry['Args']))
     return b''.join(array)
 
-def GOTO(entry):
+def GOTO(entry, string):
     array = []
     array.append(Commands.GOTO.value.to_bytes(1, byteorder='little'))
     array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
     if (entry['SUBCMD'] == 1):
         array.append(bytes.fromhex(entry['Args']))
-        array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
-    else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
+        if (string == "COMMAND"):
+            print("LABEL: %s, NEW: 0x%x" % (entry['GOTO_LABEL'], LABELS[entry['GOTO_LABEL']]))
+            array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+        else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
+    else: 
+        if (string == "COMMAND"):
+            print("LABEL: %s, NEW: 0x%x" % (entry['GOTO_LABEL'], LABELS[entry['GOTO_LABEL']]))
+            array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+        else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
     return b''.join(array)
 
 def IFN(entry):
@@ -451,11 +459,11 @@ def DEL_CALLSTACK(entry):
     array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
     return b''.join(array)
 
-def Make_command(entry):
+def Make_command(entry, string):
     if (entry['Type'] == "EQU"): return EQU(entry)
     elif (entry['Type'] == "EQUN"): return EQUN(entry)
     elif (entry['Type'] == "VARSTR"): return VARSTR(entry)
-    elif (entry['Type'] == "GOTO"): return GOTO(entry)
+    elif (entry['Type'] == "GOTO"): return GOTO(entry, string)
     elif (entry['Type'] == "IFN"): return IFN(entry)
     elif (entry['Type'] == "JUMP"): return JUMP(entry)
     elif (entry['Type'] == "JUMPPOINT"): return JUMPPOINT(entry)
@@ -490,10 +498,12 @@ def Make_command(entry):
         print("Type not supported: %s" % (entry['Type']))
         sys.exit()
 
-def Process(string, entry):
-    _COM = Make_command(entry)
-    if (string == "SIZE"): return len(_COM)
-    elif (string == "COMMAND"): return _COM
+def Process(string, entry, offset_new):
+    if (string == "SIZE"):
+        _COM = Make_command(entry, string)
+        LABELS[entry['LABEL']] = offset_new
+        return len(_COM)
+    elif (string == "COMMAND"): return Make_command(entry, string)
 
 
 try:
@@ -504,9 +514,8 @@ except:
 with open("chapternames.txt", 'r', encoding="ascii") as f:
     Filenames = [line.strip("\r\n").strip("\n").split("\t", -1)[0] for line in f]
 
-
-
 for i in range(0, len(Filenames)):
+    offset_new = 0
     if (len(sys.argv) <= 1 or len(sys.argv) > 2):
         print("script_compiler.py [ENG/JPN]")
         sys.exit()
@@ -527,12 +536,13 @@ for i in range(0, len(Filenames)):
     COMMAND_OUTPUT_SIZE = []
     file.close()
     for x in range(0, len(DUMP)):
-        Size = Process("SIZE", DUMP[x])
+        Size = Process("SIZE", DUMP[x], offset_new)
         if (Size % 2 != 0): Size += 1
         COMMAND_OUTPUT_SIZE.append(Size)
+        offset_new += Size + 2
     file = open("Compiled\%s.dat" % (Filenames[i]), "wb")
     for x in range(0, len(DUMP)):
-        COM = Process("COMMAND", DUMP[x])
+        COM = Process("COMMAND", DUMP[x], offset_new)
         file.write((len(COM)+2).to_bytes(2, byteorder='little'))
         file.write(COM)
         if (len(COM) % 2 != 0): file.write(b"\x00")
