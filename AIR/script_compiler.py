@@ -1,3 +1,6 @@
+# For now only it's reproducing correctly untouched dump.
+# It's not working yet with changed dumps
+
 import numpy
 import json
 import os
@@ -174,11 +177,14 @@ def GOTO(entry, string):
         else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
     return b''.join(array)
 
-def IFN(entry):
+def IFN(entry, string):
     array = []
     array.append(Commands.IFN.value.to_bytes(1, byteorder='little'))
     array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
     array.append(bytes.fromhex(entry['Args']))
+    if (string == "COMMAND"):
+        array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+    else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
     return b''.join(array)
 
 def JUMP(entry):
@@ -461,7 +467,7 @@ def Make_command(entry, string):
     elif (entry['Type'] == "EQUN"): return EQUN(entry)
     elif (entry['Type'] == "VARSTR"): return VARSTR(entry)
     elif (entry['Type'] == "GOTO"): return GOTO(entry, string)
-    elif (entry['Type'] == "IFN"): return IFN(entry)
+    elif (entry['Type'] == "IFN"): return IFN(entry, string)
     elif (entry['Type'] == "JUMP"): return JUMP(entry)
     elif (entry['Type'] == "JUMPPOINT"): return JUMPPOINT(entry)
     elif (entry['Type'] == "END"): return END(entry)
@@ -502,15 +508,6 @@ def Process(string, entry, offset_new):
         return len(_COM)
     elif (string == "COMMAND"): return Make_command(entry, string)
 
-if (len(sys.argv) <= 1 or len(sys.argv) > 2):
-    print("script_compiler.py [ENG/JPN]")
-    sys.exit()
-else:
-    if (sys.argv[1] == "ENG"):
-        ENG = True
-    elif (sys.argv[1] != "JPN"):
-        print("script_compiler.py [ENG/JPN]")
-        sys.exit()
 
 try:
     os.mkdir("Compiled")
@@ -522,6 +519,15 @@ with open("chapternames.txt", 'r', encoding="ascii") as f:
 
 for i in range(0, len(Filenames)):
     offset_new = 0
+    if (len(sys.argv) <= 1 or len(sys.argv) > 2):
+        print("script_compiler.py [ENG/JPN]")
+        sys.exit()
+    else:
+        if (sys.argv[1] == "ENG"):
+            ENG = True
+        elif (sys.argv[1] != "JPN"):
+            print("script_compiler.py [ENG/JPN]")
+            sys.exit()
     EXCEPTIONS = ["_varstr", "_arflag", "_colorbg", "_shakelist"]
     if (Filenames[i][0] == "_"): 
         if (Filenames[i] not in EXCEPTIONS):

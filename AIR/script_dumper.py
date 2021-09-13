@@ -178,7 +178,12 @@ def IFN(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['LABEL'] = "%s" % (hex(file.tell()-4))
     entry['Type'] = "IFN"
     entry['SUBCMD'] = SUBCMD
-    entry['Args'] = file.read(argsize).hex()
+    entry['Args'] = file.read(argsize-4).hex()
+    if (SUBCMD != 1):
+        print("IFN other than 0 detected. SUBCMD: %d, file: %s" % (SUBCMD. file.name))
+        sys.exit()
+    else:
+        entry['GOTO_LABEL'] = "%s" % hex(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
     MAIN_ENTRY.append(entry)
 
 # JUMP is used to go to new file. As part of Args contains name of script file (f.e. "com02").
