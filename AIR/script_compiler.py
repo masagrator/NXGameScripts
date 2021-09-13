@@ -1,6 +1,3 @@
-# For now only it's reproducing correctly untouched dump.
-# It's not working yet with changed dumps
-
 import numpy
 import json
 import os
@@ -508,6 +505,15 @@ def Process(string, entry, offset_new):
         return len(_COM)
     elif (string == "COMMAND"): return Make_command(entry, string)
 
+if (len(sys.argv) <= 1 or len(sys.argv) > 2):
+    print("script_compiler.py [ENG/JPN]")
+    sys.exit()
+else:
+    if (sys.argv[1] == "ENG"):
+        ENG = True
+    elif (sys.argv[1] != "JPN"):
+        print("script_compiler.py [ENG/JPN]")
+        sys.exit()
 
 try:
     os.mkdir("Compiled")
@@ -519,15 +525,6 @@ with open("chapternames.txt", 'r', encoding="ascii") as f:
 
 for i in range(0, len(Filenames)):
     offset_new = 0
-    if (len(sys.argv) <= 1 or len(sys.argv) > 2):
-        print("script_compiler.py [ENG/JPN]")
-        sys.exit()
-    else:
-        if (sys.argv[1] == "ENG"):
-            ENG = True
-        elif (sys.argv[1] != "JPN"):
-            print("script_compiler.py [ENG/JPN]")
-            sys.exit()
     EXCEPTIONS = ["_varstr", "_arflag", "_colorbg", "_shakelist"]
     if (Filenames[i][0] == "_"): 
         if (Filenames[i] not in EXCEPTIONS):
