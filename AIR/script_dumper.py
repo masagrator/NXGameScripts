@@ -334,8 +334,9 @@ def SELECT(SUBCMD, MAIN_ENTRY, file, argsize):
         entry["ENG"] = []
         for i in range(0, len(entry['JPN'])):
             entry["ENG"].append("")
+            entry["LongBar"].append(bool(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0]))
     try:
-        entry['Args2'] = file.read(argsize - 12 - temp_size).hex()
+        entry['Args2'] = file.read(argsize - 13 - temp_size).hex()
     except:
         print("Error while processing select. Start offset: 0x%x" % (debug_offset-2))
         sys.exit()

@@ -308,6 +308,7 @@ def SELECT(entry):
     array.append(int(temp / 2).to_bytes(2, byteorder='little'))
     array.append(string)
     array.append(b"\x00\x00")
+    array.append(int(entry['LongBar']).to_bytes(1, byteorder='little'))
     array.append(bytes.fromhex(entry['Args2']))
     return b''.join(array)
 
