@@ -334,7 +334,7 @@ def SELECT(SUBCMD, MAIN_ENTRY, file, argsize):
         entry["ENG"] = []
         for i in range(0, len(entry['JPN'])):
             entry["ENG"].append("")
-            entry["LongBar"].append(bool(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0]))
+    entry["LongBar"].append(bool(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0]))
     try:
         entry['Args2'] = file.read(argsize - 13 - temp_size).hex()
     except:
