@@ -533,7 +533,7 @@ for i in range(0, len(Filenames)):
             continue
     print(Filenames[i])
     file = open("json\%s.json" % (Filenames[i]), "r")
-    DUMP = json.load(file)['Main']
+    DUMP = json.load(file)
     COMMAND_OUTPUT_SIZE = []
     file.close()
     for x in range(0, len(DUMP)):

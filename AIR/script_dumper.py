@@ -574,6 +574,6 @@ for i in range(0, len(Filenames)):
             file.seek(2 - (end % 2), 1)
     file.close()
     new_file = open("json\%s.json" % (Filenames[i]), "w", encoding="UTF-8")
-    json.dump(Dump, new_file, indent=4, ensure_ascii=False)
+    json.dump(Dump['Main'], new_file, indent=4, ensure_ascii=False)
     new_file.close()
     Dump['Main'] = []
