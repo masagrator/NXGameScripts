@@ -2,7 +2,6 @@ import numpy
 import json
 import os
 import sys
-import base64
 from enum import Enum
 
 Dump = {}
@@ -505,45 +504,46 @@ def DEL_CALLSTACK(SUBCMD, MAIN_ENTRY, file, argsize):
     entry['SUBCMD'] = SUBCMD
     MAIN_ENTRY.append(entry)
 
-def GOTO_COMMANDS(CMD, SUBCMD, file,cmdsize):
-    if (CMD == Commands.EQU.value): EQU(SUBCMD, Dump['Main'], file, cmdsize-4) #0x0 //
-    elif (CMD == Commands.EQUN.value): EQUN(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1 //
-    elif (CMD == Commands.VARSTR.value): VARSTR(SUBCMD, Dump['Main'], file, cmdsize-4) #0xB //
-    elif (CMD == Commands.GOTO.value): GOTO(SUBCMD, Dump['Main'], file, cmdsize-4) #0xF //
-    elif (CMD == Commands.IFN.value): IFN(SUBCMD, Dump['Main'], file, cmdsize-4) #0x13 //
-    elif (CMD == Commands.JUMP.value): JUMP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x15 //
-    elif (CMD == Commands.JUMPPOINT.value): JUMPPOINT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x18 //
-    elif (CMD == Commands.END.value): END(SUBCMD, Dump['Main'], file, cmdsize-4) #0x19 //
-    elif (CMD == Commands.STARTUP_BETGIN.value): STARTUP_BETGIN(Dump['Main']) #0x1A //
-    elif (CMD == Commands.STARTUP_END.value): STARTUP_END(Dump['Main']) #0x1B //
-    elif (CMD == Commands.VARSTR_SET.value): VARSTR_SET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1C //
-    elif (CMD == Commands.ARFLAGSET.value): ARFLAGSET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1E //
-    elif (CMD == Commands.SHAKELIST_SET.value): SHAKELIST_SET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x21 //
-    elif (CMD == Commands.MESSAGE.value): MESSAGE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x23 //
-    elif (CMD == Commands.SELECT.value): SELECT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x26 //
-    elif (CMD == Commands.CLOSE_WINDOW.value): CLOSE_WINDOW(SUBCMD, Dump['Main'], file, cmdsize-4) #0x27 //
-    elif (CMD == Commands.LOG.value): LOG(SUBCMD, Dump['Main'], file, cmdsize-4) #0x29 //
-    elif (CMD == Commands.LOG_END.value): LOG_END(SUBCMD, Dump['Main'], file, cmdsize-4) #0x2B //
-    elif (CMD == Commands.FFSTOP.value): FFSTOP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x31 //
-    elif (CMD == Commands.INIT.value): INIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x32 //
-    elif (CMD == Commands.STOP.value): STOP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x33 //
-    elif (CMD == Commands.IMAGELOAD.value): IMAGELOAD(SUBCMD, Dump['Main'], file, cmdsize-4) #0x34 //
-    elif (CMD == Commands.MOVE.value): MOVE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x37 //
-    elif (CMD == Commands.FADE.value): FADE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3A //
-    elif (CMD == Commands.SHAKELIST.value): SHAKELIST(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3D //
-    elif (CMD == Commands.WAIT.value): WAIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x44 //
-    elif (CMD == Commands.DRAW.value): DRAW(SUBCMD, Dump['Main'], file, cmdsize-4) #0x46 //
-    elif (CMD == Commands.BGM_WAITFADE.value): BGM_WAITFADE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x67 //
-    elif (CMD == Commands.BGM_POP.value): BGM_POP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x69 //
-    elif (CMD == Commands.SE_WAIT.value): SE_WAIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x6C //
-    elif (CMD == Commands.EX.value): EX(SUBCMD, Dump['Main'], file, cmdsize-4) #0x71 //
-    elif (CMD == Commands.PRINTF.value): PRINTF(SUBCMD, Dump['Main'], file, cmdsize-4) #0x75 //
-    elif (CMD == Commands.VIB_PLAY.value): VIB_PLAY(SUBCMD, Dump['Main'], file, cmdsize-4) #0x76 //
-    elif (CMD == Commands.DEL_CALLSTACK.value): DEL_CALLSTACK(SUBCMD, Dump['Main'], file, cmdsize-4) #0x7D //
-    else: 
-        print("Not implemented command: 0x%x, offset: %x" % (CMD, file.tell()-2))
-        input("Press ENTER")
-        sys.exit()
+def GOTO_COMMANDS(CMD, SUBCMD, file, cmdsize):
+    match (CMD):
+        case Commands.EQU.value: EQU(SUBCMD, Dump['Main'], file, cmdsize-4) #0x0 //
+        case Commands.EQUN.value: EQUN(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1 //
+        case Commands.VARSTR.value: VARSTR(SUBCMD, Dump['Main'], file, cmdsize-4) #0xB //
+        case Commands.GOTO.value: GOTO(SUBCMD, Dump['Main'], file, cmdsize-4) #0xF //
+        case Commands.IFN.value: IFN(SUBCMD, Dump['Main'], file, cmdsize-4) #0x13 //
+        case Commands.JUMP.value: JUMP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x15 //
+        case Commands.JUMPPOINT.value: JUMPPOINT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x18 //
+        case Commands.END.value: END(SUBCMD, Dump['Main'], file, cmdsize-4) #0x19 //
+        case Commands.STARTUP_BETGIN.value: STARTUP_BETGIN(Dump['Main']) #0x1A //
+        case Commands.STARTUP_END.value: STARTUP_END(Dump['Main']) #0x1B //
+        case Commands.VARSTR_SET.value: VARSTR_SET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1C //
+        case Commands.ARFLAGSET.value: ARFLAGSET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x1E //
+        case Commands.SHAKELIST_SET.value: SHAKELIST_SET(SUBCMD, Dump['Main'], file, cmdsize-4) #0x21 //
+        case Commands.MESSAGE.value: MESSAGE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x23 //
+        case Commands.SELECT.value: SELECT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x26 //
+        case Commands.CLOSE_WINDOW.value: CLOSE_WINDOW(SUBCMD, Dump['Main'], file, cmdsize-4) #0x27 //
+        case Commands.LOG.value: LOG(SUBCMD, Dump['Main'], file, cmdsize-4) #0x29 //
+        case Commands.LOG_END.value: LOG_END(SUBCMD, Dump['Main'], file, cmdsize-4) #0x2B //
+        case Commands.FFSTOP.value: FFSTOP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x31 //
+        case Commands.INIT.value: INIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x32 //
+        case Commands.STOP.value: STOP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x33 //
+        case Commands.IMAGELOAD.value: IMAGELOAD(SUBCMD, Dump['Main'], file, cmdsize-4) #0x34 //
+        case Commands.MOVE.value: MOVE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x37 //
+        case Commands.FADE.value: FADE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3A //
+        case Commands.SHAKELIST.value: SHAKELIST(SUBCMD, Dump['Main'], file, cmdsize-4) #0x3D //
+        case Commands.WAIT.value: WAIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x44 //
+        case Commands.DRAW.value: DRAW(SUBCMD, Dump['Main'], file, cmdsize-4) #0x46 //
+        case Commands.BGM_WAITFADE.value: BGM_WAITFADE(SUBCMD, Dump['Main'], file, cmdsize-4) #0x67 //
+        case Commands.BGM_POP.value: BGM_POP(SUBCMD, Dump['Main'], file, cmdsize-4) #0x69 //
+        case Commands.SE_WAIT.value: SE_WAIT(SUBCMD, Dump['Main'], file, cmdsize-4) #0x6C //
+        case Commands.EX.value: EX(SUBCMD, Dump['Main'], file, cmdsize-4) #0x71 //
+        case Commands.PRINTF.value: PRINTF(SUBCMD, Dump['Main'], file, cmdsize-4) #0x75 //
+        case Commands.VIB_PLAY.value: VIB_PLAY(SUBCMD, Dump['Main'], file, cmdsize-4) #0x76 //
+        case Commands.DEL_CALLSTACK.value: DEL_CALLSTACK(SUBCMD, Dump['Main'], file, cmdsize-4) #0x7D //
+        case _: 
+            print("Not implemented command: 0x%x, offset: %x" % (CMD, file.tell()-2))
+            input("Press ENTER")
+            sys.exit()
 
 try:
     os.mkdir("json")

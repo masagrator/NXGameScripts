@@ -1,4 +1,3 @@
-import numpy
 import json
 import os
 import sys
@@ -164,12 +163,10 @@ def GOTO(entry, string):
     if (entry['SUBCMD'] == 1):
         array.append(bytes.fromhex(entry['Args']))
         if (string == "COMMAND"):
-            print("LABEL: %s, NEW: 0x%x" % (entry['GOTO_LABEL'], LABELS[entry['GOTO_LABEL']]))
             array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
         else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
     else: 
         if (string == "COMMAND"):
-            print("LABEL: %s, NEW: 0x%x" % (entry['GOTO_LABEL'], LABELS[entry['GOTO_LABEL']]))
             array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
         else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
     return b''.join(array)
@@ -461,60 +458,65 @@ def DEL_CALLSTACK(entry):
     return b''.join(array)
 
 def Make_command(entry, string):
-    if (entry['Type'] == "EQU"): return EQU(entry)
-    elif (entry['Type'] == "EQUN"): return EQUN(entry)
-    elif (entry['Type'] == "VARSTR"): return VARSTR(entry)
-    elif (entry['Type'] == "GOTO"): return GOTO(entry, string)
-    elif (entry['Type'] == "IFN"): return IFN(entry, string)
-    elif (entry['Type'] == "JUMP"): return JUMP(entry)
-    elif (entry['Type'] == "JUMPPOINT"): return JUMPPOINT(entry)
-    elif (entry['Type'] == "END"): return END(entry)
-    elif (entry['Type'] == "STARTUP_BETGIN"): return STARTUP_BETGIN(entry)
-    elif (entry['Type'] == "STARTUP_END"): return STARTUP_END(entry)
-    elif (entry['Type'] == "VARSTR_SET"): return VARSTR_SET(entry)
-    elif (entry['Type'] == "ARFLAGSET"): return ARFLAGSET(entry)
-    elif (entry['Type'] == "SHAKELIST_SET"): return SHAKELIST_SET(entry)
-    elif (entry['Type'] == "MESSAGE"): return MESSAGE(entry)
-    elif (entry['Type'] == "SELECT"): return SELECT(entry)
-    elif (entry['Type'] == "CLOSE_WINDOW"): return CLOSE_WINDOW(entry)
-    elif (entry['Type'] == "LOG"): return LOG(entry)
-    elif (entry['Type'] == "LOG_END"): return LOG_END(entry)
-    elif (entry['Type'] == "FFSTOP"): return FFSTOP(entry)
-    elif (entry['Type'] == "INIT"): return INIT(entry)
-    elif (entry['Type'] == "STOP"): return STOP(entry)
-    elif (entry['Type'] == "IMAGELOAD"): return IMAGELOAD(entry)
-    elif (entry['Type'] == "MOVE"): return MOVE(entry)
-    elif (entry['Type'] == "FADE"): return FADE(entry)
-    elif (entry['Type'] == "SHAKELIST"): return SHAKELIST(entry)
-    elif (entry['Type'] == "WAIT"): return WAIT(entry)
-    elif (entry['Type'] == "DRAW"): return DRAW(entry)
-    elif (entry['Type'] == "BGM_WAITFADE"): return BGM_WAITFADE(entry)
-    elif (entry['Type'] == "BGM_POP"): return BGM_POP(entry)
-    elif (entry['Type'] == "SE_WAIT"): return SE_WAIT(entry)
-    elif (entry['Type'] == "EX"): return EX(entry)
-    elif (entry['Type'] == "PRINTF"): return PRINTF(entry)
-    elif (entry['Type'] == "VIB_PLAY"): return VIB_PLAY(entry)
-    elif (entry['Type'] == "DEL_CALLSTACK"): return DEL_CALLSTACK(entry)
-    else:
-        print("Type not supported: %s" % (entry['Type']))
-        sys.exit()
+    match (entry['Type']):
+        case "EQU": return EQU(entry)
+        case "EQUN": return EQUN(entry)
+        case "VARSTR": return VARSTR(entry)
+        case "GOTO": return GOTO(entry, string)
+        case "IFN": return IFN(entry, string)
+        case "JUMP": return JUMP(entry)
+        case "JUMPPOINT": return JUMPPOINT(entry)
+        case "END": return END(entry)
+        case "STARTUP_BETGIN": return STARTUP_BETGIN(entry)
+        case "STARTUP_END": return STARTUP_END(entry)
+        case "VARSTR_SET": return VARSTR_SET(entry)
+        case "ARFLAGSET": return ARFLAGSET(entry)
+        case "SHAKELIST_SET": return SHAKELIST_SET(entry)
+        case "MESSAGE": return MESSAGE(entry)
+        case "SELECT": return SELECT(entry)
+        case "CLOSE_WINDOW": return CLOSE_WINDOW(entry)
+        case "LOG": return LOG(entry)
+        case "LOG_END": return LOG_END(entry)
+        case "FFSTOP": return FFSTOP(entry)
+        case "INIT": return INIT(entry)
+        case "STOP": return STOP(entry)
+        case "IMAGELOAD": return IMAGELOAD(entry)
+        case "MOVE": return MOVE(entry)
+        case "FADE": return FADE(entry)
+        case "SHAKELIST": return SHAKELIST(entry)
+        case "WAIT": return WAIT(entry)
+        case "DRAW": return DRAW(entry)
+        case "BGM_WAITFADE": return BGM_WAITFADE(entry)
+        case "BGM_POP": return BGM_POP(entry)
+        case "SE_WAIT": return SE_WAIT(entry)
+        case "EX": return EX(entry)
+        case "PRINTF": return PRINTF(entry)
+        case "VIB_PLAY": return VIB_PLAY(entry)
+        case "DEL_CALLSTACK": return DEL_CALLSTACK(entry)
+        case _:
+            print("Type not supported: %s" % (entry['Type']))
+            sys.exit()
 
 def Process(string, entry, offset_new):
-    if (string == "SIZE"):
-        _COM = Make_command(entry, string)
-        LABELS[entry['LABEL']] = offset_new
-        return len(_COM)
-    elif (string == "COMMAND"): return Make_command(entry, string)
+    match (string):
+        case "SIZE":
+            _COM = Make_command(entry, string)
+            LABELS[entry['LABEL']] = offset_new
+            return len(_COM)
+        case "COMMAND":
+            return Make_command(entry, string)
+        case _:
+            print("Unsupported Process command: %s" % (string))
+            sys.exit()
 
-if (len(sys.argv) <= 1 or len(sys.argv) > 2):
+if (len(sys.argv) != 2):
     print("script_compiler.py [ENG/JPN]")
     sys.exit()
-else:
-    if (sys.argv[1] == "ENG"):
-        ENG = True
-    elif (sys.argv[1] != "JPN"):
-        print("script_compiler.py [ENG/JPN]")
-        sys.exit()
+
+if (sys.argv[1] == "ENG"): ENG = True
+elif (sys.argv[1] != "JPN"):
+    print("script_compiler.py [ENG/JPN]")
+    sys.exit()
 
 try:
     os.mkdir("Compiled")
@@ -522,7 +524,7 @@ except:
     pass
 
 with open("chapternames.txt", 'r', encoding="ascii") as f:
-    Filenames = [line.strip("\r\n").strip("\n").split("\t", -1)[0] for line in f]
+    Filenames = [line.strip("\n").split("\t", -1)[0] for line in f]
 
 for i in range(0, len(Filenames)):
     offset_new = 0
