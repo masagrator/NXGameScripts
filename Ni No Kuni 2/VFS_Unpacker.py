@@ -135,5 +135,5 @@ for i in range(0, len(Files)):
             buffer = file.read(Chunks[i]["SIZES"][x])           # currently it's writing compressed data
             data.append(buffer)
     file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
-    file_new.write(data)
+    file_new.write(b"".join(data))
     file_new.close()
