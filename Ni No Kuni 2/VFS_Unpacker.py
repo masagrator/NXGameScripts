@@ -3,7 +3,52 @@ import numpy
 import os
 import zstandard
 
-ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
+def MakeHeader (c_size, u_size):
+	buffer_temp = []
+	ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
+	buffer_temp.append(ZSTD_MAGIC_header)
+	if (u_size < 256):
+		buffer_temp.append(b"\x20")
+		buffer_temp.append(int(u_size).to_bytes(1, byteorder="little"))
+	elif ((u_size >= 256) and (u_size < 65792)):
+		buffer_temp.append(b"\x60")
+		size = int(u_size) - 256
+		buffer_temp.append(size.to_bytes(2, byteorder="little"))
+	elif (Files["0x%x" % i]["U_SIZE"] >= 65792):
+		buffer_temp.append(b"\xA0")
+		buffer_temp.append(int(u_size).to_bytes(4, byteorder="little"))
+	compress_flag = "101"
+	bin_c_size = bin(c_size)[2:]
+	bin_compress_size = bin_c_size + compress_flag
+	com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
+	buffer_temp.append(com_size)
+	return b"".join(buffer_temp)
+	
+def DecompressNoDict(data, u_size, chunks):
+	if (len(chunks) == 1):
+		list = []
+		list.append(MakeHeader(len(data), u_size))
+		list.append(data)
+		return zstandard.decompress(b"".join(list), max_output_size=u_size)
+	else:
+		list = []
+		sumarum = 0
+		for i in range(0, len(chunks)):
+			temp_list = []
+			data_temp = data[sumarum:sumarum+chunks[i]]
+			sumarum += chunks[i]
+			if (i != len(chunks)-1):
+				temp_list.append(MakeHeader(len(data_temp), 131072))
+			else:
+				temp_list.append(MakeHeader(len(data_temp), u_size-(131072*i)))
+			temp_list.append(data_temp)
+			list.append(b"".join(temp_list))
+		dctx = zstandard.ZstdDecompressor()
+		output = dctx.decompress_content_dict_chain(list)
+		return b"".join(output)
+
+
+
 
 file = open("preload_zstd.vfs", "rb")
 
@@ -136,31 +181,16 @@ for i in range(0, len(Files)):
 	if ((Files["0x%x" % i]["C_SIZE"] == 0) or (Files["0x%x" % i]["C_SIZE"] == Files["0x%x" % i]["U_SIZE"])):
 		data.append(file.read(Files["0x%x" % i]["U_SIZE"]))
 	else:
-		#for x in range(0, len(Chunks[i]["SIZES"])):
-		buffer_temp = []
-		c_size = bin(Files["0x%x" % i]["C_SIZE"])[2:]
-		buffer_temp.append(ZSTD_MAGIC_header)
-		if (Files["0x%x" % i]["U_SIZE"] < 256):
-			buffer_temp.append(b"\x20")
-			buffer_temp.append(int(Files["0x%x" % i]["U_SIZE"]).to_bytes(1, byteorder="little"))
-		elif ((Files["0x%x" % i]["U_SIZE"] >= 256) and (Files["0x%x" % i]["U_SIZE"] < 65792)):
-			buffer_temp.append(b"\x60")
-			size = int(Files["0x%x" % i]["U_SIZE"] - 256)
-			buffer_temp.append(size.to_bytes(2, byteorder="little"))
-		elif (Files["0x%x" % i]["U_SIZE"] >= 65792):
-			buffer_temp.append(b"\xA0")
-			buffer_temp.append(int(Files["0x%x" % i]["U_SIZE"]).to_bytes(4, byteorder="little"))
-		compress_flag = "101"
-		bin_compress_size = bin(Files["0x%x" % i]["C_SIZE"])[2:] + compress_flag
-		com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
-		buffer_temp.append(com_size)
-		buffer_temp.append(file.read(Files["0x%x" % i]["C_SIZE"]))
+		buffer_temp = (file.read(Files["0x%x" % i]["C_SIZE"]))
 		try:
-			decompressed = zstandard.decompress(b"".join(buffer_temp), max_output_size=Files["0x%x" % i]["U_SIZE"])
-		except:
+			decompressed = DecompressNoDict(buffer_temp, u_size=Files["0x%x" % i]["U_SIZE"], chunks=Chunks[i]["SIZES"])
+		except Exception as Exception_handle:
 			print("Error while decompressing! %s, chunks: %d" % (Files["0x%x" % i]["FULLPATH"], len(Chunks[i]["SIZES"])))
-			decompressed = b"".join(buffer_temp)
+			print(Exception_handle)
+			decompressed = buffer_temp
 		data.append(decompressed)
+		
+
 	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
 	file_new.write(b"".join(data))
 	file_new.close()
