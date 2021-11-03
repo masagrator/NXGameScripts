@@ -1,15 +1,18 @@
 import sys
 import numpy
-import zstd
 import os
 import zstandard
+
+ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
+
+ZSTD_frame_header_256_65535 = "101000000001110000001100000"
 
 file = open("preload_zstd.vfs", "rb")
 
 #Read header data
 if (file.read(0x4) != b"VFS3"):
-    print("WRONG HEADER")
-    sys.exit()
+	print("WRONG HEADER")
+	sys.exit()
 
 header_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 GEN = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
@@ -22,14 +25,14 @@ repeat_offset = file.tell()
 
 #Calculating where folder dictionary ends
 for i in range(0, folder_count):
-    temp = numpy.fromfile(file, dtype=numpy.uint32, count=7)[0]
+	temp = numpy.fromfile(file, dtype=numpy.uint32, count=7)[0]
 
 #Calculating where file dictionary ends
 file_count = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 
 for i in range(0, file_count):
-    Temp = numpy.fromfile(file, dtype=numpy.uint64, count=3)
-    Temp = numpy.fromfile(file, dtype=numpy.uint32, count=4)
+	Temp = numpy.fromfile(file, dtype=numpy.uint64, count=3)
+	Temp = numpy.fromfile(file, dtype=numpy.uint32, count=4)
 
 # Reading offsets of tables for Chunks, Decompression Dicts and String list
 Temp = numpy.fromfile(file, dtype=numpy.uint64, count=3)
@@ -48,20 +51,20 @@ File_names = []
 Folder_names = []
 
 for i in range(0, strings_count):
-    string_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    string = file.read(string_size).decode("UTF-8")
-    File_names.append(string)
+	string_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	string = file.read(string_size).decode("UTF-8")
+	File_names.append(string)
 
 strings_count = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 
 if (strings_count != folder_count):
-    print("Folder name count doesn't match!")
-    sys.exit()
+	print("Folder name count doesn't match!")
+	sys.exit()
 
 for i in range(0, strings_count):
-    string_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    string = file.read(string_size).decode("UTF-8")
-    Folder_names.append(string)
+	string_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	string = file.read(string_size).decode("UTF-8")
+	Folder_names.append(string)
 
 Folders = {}
 
@@ -71,17 +74,17 @@ file.seek(repeat_offset, 0)
 
 #Read all data related to folder dictionary
 for i in range(0, folder_count):
-    CRC = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    ID = numpy.fromfile(file, dtype=numpy.int32, count=1)[0]
-    PreviousID = numpy.fromfile(file, dtype=numpy.int32, count=1)[0]
-    NextID = numpy.fromfile(file, dtype=numpy.int32, count=1)[0]
-    Folders_inside = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    unk = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    Files_inside = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    if ((PreviousID == -1) or (Folders["0x%x" % PreviousID] == "")):
-        Folders["0x%x" % ID] = Folder_names[ID]
-    else:
-        Folders["0x%x" % ID] = "%s/%s" % (Folders["0x%x" % PreviousID], Folder_names[ID])
+	CRC = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	ID = numpy.fromfile(file, dtype=numpy.int32, count=1)[0]
+	PreviousID = numpy.fromfile(file, dtype=numpy.int32, count=1)[0]
+	NextID = numpy.fromfile(file, dtype=numpy.int32, count=1)[0]
+	Folders_inside = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	unk = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	Files_inside = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	if ((PreviousID == -1) or (Folders["0x%x" % PreviousID] == "")):
+		Folders["0x%x" % ID] = Folder_names[ID]
+	else:
+		Folders["0x%x" % ID] = "%s/%s" % (Folders["0x%x" % PreviousID], Folder_names[ID])
 
 #Read all data related to file dictionary and write in the meantime full paths
 
@@ -90,28 +93,31 @@ file_offset_base = file.tell()
 
 Files = {}
 for i in range(0, file_count):
-    entry = {}
-    Temp = numpy.fromfile(file, dtype=numpy.uint64, count=3)
-    entry["OFFSET"] = Temp[0]
-    entry["C_SIZE"] = Temp[1]
-    entry["U_SIZE"] = Temp[2]
-    Temp = numpy.fromfile(file, dtype=numpy.uint32, count=3)
-    entry["CRC"] = Temp[0]
-    entry["FolderID"] = Temp[2]
-    entry["FLAGS"] = numpy.fromfile(file, dtype=numpy.int8, count=2)
-    entry["DEC_DICT"] = numpy.fromfile(file, dtype=numpy.int16, count=1)[0] #??? Not sure
-    entry["FULLPATH"] = "%s/%s" % (Folders["0x%x" % Temp[2]], File_names[Temp[1]])
-    Files["0x%x" % Temp[1]] = entry
+	entry = {}
+	Temp = numpy.fromfile(file, dtype=numpy.uint64, count=3)
+	entry["OFFSET"] = Temp[0]
+	entry["C_SIZE"] = Temp[1]
+	entry["U_SIZE"] = Temp[2]
+	entry["CRC"] = file.read(0x4).hex()
+	Temp = numpy.fromfile(file, dtype=numpy.uint32, count=2)
+	entry["FolderID"] = Temp[1]
+	entry["COMPRESSION"] = numpy.fromfile(file, dtype=numpy.int16, count=1)[0] #Compression method
+	if (entry["COMPRESSION"] != 3):
+		print("UNKNOWN FLAG! %d" % entry["COMPRESSION"])
+		sys.exit()
+	entry["DEC_DICT"] = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
+	entry["FULLPATH"] = "%s/%s" % (Folders["0x%x" % Temp[1]], File_names[Temp[0]])
+	Files["0x%x" % Temp[0]] = entry
 
 #Read Chunks dictionary
 Chunks = []
 file.seek(Chunk_dictionary_offset, 0)
 ChunkTableSize = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 while (file.tell() < (Chunk_dictionary_offset + ChunkTableSize)):
-    entry = {}
-    size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    entry["SIZES"] = numpy.fromfile(file, dtype=numpy.uint32, count=int(size / 4))
-    Chunks.append(entry)
+	entry = {}
+	size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	entry["SIZES"] = numpy.fromfile(file, dtype=numpy.uint32, count=int(size / 4))
+	Chunks.append(entry)
 
 #Read Decompression Dicts dictionary
 decompress_dictionary_count = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
@@ -119,21 +125,63 @@ size_dec_dict = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 
 Dec_dicts = []
 for i in range(0, decompress_dictionary_count):
-    dict_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-    Dec_dicts.append(file.read(dict_size))
+	dict_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+	Dec_dicts.append(file.read(dict_size))
 
 # Write Data
 for i in range(0, len(Files)):
-    os.makedirs(os.path.dirname(Files["0x%x" % i]["FULLPATH"]), exist_ok=True)
-    Offset = OldPlace + int(Files["0x%x" % i]["OFFSET"])
-    file.seek(Offset, 0)
-    data = []
-    if ((Files["0x%x" % i]["C_SIZE"] == 0) or (Files["0x%x" % i]["C_SIZE"] == Files["0x%x" % i]["U_SIZE"])):
-        data.append(file.read(Files["0x%x" % i]["U_SIZE"]))
-    else:                                                       # Here it should write decompressed data,
-        for x in range(0, len(Chunks[i]["SIZES"])):             # but because I don't know how to do it
-            buffer = file.read(Chunks[i]["SIZES"][x])           # currently it's writing compressed data
-            data.append(buffer)
-    file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
-    file_new.write(b"".join(data))
-    file_new.close()
+	if (Files["0x%x" % i]["DEC_DICT"] != -1): continue
+	os.makedirs(os.path.dirname(Files["0x%x" % i]["FULLPATH"]), exist_ok=True)
+	Offset = OldPlace + int(Files["0x%x" % i]["OFFSET"])
+	file.seek(Offset, 0)
+	data = []
+	if ((Files["0x%x" % i]["C_SIZE"] == 0) or (Files["0x%x" % i]["C_SIZE"] == Files["0x%x" % i]["U_SIZE"])):
+		data.append(file.read(Files["0x%x" % i]["U_SIZE"]))
+	else:													# Here it should write decompressed data,
+#		for x in range(0, len(Chunks[i]["SIZES"])):
+		buffer_temp = []
+		c_size = bin(Files["0x%x" % i]["C_SIZE"])[2:]
+		buffer_temp.append(ZSTD_MAGIC_header)
+		if (Files["0x%x" % i]["U_SIZE"] < 256):
+			buffer_temp.append(b"\x20")
+			buffer_temp.append(int(Files["0x%x" % i]["U_SIZE"]).to_bytes(1, byteorder="little"))
+		elif ((Files["0x%x" % i]["U_SIZE"] >= 256) and (Files["0x%x" % i]["U_SIZE"] < 65536)):
+			buffer_temp.append(b"\x60")
+			size = int(Files["0x%x" % i]["U_SIZE"] - 256)
+			buffer_temp.append(size.to_bytes(2, byteorder="little"))
+		else:
+			print("Size above 65535! %s" % Files["0x%x" % i]["FULLPATH"])
+		compress_flag = "101"
+		bin_compress_size = bin(Files["0x%x" % i]["C_SIZE"])[2:] + compress_flag
+		com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
+		buffer_temp.append(com_size)
+		buffer_temp.append(file.read(Files["0x%x" % i]["C_SIZE"]))
+		try:
+			decompressed = zstandard.decompress(b"".join(buffer_temp), max_output_size=Files["0x%x" % i]["U_SIZE"])
+		except:
+			print("Error while decompressing! %s" % Files["0x%x" % i]["FULLPATH"])
+			decompressed = b"".join(buffer_temp)
+		data.append(decompressed)
+	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
+	file_new.write(b"".join(data))
+	file_new.close()
+"""
+		FRAME_Header = int((c_size + ZSTD_frame_header_end), base=2)
+		bytes_size = len("%x" % FRAME_Header) % 2
+		if (bytes_size == 1):
+			bytes_size = int((len("%x" % FRAME_Header) + 1)/2)
+		else:
+			bytes_size = int(len("%x" % FRAME_Header)/2)
+		FRAME_Header = FRAME_Header.to_bytes(bytes_size+1, byteorder="little")
+		buffer_temp.append(FRAME_Header)
+		buffer_temp.append(file.read(Files["0x%x" % i]["C_SIZE"]))
+		try:
+			decompressed = zstandard.decompress(b"".join(buffer_temp), max_output_size=Files["0x%x" % i]["U_SIZE"])
+		except:
+			print("Error while decompressing! %s" % Files["0x%x" % i]["FULLPATH"])
+			decompressed = b"".join(buffer_temp)
+		data.append(decompressed)
+	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
+	file_new.write(b"".join(data))
+	file_new.close()
+"""
