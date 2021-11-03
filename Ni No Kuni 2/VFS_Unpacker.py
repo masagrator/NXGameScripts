@@ -5,8 +5,6 @@ import zstandard
 
 ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
 
-ZSTD_frame_header_256_65535 = "101000000001110000001100000"
-
 file = open("preload_zstd.vfs", "rb")
 
 #Read header data
@@ -145,12 +143,13 @@ for i in range(0, len(Files)):
 		if (Files["0x%x" % i]["U_SIZE"] < 256):
 			buffer_temp.append(b"\x20")
 			buffer_temp.append(int(Files["0x%x" % i]["U_SIZE"]).to_bytes(1, byteorder="little"))
-		elif ((Files["0x%x" % i]["U_SIZE"] >= 256) and (Files["0x%x" % i]["U_SIZE"] < 65536)):
+		elif ((Files["0x%x" % i]["U_SIZE"] >= 256) and (Files["0x%x" % i]["U_SIZE"] < 65792)):
 			buffer_temp.append(b"\x60")
 			size = int(Files["0x%x" % i]["U_SIZE"] - 256)
 			buffer_temp.append(size.to_bytes(2, byteorder="little"))
-		else:
-			print("Size above 65535! %s" % Files["0x%x" % i]["FULLPATH"])
+		elif (Files["0x%x" % i]["U_SIZE"] >= 65792):
+			buffer_temp.append(b"\xA0")
+			buffer_temp.append(int(Files["0x%x" % i]["U_SIZE"]).to_bytes(4, byteorder="little"))
 		compress_flag = "101"
 		bin_compress_size = bin(Files["0x%x" % i]["C_SIZE"])[2:] + compress_flag
 		com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
