@@ -135,8 +135,8 @@ for i in range(0, len(Files)):
 	data = []
 	if ((Files["0x%x" % i]["C_SIZE"] == 0) or (Files["0x%x" % i]["C_SIZE"] == Files["0x%x" % i]["U_SIZE"])):
 		data.append(file.read(Files["0x%x" % i]["U_SIZE"]))
-	else:													# Here it should write decompressed data,
-#		for x in range(0, len(Chunks[i]["SIZES"])):
+	else:
+		#for x in range(0, len(Chunks[i]["SIZES"])):
 		buffer_temp = []
 		c_size = bin(Files["0x%x" % i]["C_SIZE"])[2:]
 		buffer_temp.append(ZSTD_MAGIC_header)
@@ -158,29 +158,9 @@ for i in range(0, len(Files)):
 		try:
 			decompressed = zstandard.decompress(b"".join(buffer_temp), max_output_size=Files["0x%x" % i]["U_SIZE"])
 		except:
-			print("Error while decompressing! %s" % Files["0x%x" % i]["FULLPATH"])
+			print("Error while decompressing! %s, chunks: %d" % (Files["0x%x" % i]["FULLPATH"], len(Chunks[i]["SIZES"])))
 			decompressed = b"".join(buffer_temp)
 		data.append(decompressed)
 	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
 	file_new.write(b"".join(data))
 	file_new.close()
-"""
-		FRAME_Header = int((c_size + ZSTD_frame_header_end), base=2)
-		bytes_size = len("%x" % FRAME_Header) % 2
-		if (bytes_size == 1):
-			bytes_size = int((len("%x" % FRAME_Header) + 1)/2)
-		else:
-			bytes_size = int(len("%x" % FRAME_Header)/2)
-		FRAME_Header = FRAME_Header.to_bytes(bytes_size+1, byteorder="little")
-		buffer_temp.append(FRAME_Header)
-		buffer_temp.append(file.read(Files["0x%x" % i]["C_SIZE"]))
-		try:
-			decompressed = zstandard.decompress(b"".join(buffer_temp), max_output_size=Files["0x%x" % i]["U_SIZE"])
-		except:
-			print("Error while decompressing! %s" % Files["0x%x" % i]["FULLPATH"])
-			decompressed = b"".join(buffer_temp)
-		data.append(decompressed)
-	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
-	file_new.write(b"".join(data))
-	file_new.close()
-"""
