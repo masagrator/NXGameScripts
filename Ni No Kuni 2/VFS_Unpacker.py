@@ -3,9 +3,10 @@ import numpy
 import os
 import zstandard
 
-def MakeHeader (c_size, u_size):
+ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
+
+def MakeHeaderNoChunks (c_size, u_size):
 	buffer_temp = []
-	ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
 	buffer_temp.append(ZSTD_MAGIC_header)
 	if (u_size < 256):
 		buffer_temp.append(b"\x20")
@@ -23,11 +24,25 @@ def MakeHeader (c_size, u_size):
 	com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
 	buffer_temp.append(com_size)
 	return b"".join(buffer_temp)
+
+def MakeHeaderChunks(chunk_size, iterator):
+	buffer_temp = []
+	if (iterator == 0):
+		buffer_temp.append(ZSTD_MAGIC_header)
+		buffer_temp.append(0x0.to_bytes(1, byteorder="little"))
+		buffer_temp.append(0x48.to_bytes(1, byteorder="little"))
+	compressed_block_flag = "100"
+	bin_c_size = bin(chunk_size)[2:]
+	bin_compress_size = bin_c_size + compressed_block_flag
+	com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
+	buffer_temp.append(com_size)
+	return b"".join(buffer_temp)
+
 	
 def DecompressNoDict(data, u_size, chunks):
 	if (len(chunks) == 1):
 		list = []
-		list.append(MakeHeader(len(data), u_size))
+		list.append(MakeHeaderNoChunks(len(data), u_size))
 		list.append(data)
 		return zstandard.decompress(b"".join(list), max_output_size=u_size)
 	else:
@@ -37,15 +52,11 @@ def DecompressNoDict(data, u_size, chunks):
 			temp_list = []
 			data_temp = data[sumarum:sumarum+chunks[i]]
 			sumarum += chunks[i]
-			if (i != len(chunks)-1):
-				temp_list.append(MakeHeader(len(data_temp), 131072))
-			else:
-				temp_list.append(MakeHeader(len(data_temp), u_size-(131072*i)))
+			temp_list.append(MakeHeaderChunks(len(data_temp), i))
 			temp_list.append(data_temp)
 			list.append(b"".join(temp_list))
-		dctx = zstandard.ZstdDecompressor()
-		output = dctx.decompress_content_dict_chain(list)
-		return b"".join(output)
+		list.append(b"\x01\x00\x00")
+		return zstandard.decompress(b"".join(list), max_output_size=u_size)
 
 
 
@@ -189,7 +200,6 @@ for i in range(0, len(Files)):
 			print(Exception_handle)
 			decompressed = buffer_temp
 		data.append(decompressed)
-		
 
 	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
 	file_new.write(b"".join(data))
