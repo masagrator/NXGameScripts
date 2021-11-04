@@ -30,7 +30,7 @@ def MakeHeader(chunk_size, iterator):
 
 	
 def Decompress(data, u_size, chunks, dec_dict_ID, dec_dicts):
-	if (dec_dict_ID != 1):
+	if (dec_dict_ID != -1):
 		dictionary = zstandard.ZstdCompressionDict(dec_dicts[dec_dict_ID])
 		dctx = zstandard.ZstdDecompressor(dict_data = dictionary)
 	else:
