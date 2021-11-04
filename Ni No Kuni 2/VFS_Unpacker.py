@@ -149,6 +149,8 @@ for i in range(0, file_count):
 	entry["FULLPATH"] = "%s/%s" % (Folders["0x%x" % Temp[1]], File_names[Temp[0]])
 	Files["0x%x" % Temp[0]] = entry
 
+print("Indexed %d files." % len(Files))
+
 #Read Chunks dictionary
 Chunks = []
 file.seek(Chunk_dictionary_offset, 0)
@@ -170,6 +172,8 @@ for i in range(0, decompress_dictionary_count):
 
 Files_SUCCESS = 0
 Files_FAIL = 0
+
+print("Decompression in work...")
 # Write Data
 for i in range(0, len(Files)):
 	Offset = OldPlace + int(Files["0x%x" % i]["OFFSET"])
@@ -193,5 +197,5 @@ for i in range(0, len(Files)):
 
 print("Finished executing script!")
 print("TOTAL / SUCCESS / FAIL")
-print("%d / %d / %d" % (Files_SUCCESS+Files_FAIL, Files_SUCCESS, Files_FAIL))
+print("%d / %d / %d" % (len(Files), Files_SUCCESS, Files_FAIL))
 if (Files_FAIL > 0): print("You can find list of failed files in Debug.txt!")
