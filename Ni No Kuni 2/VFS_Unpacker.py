@@ -170,6 +170,8 @@ for i in range(0, decompress_dictionary_count):
 	dict_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 	Dec_dicts.append(file.read(dict_size))
 
+print("Indexed %d compression dictionaries." % len(Dec_dicts))
+
 Files_SUCCESS = 0
 Files_FAIL = 0
 
@@ -185,7 +187,7 @@ for i in range(0, len(Files)):
 		try:
 			data = Decompress(buffer_temp, Files["0x%x" % i]["U_SIZE"], Chunks[i]["SIZES"], Files["0x%x" % i]["DEC_DICT"], Dec_dicts)
 		except Exception as Exception_handle:
-			DebugOutput("%s, %s, chunks=%d, dec_dict=%d" % (Files["0x%x" % i]["FULLPATH"], Exception_handle, len(Chunks[i]["SIZES"]), Files["0x%x" % i]["DEC_DICT"]))
+			DebugOutput("%s, %s, chunks_count: %d, dec_dict_id=%d" % (Files["0x%x" % i]["FULLPATH"], Exception_handle, len(Chunks[i]["SIZES"]), Files["0x%x" % i]["DEC_DICT"]))
 			Files_FAIL += 1
 			continue
 
