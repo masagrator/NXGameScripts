@@ -29,8 +29,12 @@ def MakeHeader(chunk_size, iterator):
 	return b"".join(buffer_temp)
 
 	
-def Decompress(data, u_size, chunks, dec_dict):
-	if (dec_dict != -1): raise ValueError("Dictionary is currently not supported! File will be ignored")
+def Decompress(data, u_size, chunks, dec_dict_ID, dec_dicts):
+	if (dec_dict_ID != 1):
+		dictionary = zstandard.ZstdCompressionDict(dec_dicts[dec_dict_ID])
+		dctx = zstandard.ZstdDecompressor(dict_data = dictionary)
+	else:
+		dctx = zstandard.ZstdDecompressor()
 	list = []
 	sumarum = 0
 	for i in range(0, len(chunks)):
@@ -41,7 +45,7 @@ def Decompress(data, u_size, chunks, dec_dict):
 		temp_list.append(data_temp)
 		list.append(b"".join(temp_list))
 	list.append(b"\x01\x00\x00")
-	return zstandard.decompress(b"".join(list), max_output_size=u_size)
+	return dctx.decompress(b"".join(list), max_output_size=u_size)
 
 file = open("preload_zstd.vfs", "rb")
 
@@ -170,22 +174,21 @@ Files_FAIL = 0
 for i in range(0, len(Files)):
 	Offset = OldPlace + int(Files["0x%x" % i]["OFFSET"])
 	file.seek(Offset, 0)
-	data = []
 	if ((Files["0x%x" % i]["C_SIZE"] == 0) or (Files["0x%x" % i]["C_SIZE"] == Files["0x%x" % i]["U_SIZE"])):
 		data.append(file.read(Files["0x%x" % i]["U_SIZE"]))
 	else:
 		buffer_temp = (file.read(Files["0x%x" % i]["C_SIZE"]))
 		try:
-			decompressed = Decompress(buffer_temp, Files["0x%x" % i]["U_SIZE"], Chunks[i]["SIZES"], Files["0x%x" % i]["DEC_DICT"])
+			data = Decompress(buffer_temp, Files["0x%x" % i]["U_SIZE"], Chunks[i]["SIZES"], Files["0x%x" % i]["DEC_DICT"], Dec_dicts)
 		except Exception as Exception_handle:
-			DebugOutput("%s, %s" % (Files["0x%x" % i]["FULLPATH"], Exception_handle))
+			DebugOutput("%s, %s, chunks=%d, dec_dict=%d" % (Files["0x%x" % i]["FULLPATH"], Exception_handle, len(Chunks[i]["SIZES"]), Files["0x%x" % i]["DEC_DICT"]))
 			Files_FAIL += 1
-			continue		
+			continue
 
 	Files_SUCCESS += 1
 	os.makedirs(os.path.dirname(Files["0x%x" % i]["FULLPATH"]), exist_ok=True)
 	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
-	file_new.write(b"".join(data))
+	file_new.write(data)
 	file_new.close()
 
 print("Finished executing script!")
