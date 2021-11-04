@@ -5,27 +5,7 @@ import zstandard
 
 ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
 
-def MakeHeaderNoChunks (c_size, u_size):
-	buffer_temp = []
-	buffer_temp.append(ZSTD_MAGIC_header)
-	if (u_size < 256):
-		buffer_temp.append(b"\x20")
-		buffer_temp.append(int(u_size).to_bytes(1, byteorder="little"))
-	elif ((u_size >= 256) and (u_size < 65792)):
-		buffer_temp.append(b"\x60")
-		size = int(u_size) - 256
-		buffer_temp.append(size.to_bytes(2, byteorder="little"))
-	elif (Files["0x%x" % i]["U_SIZE"] >= 65792):
-		buffer_temp.append(b"\xA0")
-		buffer_temp.append(int(u_size).to_bytes(4, byteorder="little"))
-	compress_flag = "101"
-	bin_c_size = bin(c_size)[2:]
-	bin_compress_size = bin_c_size + compress_flag
-	com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
-	buffer_temp.append(com_size)
-	return b"".join(buffer_temp)
-
-def MakeHeaderChunks(chunk_size, iterator):
+def MakeHeader(chunk_size, iterator):
 	buffer_temp = []
 	if (iterator == 0):
 		buffer_temp.append(ZSTD_MAGIC_header)
@@ -40,26 +20,17 @@ def MakeHeaderChunks(chunk_size, iterator):
 
 	
 def DecompressNoDict(data, u_size, chunks):
-	if (len(chunks) == 1):
-		list = []
-		list.append(MakeHeaderNoChunks(len(data), u_size))
-		list.append(data)
-		return zstandard.decompress(b"".join(list), max_output_size=u_size)
-	else:
-		list = []
-		sumarum = 0
-		for i in range(0, len(chunks)):
-			temp_list = []
-			data_temp = data[sumarum:sumarum+chunks[i]]
-			sumarum += chunks[i]
-			temp_list.append(MakeHeaderChunks(len(data_temp), i))
-			temp_list.append(data_temp)
-			list.append(b"".join(temp_list))
-		list.append(b"\x01\x00\x00")
-		return zstandard.decompress(b"".join(list), max_output_size=u_size)
-
-
-
+	list = []
+	sumarum = 0
+	for i in range(0, len(chunks)):
+		temp_list = []
+		data_temp = data[sumarum:sumarum+chunks[i]]
+		sumarum += chunks[i]
+		temp_list.append(MakeHeader(len(data_temp), i))
+		temp_list.append(data_temp)
+		list.append(b"".join(temp_list))
+	list.append(b"\x01\x00\x00")
+	return zstandard.decompress(b"".join(list), max_output_size=u_size)
 
 file = open("preload_zstd.vfs", "rb")
 
@@ -198,8 +169,7 @@ for i in range(0, len(Files)):
 		except Exception as Exception_handle:
 			print("Error while decompressing! %s, chunks: %d" % (Files["0x%x" % i]["FULLPATH"], len(Chunks[i]["SIZES"])))
 			print(Exception_handle)
-			decompressed = buffer_temp
-		data.append(decompressed)
+			sys.exit()
 
 	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
 	file_new.write(b"".join(data))
