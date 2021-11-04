@@ -5,6 +5,16 @@ import zstandard
 
 ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
 
+def DebugOutput(string):
+	if (DebugOutput.Flag == False): 
+		file = open("Debug.txt", "w", encoding="UTF-8")
+		DebugOutput.Flag = True
+	else: file = open("Debug.txt", "a", encoding="UTF-8")
+	file.write(string)
+	file.write("\n")
+	file.close()
+DebugOutput.Flag = False
+
 def MakeHeader(chunk_size, iterator):
 	buffer_temp = []
 	if (iterator == 0):
@@ -19,7 +29,8 @@ def MakeHeader(chunk_size, iterator):
 	return b"".join(buffer_temp)
 
 	
-def DecompressNoDict(data, u_size, chunks):
+def Decompress(data, u_size, chunks, dec_dict):
+	if (dec_dict != -1): raise ValueError("Dictionary is currently not supported! File will be ignored")
 	list = []
 	sumarum = 0
 	for i in range(0, len(chunks)):
@@ -153,10 +164,10 @@ for i in range(0, decompress_dictionary_count):
 	dict_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 	Dec_dicts.append(file.read(dict_size))
 
+Files_SUCCESS = 0
+Files_FAIL = 0
 # Write Data
 for i in range(0, len(Files)):
-	if (Files["0x%x" % i]["DEC_DICT"] != -1): continue
-	os.makedirs(os.path.dirname(Files["0x%x" % i]["FULLPATH"]), exist_ok=True)
 	Offset = OldPlace + int(Files["0x%x" % i]["OFFSET"])
 	file.seek(Offset, 0)
 	data = []
@@ -165,12 +176,19 @@ for i in range(0, len(Files)):
 	else:
 		buffer_temp = (file.read(Files["0x%x" % i]["C_SIZE"]))
 		try:
-			decompressed = DecompressNoDict(buffer_temp, u_size=Files["0x%x" % i]["U_SIZE"], chunks=Chunks[i]["SIZES"])
+			decompressed = Decompress(buffer_temp, Files["0x%x" % i]["U_SIZE"], Chunks[i]["SIZES"], Files["0x%x" % i]["DEC_DICT"])
 		except Exception as Exception_handle:
-			print("Error while decompressing! %s, chunks: %d" % (Files["0x%x" % i]["FULLPATH"], len(Chunks[i]["SIZES"])))
-			print(Exception_handle)
-			sys.exit()
+			DebugOutput("%s, %s" % (Files["0x%x" % i]["FULLPATH"], Exception_handle))
+			Files_FAIL += 1
+			continue		
 
+	Files_SUCCESS += 1
+	os.makedirs(os.path.dirname(Files["0x%x" % i]["FULLPATH"]), exist_ok=True)
 	file_new = open(Files["0x%x" % i]["FULLPATH"], "wb")
 	file_new.write(b"".join(data))
 	file_new.close()
+
+print("Finished executing script!")
+print("TOTAL / SUCCESS / FAIL")
+print("%d / %d / %d" % (Files_SUCCESS+Files_FAIL, Files_SUCCESS, Files_FAIL))
+if (Files_FAIL > 0): print("You can find list of failed files in Debug.txt!")
