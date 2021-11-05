@@ -15,15 +15,19 @@ def DebugOutput(string):
 	file.close()
 DebugOutput.Flag = False
 
-def MakeHeader(chunk_size, iterator):
+def MakeHeader(chunk_size, iterator, uncompressed):
 	buffer_temp = []
 	if (iterator == 0):
 		buffer_temp.append(ZSTD_MAGIC_header)
 		buffer_temp.append(0x0.to_bytes(1, byteorder="little"))
-		buffer_temp.append(0x48.to_bytes(1, byteorder="little"))
+		buffer_temp.append(0x88.to_bytes(1, byteorder="little"))
 	compressed_block_flag = "100"
+	uncompressed_block_flag = "000"
 	bin_c_size = bin(chunk_size)[2:]
-	bin_compress_size = bin_c_size + compressed_block_flag
+	if (uncompressed == True):
+		bin_compress_size = bin_c_size + uncompressed_block_flag
+	else:
+		bin_compress_size = bin_c_size + compressed_block_flag
 	com_size = int(bin_compress_size, base=2).to_bytes(3, byteorder="little")
 	buffer_temp.append(com_size)
 	return b"".join(buffer_temp)
@@ -38,12 +42,18 @@ def Decompress(data, u_size, chunks, dec_dict_ID, dec_dicts):
 	list = []
 	sumarum = 0
 	for i in range(0, len(chunks)):
+		uncompressed = False
+		if (chunks[i] < 0):
+			size = chunks[i] * -1
+			uncompressed = True
+		else:
+			size = chunks[i]
 		temp_list = []
-		data_temp = data[sumarum:sumarum+chunks[i]]
-		sumarum += chunks[i]
-		temp_list.append(MakeHeader(len(data_temp), i))
+		data_temp = data[sumarum:sumarum+size]
+		temp_list.append(MakeHeader(len(data_temp), i, uncompressed))
 		temp_list.append(data_temp)
 		list.append(b"".join(temp_list))
+		sumarum += size
 	list.append(b"\x01\x00\x00")
 	return dctx.decompress(b"".join(list), max_output_size=u_size)
 
@@ -158,7 +168,7 @@ ChunkTableSize = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 while (file.tell() < (Chunk_dictionary_offset + ChunkTableSize)):
 	entry = {}
 	size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
-	entry["SIZES"] = numpy.fromfile(file, dtype=numpy.uint32, count=int(size / 4))
+	entry["SIZES"] = numpy.fromfile(file, dtype=numpy.int32, count=int(size / 4))
 	Chunks.append(entry)
 
 #Read Decompression Dicts dictionary
@@ -187,7 +197,12 @@ for i in range(0, len(Files)):
 		try:
 			data = Decompress(buffer_temp, Files["0x%x" % i]["U_SIZE"], Chunks[i]["SIZES"], Files["0x%x" % i]["DEC_DICT"], Dec_dicts)
 		except Exception as Exception_handle:
-			DebugOutput("%s, %s, chunks_count: %d, dec_dict_id=%d" % (Files["0x%x" % i]["FULLPATH"], Exception_handle, len(Chunks[i]["SIZES"]), Files["0x%x" % i]["DEC_DICT"]))
+			DebugOutput("%s, %s, chunks_count: %d, dec_dict_id=%d, u_size: %d" % (Files["0x%x" % i]["FULLPATH"], Exception_handle, len(Chunks[i]["SIZES"]), Files["0x%x" % i]["DEC_DICT"], Files["0x%x" % i]["U_SIZE"]))
+			DebugOutput(" ".join(str(e) for e in Chunks[i]["SIZES"]))
+			size = Files["0x%x" % i]["U_SIZE"]
+			for i in range(0, len(Chunks[i]["SIZES"])):
+				DebugOutput("%d" % (size))
+				size -= 131072
 			Files_FAIL += 1
 			continue
 
