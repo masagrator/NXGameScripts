@@ -200,7 +200,6 @@ for i in range(0, len(Files)):
 	Offset = OldPlace + int(Files["0x%x" % i]["OFFSET"])
 	file.seek(Offset, 0)
 	if (Files["0x%x" % i]["C_SIZE"] == Files["0x%x" % i]["U_SIZE"]):
-		print("UNCOMPRESSED: %s, c_size: %d, u_size: %d" % (Files["0x%x" % i]["FULLPATH"], Files["0x%x" % i]["C_SIZE"], Files["0x%x" % i]["U_SIZE"]))
 		data = file.read(Files["0x%x" % i]["U_SIZE"])
 	else:
 		buffer_temp = (file.read(Files["0x%x" % i]["C_SIZE"]))
