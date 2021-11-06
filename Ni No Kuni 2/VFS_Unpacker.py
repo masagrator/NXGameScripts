@@ -19,8 +19,8 @@ def MakeHeader(chunk_size, iterator, uncompressed):
 	buffer_temp = []
 	if (iterator == 0):
 		buffer_temp.append(ZSTD_MAGIC_header)
-		buffer_temp.append(0x0.to_bytes(1, byteorder="little")) # Set that we don't use any additional fields for frame header
-		buffer_temp.append(0x88.to_bytes(1, byteorder="little")) # Set window size to 128MB which is enough to extract any data from Ni no Kuni 2
+		buffer_temp.append(b"\x00") # Set that we don't use any additional fields for frame header
+		buffer_temp.append(b"\x88") # Set window size to 128MB which is enough to extract any data from Ni no Kuni 2
 	compressed_block_flag = "100"
 	uncompressed_block_flag = "000"
 	bin_c_size = bin(chunk_size)[2:]
