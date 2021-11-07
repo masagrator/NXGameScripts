@@ -1,23 +1,13 @@
 import sys
 import numpy
 import zlib
-from numpy.core.shape_base import block
-from numpy.lib.utils import source
 import zstandard
-
-ZSTD_MAGIC_header = b"\x28\xB5\x2F\xFD"
-
-data_to_save = []
-
-file_new = open("Repack.vfs", "wb")
 
 def StripBlocks(data):
 	size = len(data)
 	offset = 0
 	buffer = []
 	while(offset < size):
-		print(offset)
-		print(bin(int.from_bytes(data[offset:offset+3], byteorder="little"))[2:])
 		size_of_block = int(bin(int.from_bytes(data[offset:offset+3], byteorder="little"))[2:-3], base=2)
 		offset += 3
 		buffer.append(data[offset:size_of_block+offset])
@@ -68,11 +58,6 @@ def Compress(file, dec_dict_ID, dec_dicts):
 	else:
 		temp_data = b"".join(block_entry)[2:]
 	data_new.append(StripBlocks(temp_data))
-	file = open("test.bin", "wb")
-	file.write(ZSTD_MAGIC_header)
-	file.write(b"\x00\x88")
-	file.write(b"".join(data_new))
-	file.close()
 	if (len(b"".join(data_new)) == 0):
 		raise ValueError("Compressed data has 0 B size!")
 	chunk_table = []
@@ -116,6 +101,8 @@ Decompression_dictionary_offset = Temp[1]
 StringListOffset = Temp[2]
 while (file.tell() % 16 != 0):
 	file.seek(1, 1)
+
+file_new = open("%s_NEW.vfs" % (sys.argv[1][:-4]), "wb")
 
 end_of_first_part = file.tell()
 file.seek(0, 0)
