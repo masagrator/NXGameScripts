@@ -65,10 +65,6 @@ def Compress(file, dec_dict_ID, dec_dicts):
 	
 	block_entry.append(cctx.compress(in_chunk))
 	block_entry.append(cctx.flush())
-	if (file.name == "Data/nx64/font/nk2_font2_en/nk2_font.g4tx"):
-		file_next = open("output.bin", "wb")
-		file_next.write(b"".join(block_entry))
-		file_next.close()
 	data = b"".join(block_entry)[2:]
 	data_temp, flags = StripBlocks(data)
 	for i in range(0, len(data_temp)):
@@ -266,10 +262,6 @@ for i in range(0, file_count):
 		New_table["%d" % Files[i]["FileID"]] = b"".join(entry2)
 	print("%d: FileID: %d, %s" % (i, Files[i]["FileID"], Files[i]["FULLPATH"]) + str(chunk_table))
 	file_new_c_sizes.append(len(data))
-	if (Files[i]["FULLPATH"] == "Data/nx64/event/ev_pic/ev_pic_e3thankyou/ev_pic_e3thankyou.g4tx"):
-		file_2 = open("output2.bin", "wb")
-		file_2.write(data)
-		file_2.close()
 	chunk_count = int(len(chunk_table)*4).to_bytes(4, byteorder="little")
 	entry = []
 	entry.append(chunk_count)
