@@ -3,16 +3,34 @@ import numpy
 import zlib
 import zstandard
 
+def RLE(data):
+	output = []
+	size = int(bin(int.from_bytes(data[0:3], byteorder="little"))[2:-3], base=2)
+	for i in range(0, size):
+		output.append(data[3:4])
+	return b"".join(output)
+
 def StripBlocks(data):
 	size = len(data)
 	offset = 0
 	buffer = []
+	flags = []
 	while(offset < size):
-		size_of_block = int(bin(int.from_bytes(data[offset:offset+3], byteorder="little"))[2:-3], base=2)
-		offset += 3
-		buffer.append(data[offset:size_of_block+offset])
-		offset += size_of_block
-	return b"".join(buffer)
+		flag = bin(int.from_bytes(data[offset:offset+3], byteorder="little"))[-3:]
+		if (flag[0:2] == "01"):
+			raise("RLE block detected! Not supported!")
+			output = RLE(data[offset:offset+4])
+			buffer.append(output)
+			flags.append("00" + flag[2:3])
+			offset += 4
+		else:
+			flags.append(flag)
+			size_of_block = int(bin(int.from_bytes(data[offset:offset+3], byteorder="little"))[2:-3], base=2)
+			offset += 3
+			buffer.append(data[offset:size_of_block+offset])
+			offset += size_of_block
+		print("Flags: %s" % flag)
+	return buffer, flags
 
 def SortOffset(elem):
 	return elem["OFFSET"]
@@ -33,36 +51,34 @@ def Compress(file, dec_dict_ID, dec_dicts):
 	else:
 		cctx = zstandard.ZstdCompressor(compression_params = params).compressobj(size=filesize)
 	data_new = []
+	chunk_table = []
+	flags_array = []
+	block_entry = []
 
-	first_block = True
 	while True:
 		in_chunk = file.read(131072)
 		if len(in_chunk) < 131072:
 			break
 		else:
-			block_entry = []
 			block_entry.append(cctx.compress(in_chunk))
 			block_entry.append(cctx.flush(zstandard.COMPRESSOBJ_FLUSH_BLOCK))
-			if (first_block == False):
-				temp_data = b"".join(block_entry)
-			else:
-				temp_data = b"".join(block_entry)[2:]
-				first_block == False
-			data_new.append(StripBlocks(temp_data))
 	
-	block_entry = []
 	block_entry.append(cctx.compress(in_chunk))
 	block_entry.append(cctx.flush())
-	if (first_block == False):
-		temp_data = b"".join(block_entry)
-	else:
-		temp_data = b"".join(block_entry)[2:]
-	data_new.append(StripBlocks(temp_data))
+	data = b"".join(block_entry)[2:]
+	data_temp, flags = StripBlocks(data)
+	for i in range(0, len(data_temp)):
+		data_new.append(data_temp[i])
+	for i in range(0, len(flags)):
+		flags_array.append(flags[i])
 	if (len(b"".join(data_new)) == 0):
 		raise ValueError("Compressed data has 0 B size!")
-	chunk_table = []
-	for i in range(len(data_new)):
-		chunk_table.append(len(data_new[i]).to_bytes(4, byteorder="little"))
+	for i in range(0, len(data_new)):
+		if (flags_array[i][0:1] == "0"):
+			size = int(len(data_new[i]) * -1)
+		else: 
+			size = len(data_new[i])
+		chunk_table.append(numpy.int32(size))
 	return b"".join(data_new), chunk_table
 
 file = open(sys.argv[1], "rb")
@@ -208,9 +224,13 @@ file_new_c_sizes = []
 file_new_u_sizes = []
 
 Hash_table = []
+New_table = {}
 
 for i in range(0, file_count):
+	chunk_table = []
 	Repeated = 0
+	for x in range(0, len(Chunks[i]["SIZES"])):
+		chunk_table.append(numpy.int32(Chunks[i]["SIZES"][x]))
 	try:
 		file_handle = open(Files[i]["FULLPATH"], "rb")
 	except:
@@ -222,24 +242,25 @@ for i in range(0, file_count):
 		if (crc in Hash_table):
 			Repeated = Hash_table.index(crc)
 		Hash_table.append(crc)
-		chunk_table = []
-		for x in range(0, len(Chunks[i]["SIZES"])):
-			chunk_table.append(numpy.int32(Chunks[i]["SIZES"][x]))
 		file_new_u_sizes.append(Files[i]["U_SIZE"])
 	else:
 		print("%d/%d %s detected. Packing..." % (i+1, file_count, Files[i]["FULLPATH"]))
 		file_new_u_sizes.append(GetFileSize(file_handle))
-		try:
-			data, chunk_table = Compress(file_handle, Files[i]["DEC_DICT"], Dec_dicts)
-		except Exception as Exception_handle:
-			print(Exception_handle)
-			sys.exit()
+		data, chunk_table2 = Compress(file_handle, Files[i]["DEC_DICT"], Dec_dicts)
 		print("Compression comparison ### Original: %d B / %0.2f MB, New: %d B / %0.2f MB. Ratio: %0.2f" % (Files[i]["C_SIZE"], Files[i]["C_SIZE"] / 1024 / 1024, len(data), len(data) / 1024 / 1024, (len(data) / Files[i]["C_SIZE"]) * 100) + "%")
+		print("ID: %d, iterator: %d" % (Files[i]["FileID"], i))
+		print("Chunk size offset: 0x%x" % len(b"".join(chunk_main_table)))
 		file_handle.close()
 		crc = zlib.crc32(data)
 		if (crc in Hash_table):
 			Repeated = Hash_table.index(crc)
 		Hash_table.append(crc)
+		entry2 = []
+		chunk_count = int(len(chunk_table2)*4).to_bytes(4, byteorder="little")
+		entry2.append(chunk_count)
+		entry2.append(b"".join(chunk_table2))
+		New_table["%d" % Files[i]["FileID"]] = b"".join(entry2)
+	print("%d: FileID: %d, %s" % (i, Files[i]["FileID"], Files[i]["FULLPATH"]) + str(chunk_table))
 	file_new_c_sizes.append(len(data))
 	chunk_count = int(len(chunk_table)*4).to_bytes(4, byteorder="little")
 	entry = []
@@ -255,6 +276,13 @@ for i in range(0, file_count):
 	while(file_new.tell() % 16 != 0):
 		file_new.write(b"\x00")
 
+for i in range(0, file_count):
+	try:
+		get = New_table["%d" % i]
+	except:
+		continue
+	else:
+		chunk_main_table[i] = New_table["%d" % i]
 temp_offset = file_new.tell()
 file_new.seek(dictionaries_pointers, 0)
 file_new.write(numpy.uint64(temp_offset))
