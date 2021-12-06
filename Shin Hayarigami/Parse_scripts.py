@@ -49,7 +49,6 @@ for i in range(0, len(files)):
     file_new = open("json\%s.json" % ID, "w", encoding="UTF-8")
     Dump = []
     while (file.tell() < size):
-        print("0x%x" % file.tell())
         entry = {}
         if (file.read(0x1) == b"\xFF"):
             command_size = numpy.fromfile(file, dtype=numpy.uint8, count=1)[0] - 3
