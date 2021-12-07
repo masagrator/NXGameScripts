@@ -1,3 +1,6 @@
+from sys import byteorder
+
+
 def DEMO(F):
     entry = {}
     entry["TYPE"] = "DEMO"
@@ -109,10 +112,14 @@ def IFRVtm(F, size):
     entry["UNK0"] = F.read(size).hex()
     return entry
 
-def SELECT_ITEM(F, size):
+def SELECT_ITEM(F, selectdatabase = None):
     entry = {}
     entry["TYPE"] = "SELECT_ITEM"
-    entry["UNK0"] = F.read(size).hex()
+    entry["UNK0"] = F.read(0x4).hex()
+    entry["SELECT_ITEM_ID"] = int.from_bytes(F.read(0x2), byteorder="little")
+    if (selectdatabase != None):
+        entry["SELECT_ITEM_INFO"] = selectdatabase["%d" % entry["SELECT_ITEM_ID"]]
+    entry["UNK1"] = F.read(0x4).hex()
     return entry
 
 def SELECT_ITEMtm(F, size):
@@ -931,11 +938,13 @@ def NUMBER_GET_PARAM(F, size):
     entry["UNK0"] = F.read(size).hex()
     return entry
 
-def KEYWORD(F):
+def KEYWORD(F, keyworddatabase = None):
     entry = {}
     entry["TYPE"] = "KEYWORD"
     entry["UNK0"] = F.read(0x4).hex()
     entry["KEYWORD_ID"] = int.from_bytes(F.read(0x2), byteorder="little")
+    if (keyworddatabase != None):
+        entry["KEYWORD"] = keyworddatabase["%d" % entry["KEYWORD_ID"]]
     return entry
 
 def GRADE_POINT(F, size):
@@ -1010,11 +1019,13 @@ def DATABASE(F, size):
     entry["UNK0"] = F.read(size).hex()
     return entry
 
-def SPEAKER(F):
+def SPEAKER(F, characterdatabase = None):
     entry = {}
     entry["TYPE"] = "SPEAKER"
     entry["UNK0"] = F.read(0x4).hex()
     entry["CHARACTER_ID"] = int.from_bytes(F.read(0x2), byteorder="little")
+    if (characterdatabase != None):
+        entry["NAME"] = characterdatabase["%d" % entry["CHARACTER_ID"]]
     return entry
 
 def LOGIC_SAVE(F, size):

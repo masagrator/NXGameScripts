@@ -81,7 +81,10 @@ def Disassemble_CMD(F, cmd, argsize):
         case 115:
             return IFRVtm(F, argsize)
         case 116:
-            return SELECT_ITEM(F, argsize)
+            if (select_bool == False):
+                return SELECT_ITEM(F)
+            else:
+                return SELECT_ITEM(F, Selects)
         case 117:
             return SELECT_ITEMtm(F, argsize)
         case 201:
@@ -355,7 +358,10 @@ def Disassemble_CMD(F, cmd, argsize):
         case 1505:
             return NUMBER_GET_PARAM(F, argsize)
         case 2001:
-            return KEYWORD(F)
+            if (keyword_bool == False):
+                return KEYWORD(F)
+            else:
+                return KEYWORD(F, Keywords)
         case 2002:
             return GRADE_POINT(F, argsize)
         case 2003:
@@ -381,7 +387,10 @@ def Disassemble_CMD(F, cmd, argsize):
         case 2013:
             return DATABASE(F, argsize)
         case 2014:
-            return SPEAKER(F)
+            if (character_bool == False):
+                return SPEAKER(F)
+            else:
+                return SPEAKER(F, Characters)
         case 2021:
             return LOGIC_SAVE(F, argsize)
         case 2022:
@@ -530,6 +539,36 @@ for i in range(0, table_entries):
 file.close()
 
 files = glob.glob("extracted/*.dat")
+
+character_bool = True
+try:
+    chars_file = open("strings/characterdatabase.json", "r", encoding="UTF-8")
+except:
+    print("characterdatabase not detected. Names won't be passed to output.")
+    character_bool = False
+else:
+    Characters = json.load(chars_file)
+    chars_file.close()
+
+keyword_bool = True
+try:
+    keywords_file = open("strings/keyword.json", "r", encoding="UTF-8")
+except:
+    print("keyword not detected. Keywords won't be passed to output.")
+    keyword_bool = False
+else:
+    Keywords = json.load(keywords_file)
+    keywords_file.close()
+
+select_bool = True
+try:
+    selects_file = open("strings/selectinfo.json", "r", encoding="UTF-8")
+except:
+    print("Selectinfo not detected. Selects won't be passed to output.")
+    select_bool = False
+else:
+    Selects = json.load(selects_file)
+    selects_file.close()
 
 os.makedirs("json", exist_ok=True)
 for i in range(0, len(files)):
