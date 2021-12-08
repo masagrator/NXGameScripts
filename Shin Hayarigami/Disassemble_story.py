@@ -512,7 +512,7 @@ def Disassemble_CMD(F, cmd, argsize):
             return None
 
 
-file = open("story.dat", "rb")
+file = open("database\\story.dat", "rb")
 
 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=2)
 header_size = buffer[0]

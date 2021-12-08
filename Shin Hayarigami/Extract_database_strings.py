@@ -12,13 +12,13 @@ def readString(myfile):
             return str(b"".join(chars).decode("UTF-8"))
         chars.append(c)
 
-files = glob.glob("database.dat\*.dat")
+files = glob.glob("database\*.dat")
 
 if (len(files) == 0):
     print("No files detected! Be sure to unpack database.dat!")
     sys.exit()
 
-exceptions = ["database.dat\\common_story.dat", "database.dat\\story.dat", "database.dat\\00_logic.dat", "database.dat\\00_tree.dat", "database.dat\\nmlcodelabel.dat", "database.dat\\screenposadvps4.dat", "database.dat\\tipadv.dat", "database.dat\\tiplogic.dat"]
+exceptions = ["database\\common_story.dat", "database\\story.dat", "database\\00_logic.dat", "database\\00_tree.dat", "database\\nmlcodelabel.dat", "database\\screenposadvps4.dat", "database\\tipadv.dat", "database\\tiplogic.dat"]
 
 os.makedirs("strings", exist_ok=True)
 for i in range(0, len(files)):
@@ -33,7 +33,7 @@ for i in range(0, len(files)):
     header_size = buffer[3]
     file.seek(header_size)
     match(files[i]):
-        case "database.dat\\characterdatabase.dat":
+        case "database\\characterdatabase.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -41,7 +41,7 @@ for i in range(0, len(files)):
                 file.seek(data_blob_start + buffer[2])
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\extracg.dat":
+        case "database\\extracg.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -49,7 +49,7 @@ for i in range(0, len(files)):
                 file.seek(buffer[4] + data_blob_start)
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\extraendinglist.dat":
+        case "database\\extraendinglist.dat":
             Dump = {}
             for x in range(0, entry_count):
                 entry2 = {}
@@ -75,7 +75,7 @@ for i in range(0, len(files)):
                 entry2["String9"] = readString(file)
                 Dump["%d" % buffer[0]] = entry2
                 file.seek(pos)
-        case "database.dat\\extrasidestory.dat":
+        case "database\\extrasidestory.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -83,7 +83,7 @@ for i in range(0, len(files)):
                 file.seek(buffer[2] + data_blob_start)
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\flagdatabase.dat":
+        case "database\\flagdatabase.dat":
             Dump = []
             for x in range(0, entry_count):
                 entry = {}
@@ -98,7 +98,7 @@ for i in range(0, len(files)):
                 entry["STRING"] = readString(file)
                 file.seek(pos)
                 Dump.append(entry)
-        case "database.dat\\foafdatabase.dat":
+        case "database\\foafdatabase.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -106,7 +106,7 @@ for i in range(0, len(files)):
                 file.seek(buffer[4] + data_blob_start)
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\foafdatabasetext.dat":
+        case "database\\foafdatabasetext.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -114,7 +114,7 @@ for i in range(0, len(files)):
                 file.seek(buffer[4] + data_blob_start)
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\gamestring.dat":
+        case "database\\gamestring.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -122,7 +122,7 @@ for i in range(0, len(files)):
                 file.seek(data_blob_start + buffer[2])
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\keyword.dat":
+        case "database\\keyword.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -130,7 +130,7 @@ for i in range(0, len(files)):
                 file.seek(buffer[2] + data_blob_start)
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\liarsart.dat":
+        case "database\\liarsart.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -138,7 +138,7 @@ for i in range(0, len(files)):
                 file.seek(buffer[4] + data_blob_start)
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\paramdatabase.dat":
+        case "database\\paramdatabase.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -146,7 +146,7 @@ for i in range(0, len(files)):
                 file.seek(data_blob_start + buffer[2])
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\selecter.dat":
+        case "database\\selecter.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -154,7 +154,7 @@ for i in range(0, len(files)):
                 file.seek(data_blob_start + buffer[2])
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\selectinfo.dat":
+        case "database\\selectinfo.dat":
             Dump = {}
             for x in range(0, entry_count):
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
@@ -162,7 +162,7 @@ for i in range(0, len(files)):
                 file.seek(data_blob_start + buffer[4])
                 Dump["%d" % buffer[0]] = readString(file)
                 file.seek(pos)
-        case "database.dat\\soundbgm.dat":
+        case "database\\soundbgm.dat":
             Dump = {}
             for x in range(0, entry_count):
                 entry2 = {}
@@ -180,7 +180,7 @@ for i in range(0, len(files)):
                 entry2["String4"] = readString(file)
                 Dump["%d" % buffer[0]] = entry2
                 file.seek(pos)
-        case "database.dat\\soundse.dat":
+        case "database\\soundse.dat":
             Dump = {}
             for x in range(0, entry_count):
                 entry2 = {}

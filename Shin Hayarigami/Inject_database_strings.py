@@ -3,14 +3,18 @@ import os
 import json
 import sys
 import numpy
+import shutil
 
 new_files = glob.glob("strings\*.json")
+
+exceptions = ["database\\common_story.dat", "database\\common_story.did", "database\\story.dat", "database\\story.did", "database\\00_logic.dat", "database\\00_tree.dat", "database\\nmlcodelabel.dat", "database\\screenposadvps4.dat", "database\\tipadv.dat", "database\\tiplogic.dat"]
+
 
 if (len(new_files) == 0):
     print("No files detected! Be sure to unpack strings from database.dat!")
     sys.exit()
 
-os.makedirs("new_strings_dat", exist_ok=True)
+os.makedirs("new_database", exist_ok=True)
 
 for i in range(0, len(new_files)):
     file = open(new_files[i], "r", encoding="UTF-8")
@@ -18,7 +22,7 @@ for i in range(0, len(new_files)):
     file.close()
     match(new_files[i]):
         case "strings\\characterdatabase.json":
-            new_file = open("new_strings_dat\\characterdatabase.dat", "wb")
+            new_file = open("new_database\\characterdatabase.dat", "wb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x10))
             new_file.write(numpy.uint32(0x20 + (0x10 * len(DUMP))))
@@ -35,8 +39,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\extracg.json":
-            new_file = open("new_strings_dat\\extracg.dat", "wb")
-            old_file = open("database.dat\\extracg.dat", "rb")
+            new_file = open("new_database\\extracg.dat", "wb")
+            old_file = open("database\\extracg.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x20))
             new_file.write(numpy.uint32(0x30 + (0x20 * len(DUMP))))
@@ -60,8 +64,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\extraendinglist.json":
-            new_file = open("new_strings_dat\\extraendinglist.dat", "wb")
-            old_file = open("database.dat\\extraendinglist.dat", "rb")
+            new_file = open("new_database\\extraendinglist.dat", "wb")
+            old_file = open("database\\extraendinglist.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x60))
             new_file.write(numpy.uint32(0x70 + (0x60 * len(DUMP))))
@@ -107,8 +111,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\extrasidestory.json":
-            new_file = open("new_strings_dat\\extrasidestory.dat", "wb")
-            old_file = open("database.dat\\extrasidestory.dat", "rb")
+            new_file = open("new_database\\extrasidestory.dat", "wb")
+            old_file = open("database\\extrasidestory.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x28))
             new_file.write(numpy.uint32(0x40 + (0x28 * len(DUMP))))
@@ -130,8 +134,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\flagdatabase.json":
-            new_file = open("new_strings_dat\\flagdatabase.dat", "wb")
-            old_file = open("database.dat\\flagdatabase.dat", "rb")
+            new_file = open("new_database\\flagdatabase.dat", "wb")
+            old_file = open("database\\flagdatabase.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x10))
             new_file.write(numpy.uint32(0x20 + (0x10 * len(DUMP))))
@@ -154,8 +158,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\foafdatabase.json":
-            new_file = open("new_strings_dat\\foafdatabase.dat", "wb")
-            old_file = open("database.dat\\foafdatabase.dat", "rb")
+            new_file = open("new_database\\foafdatabase.dat", "wb")
+            old_file = open("database\\foafdatabase.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x20))
             new_file.write(numpy.uint32(0x30 + (0x20 * len(DUMP))))
@@ -177,8 +181,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\foafdatabasetext.json":
-            new_file = open("new_strings_dat\\foafdatabasetext.dat", "wb")
-            old_file = open("database.dat\\foafdatabasetext.dat", "rb")
+            new_file = open("new_database\\foafdatabasetext.dat", "wb")
+            old_file = open("database\\foafdatabasetext.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x18))
             new_file.write(numpy.uint32(0x8 + 0x30 + (0x18 * len(DUMP))))
@@ -201,7 +205,7 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\gamestring.json":
-            new_file = open("new_strings_dat\\gamestring.dat", "wb")
+            new_file = open("new_database\\gamestring.dat", "wb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x10))
             new_file.write(numpy.uint32(0x20 + (0x10 * len(DUMP))))
@@ -218,8 +222,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\keyword.json":
-            new_file = open("new_strings_dat\\keyword.dat", "wb")
-            old_file = open("database.dat\\keyword.dat", "rb")
+            new_file = open("new_database\\keyword.dat", "wb")
+            old_file = open("database\\keyword.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x30))
             new_file.write(numpy.uint32(0x40 + (0x30 * len(DUMP))))
@@ -244,8 +248,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\liarsart.json":
-            new_file = open("new_strings_dat\\liarsart.dat", "wb")
-            old_file = open("database.dat\\liarsart.dat", "rb")
+            new_file = open("new_database\\liarsart.dat", "wb")
+            old_file = open("database\\liarsart.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x30))
             new_file.write(numpy.uint32(0x40 + (0x30 * len(DUMP))))
@@ -267,7 +271,7 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\paramdatabase.json":
-            new_file = open("new_strings_dat\\paramdatabase.dat", "wb")
+            new_file = open("new_database\\paramdatabase.dat", "wb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x10))
             new_file.write(numpy.uint32(0x20 + (0x10 * len(DUMP))))
@@ -284,8 +288,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\selecter.json":
-            new_file = open("new_strings_dat\\selecter.dat", "wb")
-            old_file = open("database.dat\\selecter.dat", "rb")
+            new_file = open("new_database\\selecter.dat", "wb")
+            old_file = open("database\\selecter.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x38))
             new_file.write(numpy.uint32(0x8 + 0x50 + (0x38 * len(DUMP))))
@@ -308,8 +312,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\selectinfo.json":
-            new_file = open("new_strings_dat\\selectinfo.dat", "wb")
-            old_file = open("database.dat\\selectinfo.dat", "rb")
+            new_file = open("new_database\\selectinfo.dat", "wb")
+            old_file = open("database\\selectinfo.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x28))
             new_file.write(numpy.uint32(0x8 + 0x40 + (0x28 * len(DUMP))))
@@ -332,8 +336,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\soundbgm.json":
-            new_file = open("new_strings_dat\\soundbgm.dat", "wb")
-            old_file = open("database.dat\\soundbgm.dat", "rb")
+            new_file = open("new_database\\soundbgm.dat", "wb")
+            old_file = open("database\\soundbgm.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x40))
             new_file.write(numpy.uint32(0x50 + (0x40 * len(DUMP))))
@@ -367,8 +371,8 @@ for i in range(0, len(new_files)):
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\soundse.json":
-            new_file = open("new_strings_dat\\soundse.dat", "wb")
-            old_file = open("database.dat\\soundse.dat", "rb")
+            new_file = open("new_database\\soundse.dat", "wb")
+            old_file = open("database\\soundse.dat", "rb")
             new_file.write(numpy.uint32(len(DUMP)))
             new_file.write(numpy.uint32(0x40))
             new_file.write(numpy.uint32(0x50 + (0x40 * len(DUMP))))
@@ -401,3 +405,6 @@ for i in range(0, len(new_files)):
             old_file.close()
             new_file.write(b"".join(strings_block))
             new_file.close()
+
+for i in range(0, len(exceptions)):
+    shutil.copyfile(exceptions[i], "new_database\\%s" % os.path.basename(exceptions[i]))

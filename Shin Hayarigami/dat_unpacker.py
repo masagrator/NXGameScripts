@@ -29,10 +29,10 @@ for i in range(0, file_count):
     sizes.append(numpy.fromfile(file, dtype=numpy.uint64, count=1)[0])
     offsets.append(numpy.fromfile(file, dtype=numpy.uint64, count=1)[0])
 
-os.makedirs("extracted/%s" % sys.argv[1], exist_ok=True)
+os.makedirs("%s" % sys.argv[1][:-4], exist_ok=True)
 
 for i in range(0, file_count):
-    new_file = open("extracted/%s/%s" % (sys.argv[1], filenames[i]), "wb")
+    new_file = open("%s/%s" % (sys.argv[1][:-4], filenames[i]), "wb")
     file.seek(offsets[i])
     new_file.write(file.read(sizes[i]))
     new_file.close()

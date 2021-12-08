@@ -487,8 +487,8 @@ def generateCommand(Dict):
 def sortByNumber(elem):
     return int(os.path.basename(elem)[:-5], base=10)
 
-os.makedirs("new_strings_dat", exist_ok=True)
-new_file = open("new_strings_dat\story.dat", "wb")
+os.makedirs("new_database", exist_ok=True)
+new_file = open("new_database\story.dat", "wb")
 
 orderfile = open("order.txt", "r")
 order = orderfile.readlines()
