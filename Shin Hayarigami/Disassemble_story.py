@@ -1,10 +1,8 @@
 import glob
 import json
 import os
-from types import ClassMethodDescriptorType
 import numpy
 import shutil
-import sys
 from story_commands import *
 
 def invertBitsU8(b1):
@@ -25,7 +23,7 @@ def readString(myfile):
             myfile.seek(-1, 1)
             while (myfile.tell() % 4 != 0):
                 myfile.seek(1, 1)
-            return str(InvertString(b"".join(chars)).decode("shift_jis_2004"))
+            return str(InvertString(b"".join(chars)).decode("shift_jis_2004").replace("㊤㊦", "––").replace("㊤㊥", "——"))
         chars.append(c)
 
 def TakeID(F):
@@ -45,468 +43,470 @@ def GetFileSize(F):
 def Disassemble_CMD(F, cmd, argsize):
     match(cmd):
         case 1:
-            return DEMO(F)
+            return Disassemble.DEMO(F)
         case 2:
-            return DEMOtm(F, argsize)
+            return Disassemble.DEMOtm(F, argsize)
         case 3:
-            return PAGE(F, argsize)
+            return Disassemble.PAGE(F, argsize)
         case 4:
-            return PAGEtm(F, argsize)
+            return Disassemble.PAGEtm(F, argsize)
         case 99:
-            return EXTEND(F, argsize)
+            return Disassemble.EXTEND(F, argsize)
         case 101:
-            return JUMP(F)
+            return Disassemble.JUMP(F)
         case 102:
-            return SELECT(F, argsize)
+            return Disassemble.SELECT(F, argsize)
         case 103:
-            return SELECTtm(F, argsize)
+            return Disassemble.SELECTtm(F, argsize)
         case 104:
-            return SI(F, argsize)
+            return Disassemble.SI(F, argsize)
         case 105:
-            return SItm(F, argsize)
+            return Disassemble.SItm(F, argsize)
         case 106:
-            return IF(F, argsize)
+            return Disassemble.IF(F, argsize)
         case 107:
-            return IFtm(F, argsize)
+            return Disassemble.IFtm(F, argsize)
         case 108:
-            return IFPARAM(F, argsize)
+            return Disassemble.IFPARAM(F, argsize)
         case 109:
-            return IFPARAMtm(F, argsize)
+            return Disassemble.IFPARAMtm(F, argsize)
         case 112:
-            return IFSTRING(F, argsize)
+            return Disassemble.IFSTRING(F, argsize)
         case 113:
-            return IFSTRINGtm(F, argsize)
+            return Disassemble.IFSTRINGtm(F, argsize)
         case 114:
-            return IFRV(F, argsize)
+            return Disassemble.IFRV(F, argsize)
         case 115:
-            return IFRVtm(F, argsize)
+            return Disassemble.IFRVtm(F, argsize)
         case 116:
             if (select_bool == False):
-                return SELECT_ITEM(F)
+                return Disassemble.SELECT_ITEM(F)
             else:
-                return SELECT_ITEM(F, Selects)
+                return Disassemble.SELECT_ITEM(F, Selects)
         case 117:
-            return SELECT_ITEMtm(F, argsize)
+            return Disassemble.SELECT_ITEMtm(F, argsize)
         case 201:
-            return WAIT(F, argsize)
+            return Disassemble.WAIT(F, argsize)
         case 202:
-            return BWAIT(F, argsize)
+            return Disassemble.BWAIT(F, argsize)
         case 203:
-            return TWAIT(F, argsize)
+            return Disassemble.TWAIT(F, argsize)
         case 204:
-            return BR(F, argsize) #Break Line
+            return Disassemble.BR(F, argsize) #Break Line
         case 205:
-            return FONT(F, argsize)
+            return Disassemble.FONT(F, argsize)
         case 206:
-            return FONTtm(F, argsize)
+            return Disassemble.FONTtm(F, argsize)
         case 207:
-            return MSPEED(F, argsize)
+            return Disassemble.MSPEED(F, argsize)
         case 208:
-            return RUBY(F, argsize)
+            return Disassemble.RUBY(F, argsize)
         case 209:
-            return RUBYtm(F, argsize)
+            return Disassemble.RUBYtm(F, argsize)
         case 210:
-            return TEXT_LEFT(F, argsize)
+            return Disassemble.TEXT_LEFT(F, argsize)
         case 211:
-            return TEXT_RIGHT(F, argsize)
+            return Disassemble.TEXT_RIGHT(F, argsize)
         case 212:
-            return TEXT_TOP(F, argsize)
+            return Disassemble.TEXT_TOP(F, argsize)
         case 213:
-            return EMBED(F, argsize)
+            return Disassemble.EMBED(F, argsize)
         case 214:
-            return SPACE(F, argsize)
+            return Disassemble.SPACE(F, argsize)
         case 215:
-            return CURSOR(F, argsize)
+            return Disassemble.CURSOR(F, argsize)
         case 216:
-            return TEXT_FADE(F, argsize)
+            return Disassemble.TEXT_FADE(F, argsize)
         case 217:
-            return ICON(F, argsize)
+            return Disassemble.ICON(F, argsize)
         case 218:
-            return EMBED_PARAM(F, argsize)
+            return Disassemble.EMBED_PARAM(F, argsize)
         case 219:
-            return TEXT_MODE(F, argsize)
+            return Disassemble.TEXT_MODE(F, argsize)
         case 255:
-            return NML(F, argsize)
+            return Disassemble.NML(F, argsize)
         case 301:
-            return WINDOW_ON(F, argsize)
+            return Disassemble.WINDOW_ON(F, argsize)
         case 302:
-            return WINDOW_OFF(F, argsize)
+            return Disassemble.WINDOW_OFF(F, argsize)
         case 303:
-            return WINDOW_SIZE(F, argsize)
+            return Disassemble.WINDOW_SIZE(F, argsize)
         case 304:
-            return WINDOW_MOVE(F, argsize)
+            return Disassemble.WINDOW_MOVE(F, argsize)
         case 305:
-            return WINDOW_FADE(F, argsize)
+            return Disassemble.WINDOW_FADE(F, argsize)
         case 306:
-            return TXTWND_IN(F, argsize)
+            return Disassemble.TXTWND_IN(F, argsize)
         case 307:
-            return TXTWND_OUT(F, argsize)
+            return Disassemble.TXTWND_OUT(F, argsize)
         case 401:
-            return BG_LOAD(F, argsize)
+            return Disassemble.BG_LOAD(F, argsize)
         case 402:
-            return BG_WAIT(F, argsize)
+            return Disassemble.BG_WAIT(F, argsize)
         case 403:
-            return BG_FADE(F, argsize)
+            return Disassemble.BG_FADE(F, argsize)
         case 404:
-            return BG_COLOR(F, argsize)
+            return Disassemble.BG_COLOR(F, argsize)
         case 405:
-            return BG_MOVE(F, argsize)
+            return Disassemble.BG_MOVE(F, argsize)
         case 406:
-            return BG_SIZE(F, argsize)
+            return Disassemble.BG_SIZE(F, argsize)
         case 407:
-            return BG_ST(F, argsize)
+            return Disassemble.BG_ST(F, argsize)
         case 410:
-            return BG_SET_ADJUST_Z(F, argsize)
+            return Disassemble.BG_SET_ADJUST_Z(F, argsize)
         case 501:
-            return TX2_LOAD(F, argsize)
+            return Disassemble.TX2_LOAD(F, argsize)
         case 502:
-            return TX2_MOVE(F, argsize)
+            return Disassemble.TX2_MOVE(F, argsize)
         case 503:
-            return TX2_FADE(F, argsize)
+            return Disassemble.TX2_FADE(F, argsize)
         case 504:
-            return TX2_SIZE(F, argsize)
+            return Disassemble.TX2_SIZE(F, argsize)
         case 505:
-            return TX2_ST(F, argsize)
+            return Disassemble.TX2_ST(F, argsize)
         case 506:
-            return TX2_COLOR(F, argsize)
+            return Disassemble.TX2_COLOR(F, argsize)
         case 507:
-            return TX2_ZGP(F, argsize)
+            return Disassemble.TX2_ZGP(F, argsize)
         case 508:
-            return TX2_CENTERING(F, argsize)
+            return Disassemble.TX2_CENTERING(F, argsize)
         case 509:
-            return TX2_CTL_TRACK(F, argsize)
+            return Disassemble.TX2_CTL_TRACK(F, argsize)
         case 550:
-            return TX2_TRACK(F, argsize)
+            return Disassemble.TX2_TRACK(F, argsize)
         case 551:
-            return TX2_PACK_READ(F, argsize)
+            return Disassemble.TX2_PACK_READ(F, argsize)
         case 552:
-            return TX2_PACK_WAIT(F, argsize)
+            return Disassemble.TX2_PACK_WAIT(F, argsize)
         case 601:
-            return ANM_LOAD(F, argsize)
+            return Disassemble.ANM_LOAD(F, argsize)
         case 602:
-            return ANM_MOVE(F, argsize)
+            return Disassemble.ANM_MOVE(F, argsize)
         case 603:
-            return ANM_FADE(F, argsize)
+            return Disassemble.ANM_FADE(F, argsize)
         case 604:
-            return ANM_SIZE(F, argsize)
+            return Disassemble.ANM_SIZE(F, argsize)
         case 605:
-            return ANM_PLAY(F, argsize)
+            return Disassemble.ANM_PLAY(F, argsize)
         case 606:
-            return ANM_SKIP(F, argsize)
+            return Disassemble.ANM_SKIP(F, argsize)
         case 607:
-            return ANM_STOP(F, argsize)
+            return Disassemble.ANM_STOP(F, argsize)
         case 651:
-            return ANM_PACK_READ(F, argsize)
+            return Disassemble.ANM_PACK_READ(F, argsize)
         case 652:
-            return ANM_PACK_WAIT(F, argsize)
+            return Disassemble.ANM_PACK_WAIT(F, argsize)
         case 701:
-            return SCR_FADE(F, argsize)
+            return Disassemble.SCR_FADE(F, argsize)
         case 702:
-            return SCR_VIB(F, argsize)
+            return Disassemble.SCR_VIB(F, argsize)
         case 801:
-            return FLAG(F, argsize)
+            return Disassemble.FLAG(F, argsize)
         case 802:
-            return PARAM(F, argsize)
+            return Disassemble.PARAM(F, argsize)
         case 803:
-            return STRING(F, argsize)
+            return Disassemble.STRING(F, argsize)
         case 804:
-            return PARAM_COMPARE(F, argsize)
+            return Disassemble.PARAM_COMPARE(F, argsize)
         case 805:
-            return STRING_COMPARE(F, argsize)
+            return Disassemble.STRING_COMPARE(F, argsize)
         case 806:
-            return PARAM_COPY(F, argsize)
+            return Disassemble.PARAM_COPY(F, argsize)
         case 807:
-            return STRING_COPY(F, argsize)
+            return Disassemble.STRING_COPY(F, argsize)
         case 901:
-            return SET_VOL(F, argsize)
+            return Disassemble.SET_VOL(F, argsize)
         case 902:
-            return BGM_READY(F, argsize)
+            return Disassemble.BGM_READY(F, argsize)
         case 903:
-            return BGM_WAIT(F, argsize)
+            return Disassemble.BGM_WAIT(F, argsize)
         case 904:
-            return BGM_PLAY(F, argsize)
+            return Disassemble.BGM_PLAY(F, argsize)
         case 905:
-            return BGM_VOL(F, argsize)
+            return Disassemble.BGM_VOL(F, argsize)
         case 906:
-            return BGM_STOP(F, argsize)
+            return Disassemble.BGM_STOP(F, argsize)
         case 907:
-            return MSG_READY(F, argsize)
+            return Disassemble.MSG_READY(F, argsize)
         case 908:
-            return MSG_WAIT(F, argsize)
+            return Disassemble.MSG_WAIT(F, argsize)
         case 909:
-            return MSG_PLAY(F, argsize)
+            return Disassemble.MSG_PLAY(F, argsize)
         case 910:
-            return MSG_VOL(F, argsize)
+            return Disassemble.MSG_VOL(F, argsize)
         case 911:
-            return MSG_STOP(F, argsize)
+            return Disassemble.MSG_STOP(F, argsize)
         case 914:
-            return SE_PLAY(F, argsize)
+            return Disassemble.SE_PLAY(F, argsize)
         case 915:
-            return SE_VOL(F, argsize)
+            return Disassemble.SE_VOL(F, argsize)
         case 916:
-            return SE_STOP(F, argsize)
+            return Disassemble.SE_STOP(F, argsize)
         case 917:
-            return SE_ALL_STOP(F, argsize)
+            return Disassemble.SE_ALL_STOP(F, argsize)
         case 918:
-            return LOOPS_READY(F, argsize)
+            return Disassemble.LOOPS_READY(F, argsize)
         case 919:
-            return LOOPS_WAIT(F, argsize)
+            return Disassemble.LOOPS_WAIT(F, argsize)
         case 920:
-            return LOOPS_PLAY(F, argsize)
+            return Disassemble.LOOPS_PLAY(F, argsize)
         case 921:
-            return LOOPS_VOL(F, argsize)
+            return Disassemble.LOOPS_VOL(F, argsize)
         case 922:
-            return LOOPS_STOP(F, argsize)
+            return Disassemble.LOOPS_STOP(F, argsize)
         case 923:
-            return SONG_READY(F, argsize)
+            return Disassemble.SONG_READY(F, argsize)
         case 924:
-            return SONG_WAIT(F, argsize)
+            return Disassemble.SONG_WAIT(F, argsize)
         case 925:
-            return SONG_PLAY(F, argsize)
+            return Disassemble.SONG_PLAY(F, argsize)
         case 926:
-            return SONG_VOL(F, argsize)
+            return Disassemble.SONG_VOL(F, argsize)
         case 927:
-            return SONG_STOP(F, argsize)
+            return Disassemble.SONG_STOP(F, argsize)
         case 931:
-            return MSG_SYNC(F, argsize)
+            return Disassemble.MSG_SYNC(F, argsize)
         case 932:
-            return SONG_SYNC(F, argsize)
+            return Disassemble.SONG_SYNC(F, argsize)
         case 1001:
-            return EMBED_EDIT(F, argsize)
+            return Disassemble.EMBED_EDIT(F, argsize)
         case 1002:
-            return TITLE_JUMP(F, argsize)
+            return Disassemble.TITLE_JUMP(F, argsize)
         case 1003:
-            return DLOGIC(F, argsize)
+            return Disassemble.DLOGIC(F, argsize)
         case 1004:
-            return GRADE(F, argsize)
+            return Disassemble.GRADE(F, argsize)
         case 1005:
-            return LOGIC_INFER(F, argsize)
+            return Disassemble.LOGIC_INFER(F, argsize)
         case 1006:
-            return SAVE_POINT(F, argsize)
+            return Disassemble.SAVE_POINT(F, argsize)
         case 1101:
-            return PAD_CTL(F, argsize)
+            return Disassemble.PAD_CTL(F, argsize)
         case 1102:
-            return PAD_VIB(F, argsize)
+            return Disassemble.PAD_VIB(F, argsize)
         case 1103:
-            return PAD_PUSH(F, argsize)
+            return Disassemble.PAD_PUSH(F, argsize)
         case 1201:
-            return CODE_3D_PLAY(F, argsize)
+            return Disassemble.CODE_3D_PLAY(F, argsize)
         case 1202:
-            return CODE_3D_MOVE(F, argsize)
+            return Disassemble.CODE_3D_MOVE(F, argsize)
         case 1203:
-            return CODE_3D_FADE(F, argsize)
+            return Disassemble.CODE_3D_FADE(F, argsize)
         case 1204:
-            return CODE_3D_ROTATE(F, argsize)
+            return Disassemble.CODE_3D_ROTATE(F, argsize)
         case 1205:
-            return CODE_3D_SIZE(F, argsize)
+            return Disassemble.CODE_3D_SIZE(F, argsize)
         case 1206:
-            return CODE_3D_STOP(F, argsize)
+            return Disassemble.CODE_3D_STOP(F, argsize)
         case 1251:
-            return CODE_3D_PACK_READ(F, argsize)
+            return Disassemble.CODE_3D_PACK_READ(F, argsize)
         case 1252:
-            return CODE_3D_PACK_WAIT(F, argsize)
+            return Disassemble.CODE_3D_PACK_WAIT(F, argsize)
         case 1261:
-            return CODE_3D_CAMERA_SET(F, argsize)
+            return Disassemble.CODE_3D_CAMERA_SET(F, argsize)
         case 1301:
-            return CALL_DEMO(F, argsize)
+            return Disassemble.CALL_DEMO(F, argsize)
         case 1302:
-            return WAIT_DEMO_ALL(F, argsize)
+            return Disassemble.WAIT_DEMO_ALL(F, argsize)
         case 1303:
-            return OPTWND(F, argsize)
+            return Disassemble.OPTWND(F, argsize)
         case 1304:
-            return RANDOM(F, argsize)
+            return Disassemble.RANDOM(F, argsize)
         case 1305:
-            return READED_PCT(F, argsize)
+            return Disassemble.READED_PCT(F, argsize)
         case 1306:
-            return DENY_SKIP(F, argsize)
+            return Disassemble.DENY_SKIP(F, argsize)
         case 1307:
-            return BACKLOG_CLEAR(F, argsize)
+            return Disassemble.BACKLOG_CLEAR(F, argsize)
         case 1308:
-            return HIDE_SELECTER_MENU(F, argsize)
+            return Disassemble.HIDE_SELECTER_MENU(F, argsize)
         case 1309:
-            return HIDE_NAMEEDIT_MENU(F, argsize)
+            return Disassemble.HIDE_NAMEEDIT_MENU(F, argsize)
         case 1310:
-            return YES_NO_DLG(F, argsize)
+            return Disassemble.YES_NO_DLG(F, argsize)
         case 1311:
-            return STOP_SKIP(F, argsize)
+            return Disassemble.STOP_SKIP(F, argsize)
         case 1312:
-            return TXTHIDE_CTL(F, argsize)
+            return Disassemble.TXTHIDE_CTL(F, argsize)
         case 1313:
-            return STOP_OTHER_DEMO(F, argsize)
+            return Disassemble.STOP_OTHER_DEMO(F, argsize)
         case 1314:
-            return SUBMENU_CTL(F, argsize)
+            return Disassemble.SUBMENU_CTL(F, argsize)
         case 1315:
-            return SHORTCUT_CTL(F, argsize)
+            return Disassemble.SHORTCUT_CTL(F, argsize)
         case 1316:
-            return NOVELCLEAR(F, argsize)
+            return Disassemble.NOVELCLEAR(F, argsize)
         case 1317:
-            return PLAY_VIDEO(F, argsize) # Guessed
+            return Disassemble.PLAY_VIDEO(F, argsize) # Guessed
         case 1401:
-            return PHRASE_SET(F, argsize)
+            return Disassemble.PHRASE_SET(F, argsize)
         case 1402:
-            return PHRASE_FADE(F, argsize)
+            return Disassemble.PHRASE_FADE(F, argsize)
         case 1403:
-            return PHRASE_MOVE(F, argsize)
+            return Disassemble.PHRASE_MOVE(F, argsize)
         case 1501:
-            return NUMBER_SET(F, argsize)
+            return Disassemble.NUMBER_SET(F, argsize)
         case 1502:
-            return NUMBER_FADE(F, argsize)
+            return Disassemble.NUMBER_FADE(F, argsize)
         case 1503:
-            return NUMBER_MOVE(F, argsize)
+            return Disassemble.NUMBER_MOVE(F, argsize)
         case 1504:
-            return NUMBER_SIZE(F, argsize)
+            return Disassemble.NUMBER_SIZE(F, argsize)
         case 1505:
-            return NUMBER_GET_PARAM(F, argsize)
+            return Disassemble.NUMBER_GET_PARAM(F, argsize)
         case 2001:
             if (keyword_bool == False):
-                return KEYWORD(F)
+                return Disassemble.KEYWORD(F)
             else:
-                return KEYWORD(F, Keywords)
+                return Disassemble.KEYWORD(F, Keywords)
         case 2002:
-            return GRADE_POINT(F, argsize)
+            return Disassemble.GRADE_POINT(F, argsize)
         case 2003:
-            return ADD_MEMO(F, argsize)
+            return Disassemble.ADD_MEMO(F, argsize)
         case 2004:
-            return LOGIC_MODE(F, argsize)
+            return Disassemble.LOGIC_MODE(F, argsize)
         case 2005:
-            return LOGIC_SET_KEY(F, argsize)
+            return Disassemble.LOGIC_SET_KEY(F, argsize)
         case 2006:
-            return LOGIC_GET_KEY(F, argsize)
+            return Disassemble.LOGIC_GET_KEY(F, argsize)
         case 2007:
-            return LOGIC_CTL(F, argsize)
+            return Disassemble.LOGIC_CTL(F, argsize)
         case 2008:
-            return LOGIC_LOAD(F, argsize)
+            return Disassemble.LOGIC_LOAD(F, argsize)
         case 2009:
-            return GAME_END(F, argsize)
+            return Disassemble.GAME_END(F, argsize)
         case 2010:
-            return FACE(F, argsize)
+            return Disassemble.FACE(F, argsize)
         case 2011:
-            return CHOOSE_KEYWORD(F, argsize)
+            return Disassemble.CHOOSE_KEYWORD(F, argsize)
         case 2012:
-            return LOGIC_CLEAR_KEY(F, argsize)
+            return Disassemble.LOGIC_CLEAR_KEY(F, argsize)
         case 2013:
-            return DATABASE(F, argsize)
+            return Disassemble.DATABASE(F, argsize)
         case 2014:
             if (character_bool == False):
-                return SPEAKER(F)
+                return Disassemble.SPEAKER(F)
             else:
-                return SPEAKER(F, Characters)
+                return Disassemble.SPEAKER(F, Characters)
         case 2021:
-            return LOGIC_SAVE(F, argsize)
+            return Disassemble.LOGIC_SAVE(F, argsize)
         case 2022:
-            return LOGIC_DRAW_MARK(F, argsize)
+            return Disassemble.LOGIC_DRAW_MARK(F, argsize)
         case 2101:
-            return DLPAGE(F, argsize)
+            return Disassemble.DLPAGE(F, argsize)
         case 2102:
-            return DLPAGEtm(F, argsize)
+            return Disassemble.DLPAGEtm(F, argsize)
         case 2103:
-            return DLKEY(F, argsize)
+            return Disassemble.DLKEY(F, argsize)
         case 2104:
-            return DLSELSET(F, argsize)
+            return Disassemble.DLSELSET(F, argsize)
         case 2105:
-            return DLSELSETtm(F, argsize)
+            return Disassemble.DLSELSETtm(F, argsize)
         case 2106:
-            return DLSEL(F, argsize)
+            return Disassemble.DLSEL(F, argsize)
         case 2107:
-            return DLSELECT(F, argsize)
+            return Disassemble.DLSELECT(F, argsize)
         case 2108:
-            return ILCAMERA(F, argsize)
+            return Disassemble.ILCAMERA(F, argsize)
         case 2109:
-            return ILZOOM(F, argsize)
+            return Disassemble.ILZOOM(F, argsize)
         case 2201:
-            return CI_LOAD(F, argsize)
+            return Disassemble.CI_LOAD(F, argsize)
         case 2202:
-            return CI_LOAD_WAIT(F, argsize)
+            return Disassemble.CI_LOAD_WAIT(F, argsize)
         case 2203:
-            return CI_MOVE(F, argsize)
+            return Disassemble.CI_MOVE(F, argsize)
         case 2204:
-            return CI_FADE(F, argsize)
+            return Disassemble.CI_FADE(F, argsize)
         case 2205:
-            return CI_SIZE(F, argsize)
+            return Disassemble.CI_SIZE(F, argsize)
         case 2206:
-            return CI_ST(F, argsize)
+            return Disassemble.CI_ST(F, argsize)
         case 2207:
-            return CI_COLOR(F, argsize)
+            return Disassemble.CI_COLOR(F, argsize)
         case 2208:
-            return CI_ZGP(F, argsize)
+            return Disassemble.CI_ZGP(F, argsize)
         case 2209:
-            return CI_CENTERING(F, argsize)
+            return Disassemble.CI_CENTERING(F, argsize)
         case 2210:
-            return CI_CTL_TRACK(F, argsize)
+            return Disassemble.CI_CTL_TRACK(F, argsize)
         case 2211:
-            return CI_TRACK(F, argsize)
+            return Disassemble.CI_TRACK(F, argsize)
         case 2212:
-            return CI_NEGAPOSI(F, argsize)
+            return Disassemble.CI_NEGAPOSI(F, argsize)
         case 2213:
-            return CI_BUSTUP_CENTERING(F, argsize)
+            return Disassemble.CI_BUSTUP_CENTERING(F, argsize)
         case 2301:
-            return MCR_TEXT_TOP(F, argsize)
+            return Disassemble.MCR_TEXT_TOP(F, argsize)
         case 2302:
-            return MCR_RUBY(F, argsize)
+            return Disassemble.MCR_RUBY(F, argsize)
         case 2303:
-            return MCR_BG_START(F, argsize)
+            return Disassemble.MCR_BG_START(F, argsize)
         case 2304:
-            return MCR_BG_STOP(F, argsize)
+            return Disassemble.MCR_BG_STOP(F, argsize)
         case 2305:
-            return MCR_BU_START(F, argsize)
+            return Disassemble.MCR_BU_START(F, argsize)
         case 2306:
-            return MCR_BU_STOP(F, argsize)
+            return Disassemble.MCR_BU_STOP(F, argsize)
         case 2307:
-            return MCR_CI_START(F, argsize)
+            return Disassemble.MCR_CI_START(F, argsize)
         case 2308:
-            return MCR_CI_STOP(F, argsize)
+            return Disassemble.MCR_CI_STOP(F, argsize)
         case 2309:
-            return MCR_TEXTWIN_IN(F, argsize)
+            return Disassemble.MCR_TEXTWIN_IN(F, argsize)
         case 2310:
-            return MCR_TEXTWIN_OUT(F, argsize)
+            return Disassemble.MCR_TEXTWIN_OUT(F, argsize)
         case 2311:
-            return MCR_3D_EFFECT(F, argsize)
+            return Disassemble.MCR_3D_EFFECT(F, argsize)
         case 2312:
-            return MCR_BGM_START(F, argsize)
+            return Disassemble.MCR_BGM_START(F, argsize)
         case 2313:
-            return MCR_BGM_STOP(F, argsize)
+            return Disassemble.MCR_BGM_STOP(F, argsize)
         case 2314:
-            return MCR_SE_START(F, argsize)
+            return Disassemble.MCR_SE_START(F, argsize)
         case 2315:
-            return MCR_LOOPVOICE_START(F, argsize)
+            return Disassemble.MCR_LOOPVOICE_START(F, argsize)
         case 2316:
-            return MCR_LOOPVOICE_STOP(F, argsize)
+            return Disassemble.MCR_LOOPVOICE_STOP(F, argsize)
         case 2401:
-            return ANIME_LOAD(F, argsize)
+            return Disassemble.ANIME_LOAD(F, argsize)
         case 2402:
-            return ANIME_LOAD_WAIT(F, argsize)
+            return Disassemble.ANIME_LOAD_WAIT(F, argsize)
         case 2403:
-            return ANIME_PLAY(F, argsize)
+            return Disassemble.ANIME_PLAY(F, argsize)
         case 2404:
-            return ANIME_SKIP(F, argsize)
+            return Disassemble.ANIME_SKIP(F, argsize)
         case 2405:
-            return ANIME_STOP(F, argsize)
+            return Disassemble.ANIME_STOP(F, argsize)
         case 2406:
-            return ANIME_MOVE(F, argsize)
+            return Disassemble.ANIME_MOVE(F, argsize)
         case 2407:
-            return ANIME_FADE(F, argsize)
+            return Disassemble.ANIME_FADE(F, argsize)
         case 2408:
-            return ANIME_SCALE(F, argsize)
+            return Disassemble.ANIME_SCALE(F, argsize)
         case 2409:
-            return ANIME_ROT(F, argsize)
+            return Disassemble.ANIME_ROT(F, argsize)
         case 2410:
-            return ANIME_ZGP(F, argsize)
+            return Disassemble.ANIME_ZGP(F, argsize)
         case 2411:
-            return ANIME_SYNC(F, argsize)
+            return Disassemble.ANIME_SYNC(F, argsize)
         case 2412:
-            return ANIME_PAUSE(F, argsize)
+            return Disassemble.ANIME_PAUSE(F, argsize)
         case 2413:
-            return ANIME_RESUME(F, argsize)
+            return Disassemble.ANIME_RESUME(F, argsize)
         case 2414:
-            return ANIME_FRAME(F, argsize)
+            return Disassemble.ANIME_FRAME(F, argsize)
         case 2501:
-            return LIARSART_START(F, argsize)
+            return Disassemble.LIARSART_START(F, argsize)
         case 2502:
-            return LIARSART_DEMOEND(F, argsize)
+            return Disassemble.LIARSART_DEMOEND(F, argsize)
         case 2503:
-            return LIARSART_END(F, argsize)
+            return Disassemble.LIARSART_END(F, argsize)
         case 2504:
-            return LIARSART_TUTORIAL(F, argsize)
+            return Disassemble.LIARSART_TUTORIAL(F, argsize)
+        case 2505:
+            return Disassemble.UNK_2505(F, argsize)
         case _:
             print("Unknown command! %d" % cmd)
             return None
