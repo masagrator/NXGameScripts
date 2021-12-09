@@ -1,3 +1,6 @@
+//Original work by iltrof
+//Modifications done by MasaGratoR to change support from .fad to .nltx
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
