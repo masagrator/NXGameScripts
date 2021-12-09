@@ -105,9 +105,9 @@ bool isMagic(std::ifstream& in) {
 void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	in.seekg(offset);
 	unsigned int format = read2(in);
-	if (format != 0x2) {
+	if (format != 0x2 || format != 0x6) {
 		std::cout << "Unknown texture format in " << currentFad << " @0x" << std::hex << (offset + 0x1E) << std::dec << std::endl;
-		std::cout << "Should be 0x2 (DXT5). Skipping...\n";
+		std::cout << "Should be 0x2 (DXT5) or 0x6 (BC7). Skipping...\n";
 		return;
 	}
 	in.ignore(0x2);
@@ -183,6 +183,9 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	else if (format == 0x2) {
 		outDDS.write(ddsHeaderDXT5, 108);
 	}
+	else if (format == 0x6) {
+		outDDS.write(ddsHeaderBC7, 108);
+	}
 	else {
 		outDDS.write(ddsHeaderRGBA, 108);
 	}
@@ -192,7 +195,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 		swWidth = blockSize * (unsigned int)ceil(swWidth / (double)blockSize);
 		swHeight = blockSize * (unsigned int)ceil(swHeight / (double)blockSize);
 	}
-	if (format == 0x4 || format == 0x2) {
+	if (format == 0x4 || format == 0x2 || format == 0x6) {
 		width /= 4; swWidth /= 4;
 		height /= 4; swHeight /= 4;
 	}
