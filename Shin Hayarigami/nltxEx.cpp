@@ -17,13 +17,16 @@ fs::path currentFad;
 const char ddsHeader0[] = "DDS |\0\0\0\x07\x10\0\0";
 const char ddsHeaderRGBA[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x20\0\0\0\x41\0\0\0\0\0\0\0\x20\0\0\0"
-"\xff\0\0\0\0\xff\0\0\0\0\xff\0\0\0\0\xff\0\x10\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+"\xff\0\0\0\0\xff\0\0\0\0\xff\0\0\0\0\xff\0\x10\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 const char ddsHeaderDXT1[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x20\0\0\0\x4\0\0\0DXT1\0\0\0\0"
+"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x20\0\0\0\x4\0\0\0DXT1\0\0\0"
 "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x10\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 const char ddsHeaderDXT5[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x20\0\0\0\x4\0\0\0DXT5\0\0\0\0"
+"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x20\0\0\0\x4\0\0\0DXT5\0\0\0"
 "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x10\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+const char ddsHeaderBC7[] = "\0\0\0\x1\x1\0\0\0\x01\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x20\0\0\0\x4\0\0\0DX10\0\0\0\0\0\0\0\0\0"
+"\0\0\0\0\0\0\0\0\0\0\0\0\x10\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x62\0\0\0\x3\0\0\0\0\0\0\0\x1\0\0\0\0\0\0";
 
 int countLSBZeros(int value) {
 	unsigned int c = 0;
@@ -105,7 +108,7 @@ bool isMagic(std::ifstream& in) {
 void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	in.seekg(offset);
 	unsigned int format = read2(in);
-	if (format != 0x2 || format != 0x6) {
+	if ((format != 0x2) && (format != 0x6)) {
 		std::cout << "Unknown texture format in " << currentFad << " @0x" << std::hex << (offset + 0x1E) << std::dec << std::endl;
 		std::cout << "Should be 0x2 (DXT5) or 0x6 (BC7). Skipping...\n";
 		return;
@@ -178,16 +181,16 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	write4(outDDS, height);
 	write4(outDDS, width);
 	if (format == 0x4) {
-		outDDS.write(ddsHeaderDXT1, 108);
+		outDDS.write(ddsHeaderDXT1, sizeof(ddsHeaderDXT1));
 	} 
 	else if (format == 0x2) {
-		outDDS.write(ddsHeaderDXT5, 108);
+		outDDS.write(ddsHeaderDXT5, sizeof(ddsHeaderDXT5));
 	}
 	else if (format == 0x6) {
-		outDDS.write(ddsHeaderBC7, 108);
+		outDDS.write(ddsHeaderBC7, sizeof(ddsHeaderBC7));
 	}
 	else {
-		outDDS.write(ddsHeaderRGBA, 108);
+		outDDS.write(ddsHeaderRGBA, sizeof(ddsHeaderRGBA));
 	}
 
 	unsigned int swWidth = width, swHeight = height;
