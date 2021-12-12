@@ -121,9 +121,9 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	unsigned int height = read4(in);
 	in.ignore(0x10);
 	unsigned char swizzleType = in.get();
-	if (swizzleType < 1 || swizzleType > 3) {
+	if (swizzleType < 1 || swizzleType > 4) {
 		std::cout << "Unknown swizzle type in " << currentFad << " @0x" << std::hex << (offset + 0x28) << std::dec << std::endl;
-		std::cout << "Should be 1, 2 or 3. Skipping...";
+		std::cout << "Should be 1, 2, 3 or 4. Skipping...";
 		return;
 	}
 	unsigned char swizzleExpandSize = in.get();
@@ -197,7 +197,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	}
 
 	unsigned int swWidth = width, swHeight = height;
-	if (swizzleType == 3 && blockSize != 0) {
+	if (swizzleType >= 3 && blockSize != 0) {
 		swWidth = blockSize * (unsigned int)ceil(swWidth / (double)blockSize);
 		swHeight = blockSize * (unsigned int)ceil(swHeight / (double)blockSize);
 	}
@@ -215,11 +215,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	default: bpp = 16; break;
 	}
 
-	switch (swizzleType) {
-	case 1: sw = Swizzler(swWidth, bpp, 2); break;
-	case 2: sw = Swizzler(swWidth, bpp, 4); break;
-	default: sw = Swizzler(swWidth, bpp, 8); break;
-	}
+	sw = Swizzler(swWidth, bpp, pow(2, (int)swizzleType));
 
 	for (unsigned int y = 0; y < height; y++) {
 		for (unsigned int x = 0; x < width; x++) {

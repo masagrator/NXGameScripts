@@ -207,7 +207,7 @@ void compress(Texture& tex) {
 
 	unsigned int swWidth = width, swHeight = height;
 	int blockSize = tex.swizzleExpandSize * 64;
-	if (tex.swizzleType == 3 && blockSize != 0) {
+	if (tex.swizzleType >= 3 && blockSize != 0) {
 		swWidth = blockSize * (unsigned int)ceil(swWidth / (double)blockSize);
 		swHeight = blockSize * (unsigned int)ceil(swHeight / (double)blockSize);
 	}
@@ -225,11 +225,7 @@ void compress(Texture& tex) {
 	default: bpp = 16; break;
 	}
 
-	switch (tex.swizzleType) {
-	case 1: sw = Swizzler(swWidth, bpp, 2); break;
-	case 2: sw = Swizzler(swWidth, bpp, 4); break;
-	default: sw = Swizzler(swWidth, bpp, 8); break;
-	}
+	sw = Swizzler(swWidth, bpp, pow(2, tex.swizzleType));
 
 	char* swizzled = new char[swWidth * swHeight * bpp];
 	for (unsigned int i = 0; i < swWidth*swHeight*bpp; i++) {
