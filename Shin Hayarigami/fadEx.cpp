@@ -126,7 +126,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	unsigned char textureType = in.get();
 	if (textureType != 0x0 && textureType != 0x4 && textureType != 0x5 && textureType != 0x6 && textureType != 0x7) {
 		std::cout << "Unknown textureType in " << currentFad << " @0x" << std::hex << (offset + 0x1E) << std::dec << std::endl;
-		std::cout << "Should be 0x0 (RGBA8), 0x4 (DXT1), 0x5 (DXT3), 0x6 (DXT5) or 0x7 (DXT7). Skipping...\n";
+		std::cout << "Should be 0x0 (RGBA8), 0x4 (DXT1), 0x5 (DXT3), 0x6 (DXT5) or 0x7 (BC7). Skipping...\n";
 		in.seekg(oldOffset);
 		return;
 	}
