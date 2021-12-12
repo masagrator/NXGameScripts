@@ -125,16 +125,16 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	in.ignore(1);
 	unsigned char textureType = in.get();
 	if (textureType != 0x0 && textureType != 0x4 && textureType != 0x5 && textureType != 0x6 && textureType != 0x7) {
-		std::cout << "Unknown textureType in " << currentFad << " @0x" << std::hex << (offset + 0x20) << std::dec << std::endl;
-		std::cout << "Should be 0x0 (RGBA8), 0x4 (DXT1), 0x5 (DXT3), 0x6 (DXT5) or 0x7 (BC7). Skipping...\n";
+		std::cout << "Unknown textureType in " << currentFad << " @0x" << std::hex << (offset + 0x1E) << std::dec << std::endl;
+		std::cout << "Should be 0x0 (RGBA8), 0x4 (DXT1), 0x5 (DXT3), 0x6 (DXT5) or 0x7 (DXT7). Skipping...\n";
 		in.seekg(oldOffset);
 		return;
 	}
 	in.ignore(7);
 	unsigned char swizzleType = in.get();
-	if (swizzleType < 1 || swizzleType > 3) {
+	if (swizzleType < 1 || swizzleType > 4) {
 		std::cout << "Unknown swizzle type in " << currentFad << " @0x" << std::hex << (offset + 0x28) << std::dec << std::endl;
-		std::cout << "Should be 1, 2 or 3. Skipping...";
+		std::cout << "Should be 1, 2, 3 or 4. Skipping...";
 		in.seekg(oldOffset);
 		return;
 	}
@@ -196,7 +196,6 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	write4(outDDS, height);
 	write4(outDDS, width);
 	if (textureType == 0x0) {
-		std::cout << "RGBA catch";
 		outDDS.write(ddsHeaderRGBA, 108);
 	} 
 	else if (textureType == 0x4) {
@@ -231,11 +230,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	default: bpp = 16; break;
 	}
 
-	switch (swizzleType) {
-	case 1: sw = Swizzler(swWidth, bpp, 2); break;
-	case 2: sw = Swizzler(swWidth, bpp, 4); break;
-	default: sw = Swizzler(swWidth, bpp, 8); break;
-	}
+	sw = Swizzler(swWidth, bpp, pow(2, (int)swizzleType));
 
 	for (unsigned int y = 0; y < height; y++) {
 		for (unsigned int x = 0; x < width; x++) {
