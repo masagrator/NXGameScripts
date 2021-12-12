@@ -113,7 +113,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	unsigned int format = read2(in);
 	if ((format != 0x2) && (format != 0x6)) {
 		std::cout << "Unknown texture format in " << currentFad << " @0x" << std::hex << (offset + 0x1E) << std::dec << std::endl;
-		std::cout << "Should be 0x2 (DXT5) or 0x6 (BC7). Skipping...\n";
+		std::cout << "Should be 0x2 (DXT3) or 0x6 (BC7). Skipping...\n";
 		return;
 	}
 	in.ignore(0x2);
