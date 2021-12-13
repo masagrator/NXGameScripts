@@ -212,7 +212,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	}
 
 	unsigned int swWidth = width, swHeight = height;
-	if (swizzleType >= 3 && blockSize != 0) {
+	if (swizzleType >= 3 && blockSize != 0 && pixeltype != 0x20) {
 		swWidth = blockSize * (unsigned int)ceil(swWidth / (double)blockSize);
 		swHeight = blockSize * (unsigned int)ceil(swHeight / (double)blockSize);
 	}
