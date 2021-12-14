@@ -118,7 +118,13 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	}
 	in.ignore(0x2);
 	unsigned int width = read4(in);
+	if (width % 16 != 0) {
+		width += 16 - (width % 16);
+	}
 	unsigned int height = read4(in);
+	if (height % 16 != 0) {
+		height += 16 - (height % 16);
+	}
 	in.ignore(0x10);
 	unsigned char swizzleType = in.get();
 	if (swizzleType < 1 || swizzleType > 4) {
