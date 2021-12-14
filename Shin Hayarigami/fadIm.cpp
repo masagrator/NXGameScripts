@@ -214,7 +214,9 @@ void compress(Texture& tex) {
 
 	unsigned int height = read4(in);
 	unsigned int width = read4(in);
-	in.ignore(0x6C);
+	in.ignore(0x40);
+	if (read4(in) != 0x30315844) in.ignore(0x28);
+	else in.ignore(0x3C);
 
 	unsigned int swWidth = width, swHeight = height;
 	int blockSize = tex.swizzleExpandSize * 64;
