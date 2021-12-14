@@ -113,7 +113,13 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	in.seekg(offset);
 	in.ignore(24);
 	unsigned int width = read2(in);
+	if (width % 16 != 0) {
+		width += 16 - (width % 16);
+	}
 	unsigned int height = read2(in);
+	if (height % 16 != 0) {
+		height += 16 - (height % 16);
+	}
 	in.ignore(2);
 	unsigned char pixeltype = in.get();
 	if (pixeltype != 0x4 && pixeltype != 0x8 && pixeltype != 0x20) {
