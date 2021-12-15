@@ -109,10 +109,16 @@ for i in range(0, len(files)):
         case "database\\foafdatabasetext.dat":
             Dump = {}
             for x in range(0, entry_count):
+                entry = {}
+                entry["STRINGS"] = []
                 buffer = numpy.fromfile(file, dtype=numpy.uint32, count=int(entry_size / 4))
                 pos = file.tell()
                 file.seek(buffer[4] + data_blob_start)
-                Dump["%d" % buffer[0]] = readString(file)
+                if (buffer[2] == 1):
+                    entry["STRINGS"].append(readString(file))
+                    Dump["%d" % buffer[1]] = entry
+                else:
+                    Dump["%d" % buffer[1]]["STRINGS"].append(readString(file))
                 file.seek(pos)
         case "database\\gamestring.dat":
             Dump = {}

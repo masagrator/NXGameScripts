@@ -183,25 +183,32 @@ for i in range(0, len(new_files)):
         case "strings\\foafdatabasetext.json":
             new_file = open("new_database\\foafdatabasetext.dat", "wb")
             old_file = open("database\\foafdatabasetext.dat", "rb")
-            new_file.write(numpy.uint32(len(DUMP)))
+            keys = list(DUMP.keys())
+            entry_count = 0
+            for x in range(0, len(keys)):
+                entry_count += len(DUMP[keys[x]]["STRINGS"])
+            new_file.write(numpy.uint32(entry_count))
             new_file.write(numpy.uint32(0x18))
-            new_file.write(numpy.uint32(0x8 + 0x30 + (0x18 * len(DUMP))))
+            new_file.write(numpy.uint32(0x8 + 0x30 + (0x18 * entry_count)))
             new_file.write(numpy.uint32(0x30))
             old_file.seek(0x10)
             new_file.write(old_file.read(0x20))
-            keys = list(DUMP.keys())
-            strings_block = []
-            for x in range(0, len(keys)):
-                new_file.write(numpy.uint32(int(keys[x], base=10)))
-                old_file.seek(new_file.tell())
-                new_file.write(old_file.read(0xC))
-                new_file.write(numpy.uint32(len(b"".join(strings_block))))
-                old_file.seek(4, 1)
-                new_file.write(old_file.read(0x4))
-                strings_block.append(DUMP[keys[x]].encode("UTF-8"))
-                strings_block.append(numpy.uint32(0))
-            new_file.write(numpy.uint64(0))
             old_file.close()
+            strings_block = []
+            ID = 1
+            for x in range(0, len(keys)):
+                for z in range(0, len(DUMP[keys[x]]["STRINGS"])):
+                    new_file.write(numpy.uint32(ID))
+                    ID += 1
+                    new_file.write(numpy.uint32(int(keys[x], base=10)))
+                    new_file.write(numpy.uint32(z+1))
+                    new_file.write(numpy.uint32(0))
+                    new_file.write(numpy.uint32(len(b"".join(strings_block))))
+                    new_file.write(numpy.uint32(0))
+                    strings_block.append(DUMP[keys[x]]["STRINGS"][z].encode("UTF-8"))
+                    strings_block.append(numpy.uint32(0))
+            if (new_file.tell() % 16 != 0):
+                new_file.write(numpy.uint64(0))
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\gamestring.json":
