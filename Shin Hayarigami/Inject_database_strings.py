@@ -189,7 +189,7 @@ for i in range(0, len(new_files)):
                 entry_count += len(DUMP[keys[x]]["STRINGS"])
             new_file.write(numpy.uint32(entry_count))
             new_file.write(numpy.uint32(0x18))
-            new_file.write(numpy.uint32(0x8 + 0x30 + (0x18 * entry_count)))
+            new_file.write(numpy.uint32(0))
             new_file.write(numpy.uint32(0x30))
             old_file.seek(0x10)
             new_file.write(old_file.read(0x20))
@@ -209,6 +209,10 @@ for i in range(0, len(new_files)):
                     strings_block.append(numpy.uint32(0))
             if (new_file.tell() % 16 != 0):
                 new_file.write(numpy.uint64(0))
+            size = new_file.tell()
+            new_file.seek(8, 0)
+            new_file.write(numpy.uint32(size))
+            new_file.seek(0, 2)
             new_file.write(b"".join(strings_block))
             new_file.close()
         case "strings\\gamestring.json":
