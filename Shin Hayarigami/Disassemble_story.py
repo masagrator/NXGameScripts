@@ -597,7 +597,33 @@ for i in range(0, len(files)):
             file.seek(-1, 1)
             entry["STRING"] = readString(file)
             Dump.append(entry)
-    json.dump(Dump, file_new, indent="\t", ensure_ascii=False)
+    Dump2 = []
+    i = 0
+    while (i < len(Dump)):
+        try:
+            Dump[i]["TYPE"]
+        except:
+            entry = {}
+            entry["STRINGS"] = []
+            flag = False
+            while(flag == False):
+                entry["STRINGS"].append(Dump[i]["STRING"])
+                if (Dump[i+1]["TYPE"] != "BR"): flag = True
+                else:
+                    if (Dump[i+1]["UNK0"][8:] != "0000"): 
+                        flag = True
+                        continue
+                    try:
+                        Dump[i+2]["STRING"]
+                    except:
+                        flag = True
+                    else:
+                        i += 2
+            Dump2.append(entry)
+        else:
+            Dump2.append(Dump[i])
+        i += 1
+    json.dump(Dump2, file_new, indent="\t", ensure_ascii=False)
     file.close()
 
 #shutil.rmtree('extracted')
