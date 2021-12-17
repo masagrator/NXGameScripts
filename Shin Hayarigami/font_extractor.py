@@ -3,9 +3,16 @@ import json
 import numpy
 import os
 
+from numpy.typing import _32Bit
+
 file = open(sys.argv[1], "rb")
 os.makedirs(sys.argv[1][:-4], exist_ok=True)
-file.seek(0xC, 0)
+buffer = numpy.fromfile(file, dtype=numpy.uint16, count=4)
+texture_width = buffer[0]
+texture_height = buffer[1]
+block_width = buffer[2]
+block_height = buffer[3]
+file.seek(0x4, 1)
 table_character_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 file.seek(8, 1)
 character_count = numpy.fromfile(file, dtype=numpy.uint64, count=1)[0]
@@ -13,6 +20,7 @@ file.seek(8, 1)
 DUMP = {}
 for i in range(0, character_count):
     entry = {}
+    entry["OFFSET"] = "0x%x" % file.tell()
     entry["ID"] = int(numpy.fromfile(file, dtype=numpy.uint64, count=1)[0])
     string = file.read(0x8)
     string = int.from_bytes(string, byteorder="little")
@@ -24,7 +32,7 @@ for i in range(0, character_count):
     buffer = numpy.fromfile(file, dtype=numpy.int8, count=2)
     entry["ANCHOR"] = int(buffer[0])
     entry["WIDTH"] = int(buffer[1])
-    entry["HEIGHT"] = int(numpy.fromfile(file, dtype=numpy.int16, count=1)[0])
+    entry["UNK2"] = int(numpy.fromfile(file, dtype=numpy.int16, count=1)[0])
     buffer = numpy.fromfile(file, dtype=numpy.int8, count=2)
     entry["UNK3"] = int(buffer[0])
     entry["UNK4"] = int(buffer[1])
@@ -38,5 +46,5 @@ file.seek(4, 1)
 texture_size = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 file.seek(8, 1)
 
-new_file = open("%s/font_texture.yk" % sys.argv[1][:-4], "wb")
+new_file = open("%s/font_texture.nltx" % sys.argv[1][:-4], "wb")
 new_file.write(file.read(texture_size))
