@@ -517,8 +517,18 @@ for i in range(0, len(order)):
     json_file.close()
     new_file.write(numpy.uint32(DUMP[0]["SCRIPT_ID"]))
     new_file.write(numpy.uint32(header_size + len(b"".join(scripts_block))))
-    for i in range(0, len(DUMP)):
-        scripts_block.append(generateCommand(DUMP[i]))
+    size = 0
+    for x in range(0, len(DUMP)):
+        data = generateCommand(DUMP[x])
+#        size += len(data)
+        scripts_block.append(data)
+#    size_check_file = open("extracted\\%s.dat" % order[i], "rb")
+#    size_check_file.seek(0, 2)
+#    size_check = size_check_file.tell()
+#    size_check_file.close()
+#    if (size_check != size):
+#        print("Size check failed! Expected: %d B, got: %d B" % (size_check, size))
+#        sys.exit()
 
 new_file.write(b"".join(scripts_block))
 new_file.close()
