@@ -5,6 +5,11 @@ import sys
 import numpy
 from story_commands import *
 
+BR_DICT = {
+	"TYPE": "BR",
+	"UNK0": "00000a000000"
+}
+
 def invertBitsU8(b1):
     number = numpy.uint8(b1)
     return ~number
@@ -21,8 +26,13 @@ def generateCommand(Dict):
     try:
         Dict["TYPE"]
     except:
-        text_bytes = Dict["STRING"].replace("––", "㊤㊦").replace("——", "㊤㊥").encode("shift_jis_2004")
-        return InvertString(text_bytes)
+        entry = []
+        for i in range(0, len(Dict["STRINGS"])):
+            text_bytes = Dict["STRINGS"][i].replace("––", "㊤㊦").replace("——", "㊤㊥").encode("shift_jis_2004")
+            entry.append(InvertString(text_bytes))
+            if (i < (len(Dict["STRINGS"]) - 1)):
+                entry.append(Assemble.BR(BR_DICT))
+        return b"".join(entry)
     match(Dict["TYPE"]):
         case "DEMO":
             return Assemble.DEMO(Dict)
