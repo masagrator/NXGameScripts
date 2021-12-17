@@ -5,6 +5,8 @@ import sys
 import numpy
 from story_commands import *
 
+character_limit = 57
+
 BR_DICT = {
 	"TYPE": "BR",
 	"UNK0": "00000a000000"
@@ -22,12 +24,18 @@ def InvertString(bytes):
         chars.append(b"\x00")
     return b"".join(chars)
 
-def generateCommand(Dict):
+def generateCommand(Dict, entry_number):
     try:
         Dict["TYPE"]
     except:
         entry = []
         for i in range(0, len(Dict["STRINGS"])):
+            if (len(Dict["STRINGS"][i]) > character_limit):
+                print("Detected line overflow. Entry number: %d, line: %d. Got: %d, Max allowed: %d" % (entry_number, i+1, len(Dict["STRINGS"][i]), character_limit))
+                print("Entry dump:")
+                print(Dict["STRINGS"])
+                print("Aborting...")
+                sys.exit()
             text_bytes = Dict["STRINGS"][i].replace("––", "㊤㊦").replace("——", "㊤㊥").encode("shift_jis_2004")
             entry.append(InvertString(text_bytes))
             if (i < (len(Dict["STRINGS"]) - 1)):
@@ -519,7 +527,7 @@ for i in range(0, len(order)):
     new_file.write(numpy.uint32(header_size + len(b"".join(scripts_block))))
     size = 0
     for x in range(0, len(DUMP)):
-        data = generateCommand(DUMP[x])
+        data = generateCommand(DUMP[x], x)
 #        size += len(data)
         scripts_block.append(data)
 #    size_check_file = open("extracted\\%s.dat" % order[i], "rb")
