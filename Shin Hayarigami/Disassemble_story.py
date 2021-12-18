@@ -598,7 +598,7 @@ def reformatDump(Dict):
 		i += 1
 	return Dump
 
-def reformatDump2(Dict):
+def reformatDump2(Dict): # join missed strings separated with break lines
 	Dump = []
 	i = 0
 	flag = False
