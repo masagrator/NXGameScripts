@@ -511,6 +511,84 @@ def Disassemble_CMD(F, cmd, argsize):
             print("Unknown command! %d" % cmd)
             return None
 
+def processAssembly(file, size):
+    Dump = []
+    while (file.tell() < size):
+        entry = {}
+        if (file.read(0x1) == b"\xFF"):
+            command_size = numpy.fromfile(file, dtype=numpy.uint8, count=1)[0] - 4
+            command_ID = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
+            Result = Disassemble_CMD(file, command_ID, command_size)
+            if (Result == None):
+                entry["ARGS"] = file.read(command_size).hex()
+                entry["CMD_ID"] = int(command_ID)
+                Dump.append(entry)
+            else:
+                Dump.append(Result)
+            while (file.tell() % 4 != 0):
+                file.seek(1, 1)
+            
+        else:
+            file.seek(-1, 1)
+            entry["STRING"] = readString(file)
+            Dump.append(entry)
+    return Dump
+
+def reformatDump(Dict):
+    Dump = []
+    i = 0
+    addName = 0
+    addSurname = 0
+    while (i < len(Dict)):
+        try:
+            Dict[i]["TYPE"]
+        except:
+            entry = {}
+            entry["STRINGS"] = []
+            flag = False
+            while(flag == False):
+                string = Dict[i]["STRING"]
+                if (addName != 0 or addSurname != 0):
+                    if (addName == 2):
+                        string = "北條紗希" + string
+                    elif (addName == 1):
+                        string = "紗希" + string
+                    elif (addSurname == 1):
+                        string = "北條" + string
+                    addName = 0
+                    addSurname = 0
+                entry["STRINGS"].append(string)
+                if (Dict[i+1]["TYPE"] != "BR"): flag = True
+                else:
+                    if (Dict[i+1]["UNK0"][8:] != "0000"): 
+                        flag = True
+                        continue
+                    try:
+                        Dict[i+2]["STRING"]
+                    except:
+                        flag = True
+                    else:
+                        i += 2
+            Dump.append(entry)
+        else:
+            match(Dict[i]["TYPE"]):
+                case "EMBED_EDIT": # This removes Change Name popup at the beginning of game
+                    None
+                case "EMBED": # Removes embedding user's character name in favour of original name
+                    if (Dict[i]["UNK0"][4:] == "0a000100"):
+                        if (addSurname == 1):
+                            addName = 2
+                        else:
+                            addName = 1
+                    elif (Dict[i]["UNK0"][4:] == "0a000000"):
+                            addSurname = 1
+                    else:
+                        Dump.append(Dict[i])
+                case _:
+                    Dump.append(Dict[i])
+        i += 1
+    return Dump
+
 
 file = open("database\\story.dat", "rb")
 
@@ -577,53 +655,10 @@ for i in range(0, len(files)):
     print(ID)
     size = GetFileSize(file)
     file_new = open("json\%s.json" % ID, "w", encoding="UTF-8")
-    Dump = []
-    while (file.tell() < size):
-        entry = {}
-        if (file.read(0x1) == b"\xFF"):
-            command_size = numpy.fromfile(file, dtype=numpy.uint8, count=1)[0] - 4
-            command_ID = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
-            Result = Disassemble_CMD(file, command_ID, command_size)
-            if (Result == None):
-                entry["ARGS"] = file.read(command_size).hex()
-                entry["CMD_ID"] = int(command_ID)
-                Dump.append(entry)
-            else:
-                Dump.append(Result)
-            while (file.tell() % 4 != 0):
-                file.seek(1, 1)
-            
-        else:
-            file.seek(-1, 1)
-            entry["STRING"] = readString(file)
-            Dump.append(entry)
-    Dump2 = []
-    i = 0
-    while (i < len(Dump)):
-        try:
-            Dump[i]["TYPE"]
-        except:
-            entry = {}
-            entry["STRINGS"] = []
-            flag = False
-            while(flag == False):
-                entry["STRINGS"].append(Dump[i]["STRING"])
-                if (Dump[i+1]["TYPE"] != "BR"): flag = True
-                else:
-                    if (Dump[i+1]["UNK0"][8:] != "0000"): 
-                        flag = True
-                        continue
-                    try:
-                        Dump[i+2]["STRING"]
-                    except:
-                        flag = True
-                    else:
-                        i += 2
-            Dump2.append(entry)
-        else:
-            Dump2.append(Dump[i])
-        i += 1
-    json.dump(Dump2, file_new, indent="\t", ensure_ascii=False)
+    Dump = processAssembly(file, size)
     file.close()
+    Dump2 = reformatDump(Dump)
+    json.dump(Dump2, file_new, indent="\t", ensure_ascii=False)
+    file_new.close()
 
-#shutil.rmtree('extracted')
+shutil.rmtree('extracted')

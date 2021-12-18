@@ -1,5 +1,15 @@
 import numpy
 
+def invertBitsU8(b1):
+    number = numpy.uint8(b1)
+    return ~number
+
+def InvertString(bytes):
+    chars = []
+    for i in range(0, len(bytes)):
+        chars.append(invertBitsU8(bytes[i]))
+    return b"".join(chars)
+
 class Disassemble:
 
     def DEMO(F):
@@ -684,7 +694,8 @@ class Disassemble:
     def EMBED_EDIT(F, size):
         entry = {}
         entry["TYPE"] = "EMBED_EDIT"
-        entry["UNK0"] = F.read(size).hex()
+        entry["UNK0"] = F.read(12).hex()
+        entry["STRING"] = InvertString(F.read(size-12)).decode("shift_jis_2004")
         return entry
 
     def TITLE_JUMP(F, size):
@@ -2627,6 +2638,7 @@ class Assemble:
         entry.append(numpy.uint8(0))
         entry.append(numpy.uint16(1001))
         entry.append(bytes.fromhex(Dict["UNK0"]))
+        entry.append(InvertString(Dict["STRING"].encode("shift_jis_2004")))
         entry[1] = numpy.uint8(len(b"".join(entry)))
         while (len(b"".join(entry)) % 4 != 0):
             entry.append(b"\x00")
