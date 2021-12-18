@@ -548,7 +548,7 @@ def reformatDump(Dict):
             flag = False
             while(flag == False):
                 string = Dict[i]["STRING"]
-                if (addName != 0 or addSurname != 0):
+                if (addName != 0 or addSurname != 0): # Add name and surname to strings
                     if (addName == 2):
                         string = "北條紗希" + string
                     elif (addName == 1):
@@ -557,8 +557,16 @@ def reformatDump(Dict):
                         string = "北條" + string
                     addName = 0
                     addSurname = 0
-                entry["STRINGS"].append(string)
-                if (Dict[i+1]["TYPE"] != "BR"): flag = True
+                try: # Check if we didn't split strings to separate entries because of name injection
+                    Dump[len(Dump) - 1]["STRINGS"]
+                except:
+                    entry["STRINGS"].append(string)
+                else:
+                    count = len(Dump[len(Dump) - 1]["STRINGS"])
+                    Dump[len(Dump) - 1]["STRINGS"][count - 1] = Dump[len(Dump) - 1]["STRINGS"][count - 1] + string
+                    flag = True
+                    continue
+                if (Dict[i+1]["TYPE"] != "BR"): flag = True # Check if we don't need to break line
                 else:
                     if (Dict[i+1]["UNK0"][8:] != "0000"): 
                         flag = True
@@ -569,7 +577,8 @@ def reformatDump(Dict):
                         flag = True
                     else:
                         i += 2
-            Dump.append(entry)
+            if (len(entry["STRINGS"]) > 0): # If STRINGS entry is empty, ignore entry
+                Dump.append(entry)
         else:
             match(Dict[i]["TYPE"]):
                 case "EMBED_EDIT": # This removes Change Name popup at the beginning of game
