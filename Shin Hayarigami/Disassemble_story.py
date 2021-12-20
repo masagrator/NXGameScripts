@@ -120,7 +120,7 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 217:
 			return Disassemble.ICON(F, argsize)
 		case 218:
-			return Disassemble.EMBED_PARAM(F, argsize)
+			return Disassemble.EMBED_PARAM(F, argsize) #Not Used
 		case 219:
 			return Disassemble.TEXT_MODE(F, argsize) #Not Used
 		case 255:
