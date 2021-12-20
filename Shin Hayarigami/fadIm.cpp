@@ -220,7 +220,7 @@ void compress(Texture& tex) {
 
 	unsigned int swWidth = width, swHeight = height;
 	int blockSize = tex.swizzleExpandSize * 64;
-	if (tex.swizzleType >= 3 && blockSize != 0) {
+	if (tex.swizzleType >= 3 && blockSize != 0 && tex.format != 0x20) {
 		swWidth = blockSize * (unsigned int)ceil(swWidth / (double)blockSize);
 		swHeight = blockSize * (unsigned int)ceil(swHeight / (double)blockSize);
 	}
