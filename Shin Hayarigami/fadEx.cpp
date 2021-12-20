@@ -158,9 +158,29 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	in.ignore(16);
 	unsigned int size = read4(in);
 
+	std::string CharType = "";
+
+	switch(textureType) {
+		case 0:
+			CharType = "RGBA8";
+			break;
+		case 4:
+			CharType = "BC1";
+			break;
+		case 5:
+			CharType = "BC2";
+			break;
+		case 6:
+			CharType = "BC3";
+			break;
+		case 7:
+			CharType = "BC7";
+			break;
+	}
+
 	std::stringstream sname;
 	sname << id << "_" << (unsigned int)(pixeltype) << "_"
-		<< (unsigned int)swizzleType << "_" << (unsigned int)swizzleExpandSize << ".dds";
+		<< (unsigned int)swizzleType << "_" << (unsigned int)swizzleExpandSize << "_" << CharType << ".dds";
 	fs::path name = outputFolder / fs::path(sname.str());
 	std::cout << "Extracting " << name << std::endl;
 

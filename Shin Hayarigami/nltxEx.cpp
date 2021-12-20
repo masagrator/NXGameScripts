@@ -146,9 +146,20 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	in.ignore(0x4);
 	unsigned int size = read4(in);
 
+	std::string CharType = "";
+
+	switch(format) {
+		case 2:
+			CharType = "BC2";
+			break;
+		case 6:
+			CharType = "BC7";
+			break;
+	}
+
 	std::stringstream sname;
 	sname << id << "_" << (unsigned int)(format) << "_"
-		<< (unsigned int)swizzleType << "_" << (unsigned int)swizzleExpandSize << ".dds";
+		<< (unsigned int)swizzleType << "_" << (unsigned int)swizzleExpandSize << "_" << CharType << ".dds";
 	fs::path name = outputFolder / fs::path(sname.str());
 	std::cout << "Extracting " << name << std::endl;
 
