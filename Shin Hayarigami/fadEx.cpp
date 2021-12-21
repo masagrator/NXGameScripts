@@ -108,6 +108,34 @@ bool isMagic(std::ifstream& in) {
 	return std::string(magic) == "YKCMP_V1";
 }
 
+unsigned int upToPowerOf2(unsigned int v) {
+	v--;
+	v |= v >> 1;
+	v |= v >> 2;
+	v |= v >> 4;
+	v |= v >> 8;
+	v |= v >> 16;
+	v++;
+	return v;
+}
+
+unsigned int roundHeight(unsigned int height, unsigned int swizzleExpanSize) {
+	if (swizzleExpanSize == 3) {
+		if (height % 128 == 0) return height;
+		else return height + (128 - (height % 128));
+	}
+	if (height <= 256) return upToPowerOf2(height);
+	else if (height % 256 == 0) return height;
+	else return height + (256 - (height % 256));
+}
+
+unsigned int roundWidth(unsigned int width, unsigned int swizzleExpandSize) {
+	if (swizzleExpandSize == 0) return width;
+	else if (width < 256) return width;
+	else if (width % 256 == 0) return width;
+	else return width + (256 - (width % 256));
+}
+
 void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 	auto oldOffset = in.tellg();
 	in.seekg(offset);
@@ -180,7 +208,7 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 
 	std::stringstream sname;
 	sname << id << "_" << (unsigned int)(pixeltype) << "_"
-		<< (unsigned int)swizzleType << "_" << (unsigned int)swizzleExpandSize << "_" << CharType << ".dds";
+		<< (unsigned int)swizzleType << "_" << (unsigned int)swizzleExpandSize << "_" << width << "_" << height << "_" << CharType << ".dds";
 	fs::path name = outputFolder / fs::path(sname.str());
 	std::cout << "Extracting " << name << std::endl;
 
@@ -218,6 +246,10 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 
 	std::ofstream outDDS(name, std::ios::binary);
 
+	height = roundHeight(height, (unsigned int)swizzleExpandSize);
+	std::cout << "Real Height: " << height << "px\n";
+	width = roundWidth(width, (unsigned int)swizzleExpandSize);
+	std::cout << "Real Width: "<< width << "px\n";
 	outDDS.write(ddsHeader0, 12);
 	write4(outDDS, height);
 	write4(outDDS, width);
@@ -258,11 +290,18 @@ void extract(std::ifstream& in, unsigned int offset, unsigned int id) {
 
 	sw = Swizzler(swWidth, bpp, pow(2, (int)swizzleType));
 
+	std::cout << "Expected size: " << size << " B\n";
+	unsigned int check_size = 0;
 	for (unsigned int y = 0; y < height; y++) {
 		for (unsigned int x = 0; x < width; x++) {
 			unsigned int off = sw.getOffset(x, y);
 			outDDS.write(decomp + off, bpp);
+			check_size += bpp;
 		}
+	}
+	if (check_size != size) {
+		std::cout << "Size doesn't match! Unpacked: " << check_size << " B." << std::endl;
+		abort();
 	}
 
 	outDDS.close();
