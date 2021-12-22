@@ -2939,7 +2939,7 @@ class Assemble:
         entry.append(numpy.uint16(1310))
         entry.append(bytes.fromhex(Dict["UNK0"]))
         string = InvertString(Dict["STRING"].encode("shift_jis_2004"))
-        entry.append(numpy.uint16(len(string/2)))
+        entry.append(numpy.uint16(len(Dict["STRING"])))
         entry.append(string)
         entry[1] = numpy.uint8(len(b"".join(entry)))
         while (len(b"".join(entry)) % 4 != 0):
