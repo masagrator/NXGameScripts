@@ -11,7 +11,7 @@ def GetFileSize(file):
     return size
 
 def GetHeaderSize(count):
-    size = 0x10 + (0x30 * count)
+    size = 0x10 + (0x40 * count)
     if (size & 0xFFF > 0xA00):
         size += 0x1000
     size = size & 0xFFFFF000
