@@ -36,7 +36,7 @@ def generateCommand(Dict, entry_number):
                 print(Dict["STRINGS"])
                 print("Aborting...")
                 sys.exit()
-            text_bytes = Dict["STRINGS"][i].replace("––", "㊤㊦").replace("——", "㊤㊥").replace("…", "$").replace("é", "e").replace("ï", "i").encode("shift_jis_2004")
+            text_bytes = Dict["STRINGS"][i].replace("––", "㊤㊦").replace("——", "㊤㊥").replace("…", "$").replace("é", "e").replace("ï", "i").replace("~", "〜").replace(":", "：").encode("shift_jis_2004")
             entry.append(InvertString(text_bytes))
             if (i < (len(Dict["STRINGS"]) - 1)):
                 entry.append(Assemble.BR(BR_DICT))
