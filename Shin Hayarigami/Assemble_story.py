@@ -379,8 +379,6 @@ def generateCommand(Dict, entry_number):
         case "DATABASE":
             return Assemble.DATABASE(Dict)
         case "SPEAKER":
-            if (Dict["CHARACTER_ID"] == 6):
-                Dict["CHARACTER_ID"] = 48
             return Assemble.SPEAKER(Dict)
         case "LOGIC_SAVE":
             return Assemble.LOGIC_SAVE(Dict)
