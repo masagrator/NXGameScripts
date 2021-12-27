@@ -59,7 +59,7 @@ for i in range(0, len(DUMP)):
     elif (DUMP[i]["CHARACTER"] in fullwidth):
         index = fullwidth.index(DUMP[i]["CHARACTER"])
         file.seek(DUMP[i]["OFFSET"])
-        file.write(numpy.uint32(halfwidth_IDs["%d" % index]["ID"]))
+        file.write(numpy.uint64(halfwidth_IDs["%d" % index]["ID"]))
         file.seek(8, 1)
         file.write(numpy.int8(halfwidth_IDs["%d" % index]["ANCHOR"]))
         file.write(numpy.int8(halfwidth_IDs["%d" % index]["WIDTH"]))
