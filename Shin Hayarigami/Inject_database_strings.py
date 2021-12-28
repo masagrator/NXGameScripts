@@ -175,6 +175,7 @@ for i in range(0, len(new_files)):
                 new_file.write(numpy.uint32(len(b"".join(strings_block))))
                 old_file.seek(4, 1)
                 new_file.write(old_file.read(0xC))
+                if (len(DUMP[keys[x]]) % 2 != 0): DUMP[keys[x]] += " "
                 strings_block.append(DUMP[keys[x]].encode("UTF-8"))
                 strings_block.append(numpy.uint32(0))
             old_file.close()
