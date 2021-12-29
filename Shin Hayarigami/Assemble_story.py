@@ -12,6 +12,13 @@ BR_DICT = {
 	"UNK0": "00000a000000"
 }
 
+def ReplaceChara(string):
+	fromthis = ["«", "»", "––", "——", "…", "é", "ï", "~", ":"]
+	tothis = ["≪", "≫", "㊤㊦", "㊤㊥", "...", "e", "i", "〜", "："]
+	for i in range(0, len(fromthis)):
+		string = string.replace(fromthis[i], tothis[i])
+	return string
+
 def invertBitsU8(b1):
     number = numpy.uint8(b1)
     return ~number
@@ -36,7 +43,7 @@ def generateCommand(Dict, entry_number):
                 print(Dict["STRINGS"])
                 print("Aborting...")
                 sys.exit()
-            text_bytes = Dict["STRINGS"][i].replace("«", "≪").replace("»", "≫").replace("––", "㊤㊦").replace("——", "㊤㊥").replace("…", "...").replace("é", "e").replace("ï", "i").replace("~", "〜").replace(":", "：").encode("shift_jis_2004")
+            text_bytes = ReplaceChara(Dict["STRINGS"][i]).encode("shift_jis_2004")
             entry.append(InvertString(text_bytes))
             if (i < (len(Dict["STRINGS"]) - 1)):
                 entry.append(Assemble.BR(BR_DICT))
