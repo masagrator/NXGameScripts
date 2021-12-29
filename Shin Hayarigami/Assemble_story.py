@@ -54,8 +54,9 @@ def generateCommand(Dict, entry_number):
 				input("If you want to add automatically break line, press ENTER. If not, close window.")
 				entry.append(Assemble.BR(BR_DICT))
 				generateCommand.characters_in_line = 0
-			text_bytes = ReplaceChara(Dict["STRINGS"][i]).encode("shift_jis_2004")
-			entry.append(InvertString(text_bytes))
+			if (len(Dict["STRINGS"][i]) > 0):
+				text_bytes = ReplaceChara(Dict["STRINGS"][i]).encode("shift_jis_2004")
+				entry.append(InvertString(text_bytes))
 			if (i < (len(Dict["STRINGS"]) - 1)):
 				entry.append(Assemble.BR(BR_DICT))
 		return b"".join(entry)
@@ -524,6 +525,7 @@ def generateCommand(Dict, entry_number):
 			sys.exit()
 
 generateCommand.characters_in_line = 0
+generateCommand.row_count = 0
 
 def sortByNumber(elem):
 	return int(os.path.basename(elem)[:-5], base=10)
