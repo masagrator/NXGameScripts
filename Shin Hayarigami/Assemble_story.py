@@ -525,7 +525,6 @@ def generateCommand(Dict, entry_number):
 			sys.exit()
 
 generateCommand.characters_in_line = 0
-generateCommand.row_count = 0
 
 def sortByNumber(elem):
 	return int(os.path.basename(elem)[:-5], base=10)
