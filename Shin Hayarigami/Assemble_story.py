@@ -40,7 +40,7 @@ def generateCommand(Dict, entry_number):
 			if (i > 0):
 				generateCommand.characters_in_line = 0
 			if (len(Dict["STRINGS"][i]) > character_limit):
-				print("Detected line overflow. Entry number: %d, line: %d. Got: %d, Max allowed: %d" % (entry_number, i+1, generateCommand.characters_in_line, character_limit))
+				print("Detected line overflow. Entry number: %d, line: %d. Got: %d, Max allowed: %d" % (entry_number, i+1, len(Dict["STRINGS"][i]), character_limit))
 				print("Entry dump:")
 				print(Dict["STRINGS"])
 				print("Adding break line is not possible.")
