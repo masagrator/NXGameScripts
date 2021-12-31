@@ -5,6 +5,16 @@ import numpy
 import shutil
 from story_commands import *
 
+def ReplaceChara(string):
+	tothis = ["«", "»", "––", "——", "~", ":", "á", "é", "í", "ó", "ú", "ñ", "ß", "ï", "Ä", "ä", "Ö", "ö", "Ü", "ü", "¿", "¡"]
+	fromthis = ["≪", "≫", "㊤㊦", "㊤㊥", "〜", "：", "§", "☆", "★", "○", "●", "◎", "◇", "◆", "□", "■", "△", "▲", "▽", "▼", "※", "〒"]
+	for i in range(0, len(fromthis)):
+		string = string.replace(fromthis[i], tothis[i])
+	return string
+
+def SortNumber(elem):
+	return elem
+
 def invertBitsU8(b1):
 	number = numpy.uint8(b1)
 	return ~number
@@ -23,7 +33,7 @@ def readString(myfile):
 			myfile.seek(-1, 1)
 			while (myfile.tell() % 4 != 0):
 				myfile.seek(1, 1)
-			return str(InvertString(b"".join(chars)).decode("shift_jis_2004").replace("㊤㊦", "––").replace("㊤㊥", "——"))
+			return ReplaceChara(str(InvertString(b"".join(chars)).decode("shift_jis_2004")))
 		chars.append(c)
 
 def TakeID(F):
@@ -40,7 +50,11 @@ def GetFileSize(F):
 	F.seek(pos)
 	return size
 
+check = []
+
 def Disassemble_CMD(F, cmd, argsize):
+	if cmd not in check:
+		check.append(cmd)
 	match(cmd):
 		case 1:
 			return Disassemble.DEMO(F)
@@ -59,9 +73,9 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 103:
 			return Disassemble.SELECTtm(F, argsize)
 		case 104:
-			return Disassemble.SI(F, argsize) #Not Used
+			return Disassemble.SI(F, argsize)
 		case 105:
-			return Disassemble.SItm(F, argsize) #Not Used
+			return Disassemble.SItm(F, argsize)
 		case 106:
 			return Disassemble.IF(F, argsize)
 		case 107:
@@ -71,9 +85,9 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 109:
 			return Disassemble.IFPARAMtm(F, argsize)
 		case 112:
-			return Disassemble.IFSTRING(F, argsize) #Not Used
+			return Disassemble.IFSTRING(F, argsize)
 		case 113:
-			return Disassemble.IFSTRINGtm(F, argsize) #Not Used
+			return Disassemble.IFSTRINGtm(F, argsize)
 		case 114:
 			return Disassemble.IFRV(F, argsize)
 		case 115:
@@ -90,7 +104,7 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 202:
 			return Disassemble.BWAIT(F, argsize)
 		case 203:
-			return Disassemble.TWAIT(F, argsize) #Not Used
+			return Disassemble.TWAIT(F, argsize)
 		case 204:
 			return Disassemble.BR(F, argsize) #Break Line
 		case 205:
@@ -100,41 +114,41 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 207:
 			return Disassemble.MSPEED(F, argsize)
 		case 208:
-			return Disassemble.RUBY(F, argsize) #Not Used
+			return Disassemble.RUBY(F, argsize)
 		case 209:
-			return Disassemble.RUBYtm(F, argsize) #Not Used
+			return Disassemble.RUBYtm(F, argsize)
 		case 210:
-			return Disassemble.TEXT_LEFT(F, argsize) # Not Used
+			return Disassemble.TEXT_LEFT(F, argsize)
 		case 211:
-			return Disassemble.TEXT_RIGHT(F, argsize) #Not Used
+			return Disassemble.TEXT_RIGHT(F, argsize)
 		case 212:
-			return Disassemble.TEXT_TOP(F, argsize) #Not Used
+			return Disassemble.TEXT_TOP(F, argsize)
 		case 213:
 			return Disassemble.EMBED(F, argsize)
 		case 214:
-			return Disassemble.SPACE(F, argsize) #Not Used
+			return Disassemble.SPACE(F, argsize)
 		case 215:
-			return Disassemble.CURSOR(F, argsize) #Not Used
+			return Disassemble.CURSOR(F, argsize)
 		case 216:
 			return Disassemble.TEXT_FADE(F, argsize)
 		case 217:
 			return Disassemble.ICON(F, argsize)
 		case 218:
-			return Disassemble.EMBED_PARAM(F, argsize) #Not Used
+			return Disassemble.EMBED_PARAM(F, argsize)
 		case 219:
-			return Disassemble.TEXT_MODE(F, argsize) #Not Used
+			return Disassemble.TEXT_MODE(F, argsize)
 		case 255:
-			return Disassemble.NML(F, argsize) #Starts every command block
+			return Disassemble.NML(F, argsize)
 		case 301:
-			return Disassemble.WINDOW_ON(F, argsize) #Not Used
+			return Disassemble.WINDOW_ON(F, argsize)
 		case 302:
-			return Disassemble.WINDOW_OFF(F, argsize) #Not Used
+			return Disassemble.WINDOW_OFF(F, argsize)
 		case 303:
-			return Disassemble.WINDOW_SIZE(F, argsize) #Not Used
+			return Disassemble.WINDOW_SIZE(F, argsize)
 		case 304:
-			return Disassemble.WINDOW_MOVE(F, argsize) #Not Used
+			return Disassemble.WINDOW_MOVE(F, argsize)
 		case 305:
-			return Disassemble.WINDOW_FADE(F, argsize) #Not Used
+			return Disassemble.WINDOW_FADE(F, argsize)
 		case 306:
 			return Disassemble.TXTWND_IN(F, argsize)
 		case 307:
@@ -146,57 +160,57 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 403:
 			return Disassemble.BG_FADE(F, argsize)
 		case 404:
-			return Disassemble.BG_COLOR(F, argsize) #Not Used
+			return Disassemble.BG_COLOR(F, argsize)
 		case 405:
 			return Disassemble.BG_MOVE(F, argsize)
 		case 406:
 			return Disassemble.BG_SIZE(F, argsize)
 		case 407:
-			return Disassemble.BG_ST(F, argsize) #Not Used
+			return Disassemble.BG_ST(F, argsize)
 		case 410:
 			return Disassemble.BG_SET_ADJUST_Z(F, argsize)
 		case 501:
-			return Disassemble.TX2_LOAD(F, argsize) #Not Used
+			return Disassemble.TX2_LOAD(F, argsize)
 		case 502:
-			return Disassemble.TX2_MOVE(F, argsize) #Not Used
+			return Disassemble.TX2_MOVE(F, argsize)
 		case 503:
-			return Disassemble.TX2_FADE(F, argsize) #Not Used
+			return Disassemble.TX2_FADE(F, argsize)
 		case 504:
-			return Disassemble.TX2_SIZE(F, argsize) #Not Used
+			return Disassemble.TX2_SIZE(F, argsize)
 		case 505:
-			return Disassemble.TX2_ST(F, argsize) #Not Used
+			return Disassemble.TX2_ST(F, argsize)
 		case 506:
-			return Disassemble.TX2_COLOR(F, argsize) #Not Used
+			return Disassemble.TX2_COLOR(F, argsize)
 		case 507:
-			return Disassemble.TX2_ZGP(F, argsize) #Not Used
+			return Disassemble.TX2_ZGP(F, argsize)
 		case 508:
-			return Disassemble.TX2_CENTERING(F, argsize) #Not Used
+			return Disassemble.TX2_CENTERING(F, argsize)
 		case 509:
-			return Disassemble.TX2_CTL_TRACK(F, argsize) #Not Used
+			return Disassemble.TX2_CTL_TRACK(F, argsize)
 		case 550:
-			return Disassemble.TX2_TRACK(F, argsize) #Not Used
+			return Disassemble.TX2_TRACK(F, argsize)
 		case 551:
-			return Disassemble.TX2_PACK_READ(F, argsize) #Not Used
+			return Disassemble.TX2_PACK_READ(F, argsize)
 		case 552:
-			return Disassemble.TX2_PACK_WAIT(F, argsize) #Not Used
+			return Disassemble.TX2_PACK_WAIT(F, argsize)
 		case 601:
-			return Disassemble.ANM_LOAD(F, argsize) #Not Used
+			return Disassemble.ANM_LOAD(F, argsize)
 		case 602:
-			return Disassemble.ANM_MOVE(F, argsize) #Not Used
+			return Disassemble.ANM_MOVE(F, argsize)
 		case 603:
-			return Disassemble.ANM_FADE(F, argsize) #Not Used
+			return Disassemble.ANM_FADE(F, argsize)
 		case 604:
-			return Disassemble.ANM_SIZE(F, argsize) #Not Used
+			return Disassemble.ANM_SIZE(F, argsize)
 		case 605:
-			return Disassemble.ANM_PLAY(F, argsize) #Not Used
+			return Disassemble.ANM_PLAY(F, argsize)
 		case 606:
-			return Disassemble.ANM_SKIP(F, argsize) #Not Used
+			return Disassemble.ANM_SKIP(F, argsize)
 		case 607:
-			return Disassemble.ANM_STOP(F, argsize) #Not Used
+			return Disassemble.ANM_STOP(F, argsize)
 		case 651:
-			return Disassemble.ANM_PACK_READ(F, argsize) #Not Used
+			return Disassemble.ANM_PACK_READ(F, argsize)
 		case 652:
-			return Disassemble.ANM_PACK_WAIT(F, argsize) #Not Used
+			return Disassemble.ANM_PACK_WAIT(F, argsize)
 		case 701:
 			return Disassemble.SCR_FADE(F, argsize)
 		case 702:
@@ -206,21 +220,21 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 802:
 			return Disassemble.PARAM(F, argsize)
 		case 803:
-			return Disassemble.STRING(F, argsize) #Not Used
+			return Disassemble.STRING(F, argsize)
 		case 804:
 			return Disassemble.PARAM_COMPARE(F, argsize)
 		case 805:
-			return Disassemble.STRING_COMPARE(F, argsize) #Not Used
+			return Disassemble.STRING_COMPARE(F, argsize)
 		case 806:
-			return Disassemble.PARAM_COPY(F, argsize) #Not Used
+			return Disassemble.PARAM_COPY(F, argsize)
 		case 807:
-			return Disassemble.STRING_COPY(F, argsize) #Not Used
+			return Disassemble.STRING_COPY(F, argsize)
 		case 901:
-			return Disassemble.SET_VOL(F, argsize) #Not Used
+			return Disassemble.SET_VOL(F, argsize)
 		case 902:
-			return Disassemble.BGM_READY(F, argsize) #Not Used
+			return Disassemble.BGM_READY(F, argsize)
 		case 903:
-			return Disassemble.BGM_WAIT(F, argsize) #Not Used
+			return Disassemble.BGM_WAIT(F, argsize)
 		case 904:
 			return Disassemble.BGM_PLAY(F, argsize)
 		case 905:
@@ -240,11 +254,11 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 914:
 			return Disassemble.SE_PLAY(F, argsize)
 		case 915:
-			return Disassemble.SE_VOL(F, argsize) #Not Used
+			return Disassemble.SE_VOL(F, argsize)
 		case 916:
-			return Disassemble.SE_STOP(F, argsize) #Not Used
+			return Disassemble.SE_STOP(F, argsize)
 		case 917:
-			return Disassemble.SE_ALL_STOP(F, argsize) #Not Used
+			return Disassemble.SE_ALL_STOP(F, argsize)
 		case 918:
 			return Disassemble.LOOPS_READY(F, argsize)
 		case 919:
@@ -256,55 +270,55 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 922:
 			return Disassemble.LOOPS_STOP(F, argsize)
 		case 923:
-			return Disassemble.SONG_READY(F, argsize) #Not Used
+			return Disassemble.SONG_READY(F, argsize)
 		case 924:
-			return Disassemble.SONG_WAIT(F, argsize) #Not Used
+			return Disassemble.SONG_WAIT(F, argsize)
 		case 925:
-			return Disassemble.SONG_PLAY(F, argsize) #Not Used
+			return Disassemble.SONG_PLAY(F, argsize)
 		case 926:
 			return Disassemble.SONG_VOL(F, argsize)
 		case 927:
-			return Disassemble.SONG_STOP(F, argsize) #Not Used
+			return Disassemble.SONG_STOP(F, argsize)
 		case 931:
-			return Disassemble.MSG_SYNC(F, argsize) #Not Used
+			return Disassemble.MSG_SYNC(F, argsize)
 		case 932:
-			return Disassemble.SONG_SYNC(F, argsize) #Not Used
+			return Disassemble.SONG_SYNC(F, argsize)
 		case 1001:
 			return Disassemble.EMBED_EDIT(F, argsize)
 		case 1002:
-			return Disassemble.TITLE_JUMP(F, argsize) #Not Used
+			return Disassemble.TITLE_JUMP(F, argsize)
 		case 1003:
-			return Disassemble.DLOGIC(F, argsize) #Not Used
+			return Disassemble.DLOGIC(F, argsize)
 		case 1004:
-			return Disassemble.GRADE(F, argsize) #Not Used
+			return Disassemble.GRADE(F, argsize)
 		case 1005:
 			return Disassemble.LOGIC_INFER(F, argsize)
 		case 1006:
-			return Disassemble.SAVE_POINT(F, argsize) #Not Used
+			return Disassemble.SAVE_POINT(F, argsize)
 		case 1101:
-			return Disassemble.PAD_CTL(F, argsize) #Not Used
+			return Disassemble.PAD_CTL(F, argsize)
 		case 1102:
 			return Disassemble.PAD_VIB(F, argsize)
 		case 1103:
-			return Disassemble.PAD_PUSH(F, argsize) #Not Used
+			return Disassemble.PAD_PUSH(F, argsize)
 		case 1201:
-			return Disassemble.CODE_3D_PLAY(F, argsize) #Not Used
+			return Disassemble.CODE_3D_PLAY(F, argsize)
 		case 1202:
-			return Disassemble.CODE_3D_MOVE(F, argsize) #Not Used
+			return Disassemble.CODE_3D_MOVE(F, argsize)
 		case 1203:
-			return Disassemble.CODE_3D_FADE(F, argsize) #Not Used
+			return Disassemble.CODE_3D_FADE(F, argsize)
 		case 1204:
-			return Disassemble.CODE_3D_ROTATE(F, argsize) #Not Used
+			return Disassemble.CODE_3D_ROTATE(F, argsize)
 		case 1205:
-			return Disassemble.CODE_3D_SIZE(F, argsize) #Not Used
+			return Disassemble.CODE_3D_SIZE(F, argsize)
 		case 1206:
-			return Disassemble.CODE_3D_STOP(F, argsize) #Not Used
+			return Disassemble.CODE_3D_STOP(F, argsize)
 		case 1251:
-			return Disassemble.CODE_3D_PACK_READ(F, argsize) #Not Used
+			return Disassemble.CODE_3D_PACK_READ(F, argsize)
 		case 1252:
-			return Disassemble.CODE_3D_PACK_WAIT(F, argsize) #Not Used
+			return Disassemble.CODE_3D_PACK_WAIT(F, argsize)
 		case 1261:
-			return Disassemble.CODE_3D_CAMERA_SET(F, argsize) #Not Used
+			return Disassemble.CODE_3D_CAMERA_SET(F, argsize)
 		case 1301:
 			return Disassemble.CALL_DEMO(F, argsize)
 		case 1302:
@@ -312,29 +326,29 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 1303:
 			return Disassemble.OPTWND(F, argsize)
 		case 1304:
-			return Disassemble.RANDOM(F, argsize) #Not Used
+			return Disassemble.RANDOM(F, argsize)
 		case 1305:
-			return Disassemble.READED_PCT(F, argsize) #Not Used
+			return Disassemble.READED_PCT(F, argsize)
 		case 1306:
 			return Disassemble.DENY_SKIP(F, argsize)
 		case 1307:
-			return Disassemble.BACKLOG_CLEAR(F, argsize) #Not Used
+			return Disassemble.BACKLOG_CLEAR(F, argsize)
 		case 1308:
-			return Disassemble.HIDE_SELECTER_MENU(F, argsize) #Not Used
+			return Disassemble.HIDE_SELECTER_MENU(F, argsize)
 		case 1309:
-			return Disassemble.HIDE_NAMEEDIT_MENU(F, argsize) #Not Used
+			return Disassemble.HIDE_NAMEEDIT_MENU(F, argsize)
 		case 1310:
 			return Disassemble.YES_NO_DLG(F, argsize)
 		case 1311:
 			return Disassemble.STOP_SKIP(F, argsize)
 		case 1312:
-			return Disassemble.TXTHIDE_CTL(F, argsize) #Not Used
+			return Disassemble.TXTHIDE_CTL(F, argsize)
 		case 1313:
-			return Disassemble.STOP_OTHER_DEMO(F, argsize) #Not Used
+			return Disassemble.STOP_OTHER_DEMO(F, argsize)
 		case 1314:
-			return Disassemble.SUBMENU_CTL(F, argsize) #Not Used
+			return Disassemble.SUBMENU_CTL(F, argsize)
 		case 1315:
-			return Disassemble.SHORTCUT_CTL(F, argsize) #Not Used
+			return Disassemble.SHORTCUT_CTL(F, argsize)
 		case 1316:
 			return Disassemble.NOVELCLEAR(F, argsize)
 		case 1317:
@@ -346,24 +360,24 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 1403:
 			return Disassemble.PHRASE_MOVE(F, argsize)
 		case 1501:
-			return Disassemble.NUMBER_SET(F, argsize) #Not Used
+			return Disassemble.NUMBER_SET(F, argsize)
 		case 1502:
-			return Disassemble.NUMBER_FADE(F, argsize) #Not Used
+			return Disassemble.NUMBER_FADE(F, argsize)
 		case 1503:
-			return Disassemble.NUMBER_MOVE(F, argsize) #Not Used
+			return Disassemble.NUMBER_MOVE(F, argsize)
 		case 1504:
-			return Disassemble.NUMBER_SIZE(F, argsize) #Not Used
+			return Disassemble.NUMBER_SIZE(F, argsize)
 		case 1505:
-			return Disassemble.NUMBER_GET_PARAM(F, argsize) #Not Used
+			return Disassemble.NUMBER_GET_PARAM(F, argsize)
 		case 2001:
 			if (keyword_bool == False):
 				return Disassemble.KEYWORD(F)
 			else:
 				return Disassemble.KEYWORD(F, Keywords)
 		case 2002:
-			return Disassemble.GRADE_POINT(F, argsize) #Not Used
+			return Disassemble.GRADE_POINT(F, argsize)
 		case 2003:
-			return Disassemble.ADD_MEMO(F, argsize) #Not Used
+			return Disassemble.ADD_MEMO(F, argsize)
 		case 2004:
 			return Disassemble.LOGIC_MODE(F, argsize)
 		case 2005:
@@ -373,15 +387,15 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 2007:
 			return Disassemble.LOGIC_CTL(F, argsize)
 		case 2008:
-			return Disassemble.LOGIC_LOAD(F, argsize) #Not Used
+			return Disassemble.LOGIC_LOAD(F, argsize)
 		case 2009:
-			return Disassemble.GAME_END(F, argsize) #Not Used
+			return Disassemble.GAME_END(F, argsize)
 		case 2010:
-			return Disassemble.FACE(F, argsize) #Not Used
+			return Disassemble.FACE(F, argsize)
 		case 2011:
 			return Disassemble.CHOOSE_KEYWORD(F, argsize)
 		case 2012:
-			return Disassemble.LOGIC_CLEAR_KEY(F, argsize) #Not Used
+			return Disassemble.LOGIC_CLEAR_KEY(F, argsize)
 		case 2013:
 			return Disassemble.DATABASE(F, argsize)
 		case 2014:
@@ -394,19 +408,19 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 2022:
 			return Disassemble.LOGIC_DRAW_MARK(F, argsize)
 		case 2101:
-			return Disassemble.DLPAGE(F, argsize) #Not Used
+			return Disassemble.DLPAGE(F, argsize)
 		case 2102:
-			return Disassemble.DLPAGEtm(F, argsize) #Not Used
+			return Disassemble.DLPAGEtm(F, argsize)
 		case 2103:
-			return Disassemble.DLKEY(F, argsize) #Not Used
+			return Disassemble.DLKEY(F, argsize)
 		case 2104:
-			return Disassemble.DLSELSET(F, argsize) #Not Used
+			return Disassemble.DLSELSET(F, argsize)
 		case 2105:
-			return Disassemble.DLSELSETtm(F, argsize) #Not Used
+			return Disassemble.DLSELSETtm(F, argsize)
 		case 2106:
-			return Disassemble.DLSEL(F, argsize) #Not Used
+			return Disassemble.DLSEL(F, argsize)
 		case 2107:
-			return Disassemble.DLSELECT(F, argsize) #Not Used
+			return Disassemble.DLSELECT(F, argsize)
 		case 2108:
 			return Disassemble.ILCAMERA(F, argsize)
 		case 2109:
@@ -422,53 +436,53 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 2205:
 			return Disassemble.CI_SIZE(F, argsize)
 		case 2206:
-			return Disassemble.CI_ST(F, argsize) #Not Used
+			return Disassemble.CI_ST(F, argsize)
 		case 2207:
-			return Disassemble.CI_COLOR(F, argsize) #Not Used
+			return Disassemble.CI_COLOR(F, argsize)
 		case 2208:
-			return Disassemble.CI_ZGP(F, argsize) #Not Used
+			return Disassemble.CI_ZGP(F, argsize)
 		case 2209:
-			return Disassemble.CI_CENTERING(F, argsize) #Not Used
+			return Disassemble.CI_CENTERING(F, argsize)
 		case 2210:
-			return Disassemble.CI_CTL_TRACK(F, argsize) #Not Used
+			return Disassemble.CI_CTL_TRACK(F, argsize)
 		case 2211:
-			return Disassemble.CI_TRACK(F, argsize) #Not Used
+			return Disassemble.CI_TRACK(F, argsize)
 		case 2212:
-			return Disassemble.CI_NEGAPOSI(F, argsize) #Not Used
+			return Disassemble.CI_NEGAPOSI(F, argsize)
 		case 2213:
 			return Disassemble.CI_BUSTUP_CENTERING(F, argsize)
 		case 2301:
-			return Disassemble.MCR_TEXT_TOP(F, argsize) #Not Used
+			return Disassemble.MCR_TEXT_TOP(F, argsize)
 		case 2302:
-			return Disassemble.MCR_RUBY(F, argsize) #Not Used
+			return Disassemble.MCR_RUBY(F, argsize)
 		case 2303:
-			return Disassemble.MCR_BG_START(F, argsize) #Not Used
+			return Disassemble.MCR_BG_START(F, argsize)
 		case 2304:
-			return Disassemble.MCR_BG_STOP(F, argsize) #Not Used
+			return Disassemble.MCR_BG_STOP(F, argsize)
 		case 2305:
-			return Disassemble.MCR_BU_START(F, argsize) #Not Used
+			return Disassemble.MCR_BU_START(F, argsize)
 		case 2306:
-			return Disassemble.MCR_BU_STOP(F, argsize) #Not Used
+			return Disassemble.MCR_BU_STOP(F, argsize)
 		case 2307:
-			return Disassemble.MCR_CI_START(F, argsize) #Not Used
+			return Disassemble.MCR_CI_START(F, argsize)
 		case 2308:
-			return Disassemble.MCR_CI_STOP(F, argsize) #Not Used
+			return Disassemble.MCR_CI_STOP(F, argsize)
 		case 2309:
-			return Disassemble.MCR_TEXTWIN_IN(F, argsize) #Not Used
+			return Disassemble.MCR_TEXTWIN_IN(F, argsize)
 		case 2310:
-			return Disassemble.MCR_TEXTWIN_OUT(F, argsize) #Not Used
+			return Disassemble.MCR_TEXTWIN_OUT(F, argsize)
 		case 2311:
-			return Disassemble.MCR_3D_EFFECT(F, argsize) #Not Used
+			return Disassemble.MCR_3D_EFFECT(F, argsize)
 		case 2312:
-			return Disassemble.MCR_BGM_START(F, argsize) #Not Used
+			return Disassemble.MCR_BGM_START(F, argsize)
 		case 2313:
-			return Disassemble.MCR_BGM_STOP(F, argsize) #Not Used
+			return Disassemble.MCR_BGM_STOP(F, argsize)
 		case 2314:
-			return Disassemble.MCR_SE_START(F, argsize) #Not Used
+			return Disassemble.MCR_SE_START(F, argsize)
 		case 2315:
-			return Disassemble.MCR_LOOPVOICE_START(F, argsize) #Not Used
+			return Disassemble.MCR_LOOPVOICE_START(F, argsize)
 		case 2316:
-			return Disassemble.MCR_LOOPVOICE_STOP(F, argsize) #Not Used
+			return Disassemble.MCR_LOOPVOICE_STOP(F, argsize)
 		case 2401:
 			return Disassemble.ANIME_LOAD(F, argsize)
 		case 2402:
@@ -476,7 +490,7 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 2403:
 			return Disassemble.ANIME_PLAY(F, argsize)
 		case 2404:
-			return Disassemble.ANIME_SKIP(F, argsize) #Not Used
+			return Disassemble.ANIME_SKIP(F, argsize)
 		case 2405:
 			return Disassemble.ANIME_STOP(F, argsize)
 		case 2406:
@@ -484,19 +498,19 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 2407:
 			return Disassemble.ANIME_FADE(F, argsize)
 		case 2408:
-			return Disassemble.ANIME_SCALE(F, argsize) #Not Used
+			return Disassemble.ANIME_SCALE(F, argsize)
 		case 2409:
-			return Disassemble.ANIME_ROT(F, argsize) #Not Used
+			return Disassemble.ANIME_ROT(F, argsize)
 		case 2410:
-			return Disassemble.ANIME_ZGP(F, argsize) #Not Used
+			return Disassemble.ANIME_ZGP(F, argsize)
 		case 2411:
-			return Disassemble.ANIME_SYNC(F, argsize) #Not Used
+			return Disassemble.ANIME_SYNC(F, argsize)
 		case 2412:
-			return Disassemble.ANIME_PAUSE(F, argsize) #Not Used
+			return Disassemble.ANIME_PAUSE(F, argsize)
 		case 2413:
-			return Disassemble.ANIME_RESUME(F, argsize) #Not Used
+			return Disassemble.ANIME_RESUME(F, argsize)
 		case 2414:
-			return Disassemble.ANIME_FRAME(F, argsize) #Not Used
+			return Disassemble.ANIME_FRAME(F, argsize)
 		case 2501:
 			return Disassemble.LIARSART_START(F, argsize)
 		case 2502:
@@ -706,3 +720,5 @@ for i in range(0, len(files)):
 	file_new.close()
 
 shutil.rmtree('extracted')
+check.sort(key=SortNumber)
+print(check)
