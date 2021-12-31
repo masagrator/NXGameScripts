@@ -114,7 +114,9 @@ class Disassemble:
     def IFRV(F, size):
         entry = {}
         entry["TYPE"] = "IFRV"
-        entry["UNK0"] = F.read(size).hex()
+        entry["UNK0"] = F.read(0x4).hex()
+        entry["CHOICE_ID"] = int.from_bytes(F.read(0x1), byteorder="little")
+        entry["UNK1"] = F.read(size - 0x5).hex()
         return entry
 
     def IFRVtm(F, size):
@@ -1582,6 +1584,8 @@ class Assemble:
         entry.append(numpy.uint8(0))
         entry.append(numpy.uint16(114))
         entry.append(bytes.fromhex(Dict["UNK0"]))
+        entry.append(numpy.uint8(Dict["CHOICE_ID"]))
+        entry.append(bytes.fromhex(Dict["UNK1"]))
         entry[1] = numpy.uint8(len(b"".join(entry)))
         while (len(b"".join(entry)) % 4 != 0):
             entry.append(b"\x00")
