@@ -460,13 +460,13 @@ for y in range(0, len(files)):
 	file.write(numpy.uint32(Storage.Textcounter-1))
 	file.write(b"".join(registration_block))
 	while(file.tell() % 16 != 0):
-		file.seek(1, 1)
+		file.write(b"\x00")
 	file.write(b"".join(main_commands_block))
 	while(file.tell() % 16 != 0):
-		file.seek(1, 1)
+		file.write(b"\x00")
 	file.write(b"".join(text_block_registration))
 	while(file.tell() % 16 != 0):
-		file.seek(1, 1)
+		file.write(b"\x00")
 	file.write(b"".join(ProcessCommands.text_blob))
 	while(file.tell() % 16 != 0):
 		file.write(b"\x00")
