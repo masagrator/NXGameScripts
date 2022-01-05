@@ -410,12 +410,22 @@ for i in range(0, text_count):
 	Texts.append(readString(file))
 	file.seek(temp)
 
-
-for i in range(0, len(Main["COMMANDS"])):
+i = 0
+while(i < len(Main["COMMANDS"]) - 1):
 	if (Main["COMMANDS"][i]["TYPE"] == "Text"):
 		ID = Main["COMMANDS"][i]["U32"][0]
 		Main["COMMANDS"][i].pop("U32")
-		Main["COMMANDS"][i]["STRING"] = Texts[ID]
+		Main["COMMANDS"][i]["STRING"] = []
+		Main["COMMANDS"][i]["STRING"].append(Texts[ID])
+	elif (Main["COMMANDS"][i]["TYPE"] == "NewLine"):
+		if (Main["COMMANDS"][i-1]["TYPE"] == "Text" and Main["COMMANDS"][i+1]["TYPE"] == "Text"):
+			ID = Main["COMMANDS"][i+1]["U32"][0]
+			Main["COMMANDS"][i-1]["STRING"].append(Texts[ID])
+			Main["COMMANDS"].pop(i)
+			Main["COMMANDS"].pop(i+1)
+			continue
+	i += 1
+
 
 os.makedirs("jsons", exist_ok=True)
 new_file = open("jsons/%s.json" % sys.argv[1][:-4], "w", encoding="UTF-8")
