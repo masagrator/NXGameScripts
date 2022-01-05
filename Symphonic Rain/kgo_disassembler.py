@@ -430,6 +430,12 @@ for y in range(0, len(files)):
 				Main["COMMANDS"].pop(i)
 				Main["COMMANDS"].pop(i)
 				continue
+		elif (Main["COMMANDS"][i]["TYPE"] == "Select"):
+			Main["COMMANDS"][i]["STRINGS"] = []
+			for x in range(0, len(Main["COMMANDS"][i]["U32"])):
+				if (Main["COMMANDS"][i]["U32"][x] > 0):
+					Main["COMMANDS"][i]["STRINGS"].append(Texts[Main["COMMANDS"][i]["U32"][x]])
+			Main["COMMANDS"][i].pop("U32")
 		i += 1
 
 	new_file = open("jsons/%s.json" % files[y][4:-4], "w", encoding="UTF-8")

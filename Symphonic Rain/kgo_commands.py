@@ -1702,14 +1702,13 @@ class Assemble:
 
     def Select(dict):
         bytes = []
-        try:
-            dict["U32"]
-        except:
-            pass
-        else:
-            for i in range(0, len(dict["U32"])):
-                bytes.append(numpy.uint16(1))
-                bytes.append(numpy.uint32(dict["U32"][i]))
+        for i in range(0, len(dict["STRINGS"])):
+            bytes.append(numpy.uint16(1))
+            bytes.append(numpy.uint32(Storage.Textcounter))
+            Storage.Textcounter += 1
+        for i in range(0, 4-len(dict["STRINGS"])):
+            bytes.append(numpy.uint16(1))
+            bytes.append(numpy.uint32(0))
         bytes.append(numpy.uint16(0x78))
         return b"".join(bytes)
 

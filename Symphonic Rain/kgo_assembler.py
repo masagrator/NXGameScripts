@@ -226,6 +226,20 @@ def ProcessCommands(dict):
 			return Assemble.SetWeather(dict)
 		
 		case "Select":
+			for i in range(0, len(dict["STRINGS"])):
+				bytes = []
+				text = dict["STRINGS"][i].encode("UTF-8")
+				length = len(text) + 2 + 1
+				if (length % 2 != 0):
+					bytes.append(numpy.uint16(length + 1))
+				else:
+					bytes.append(numpy.uint16(length))
+				bytes.append(text)
+				if (length % 2 != 0):
+					bytes.append(b"\x00\x00")
+				else:
+					bytes.append(b"\x00")
+				ProcessCommands.text_blob.append(b"".join(bytes))
 			return Assemble.Select(dict)
 		
 		case "ShowOpening":
@@ -352,6 +366,7 @@ for y in range(0, len(files)):
 	dump = json.load(file)
 	file.close()
 
+	Storage.Textcounter = 1
 	registration_block = []
 	commands_block = []
 	commands_block_true = []
