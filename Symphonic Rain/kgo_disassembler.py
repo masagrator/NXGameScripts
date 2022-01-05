@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import glob
 from kgo_commands import *
 
 def readString(myfile):
@@ -136,7 +137,7 @@ def ProcessCommands(ID, file):
 		case 0x4B:
 			return Disassemble.Voice()
 		
-		case 0x4c:
+		case 0x4C:
 			return Disassemble.VoiceVol()
 		
 		case 0x4D:
@@ -324,109 +325,112 @@ def ProcessCommands(ID, file):
 			print("Offset: 0x%x" % (file.tell() - 2))
 			print("ID: 0x%x" % ID)
 			sys.exit()
-		
 
-file = open(sys.argv[1], "rb")
-
-if (file.read(0x4) != b"SR10"): #0x0
-	print("WRONG MAGIC!")
-	sys.exit()
-
-Main = {}
-Main["HEADER"] = {}
-
-SIZE = int.from_bytes(file.read(0x4), byteorder="little") #0x4
-Main["HEADER"]["FILE_ID"] = int.from_bytes(file.read(0x4), byteorder="little") #0x8
-Main["HEADER"]["CRC"] = file.read(0x4).hex().upper() #0xC
-registration_offset = int.from_bytes(file.read(0x4), byteorder="little") #0x10
-registration_size = int.from_bytes(file.read(0x4), byteorder="little") #0x14
-registration_entries = int.from_bytes(file.read(0x4), byteorder="little") #0x18
-command_block_offset = int.from_bytes(file.read(0x4), byteorder="little") #0x1C
-command_block_size = int.from_bytes(file.read(0x4), byteorder="little") #0x20
-command_block_entries = int.from_bytes(file.read(0x4), byteorder="little") #0x24
-text_block_registration_offset = int.from_bytes(file.read(0x4), byteorder="little") #0x28
-text_block_registration_size = int.from_bytes(file.read(0x4), byteorder="little") #0x2C
-text_block_registration_entries = int.from_bytes(file.read(0x4), byteorder="little") #0x30
-text_blob_start = int.from_bytes(file.read(0x4), byteorder="little") #0x34
-text_blob_size = int.from_bytes(file.read(0x4), byteorder="little") #0x38
-text_count = int.from_bytes(file.read(0x4), byteorder="little") #0x3C
-
-file.seek(registration_offset)
-Main["HEADER"]["REGISTRATION_BLOCK"] = []
-for i in range(0, registration_entries):
-	entry = {}
-	temp = file.tell()
-	block_size = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
-	string_size = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["UNK1"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["UNK2"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["UNK3"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["UNK4"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["UNK5"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["UNK6"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["UNK7"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["STRING"] = readString(file)
-	Main["HEADER"]["REGISTRATION_BLOCK"].append(entry)
-	file.seek(temp+block_size)
-
-file.seek(command_block_offset)
-block_size = int.from_bytes(file.read(0x4), byteorder="little")
-
-string_size = int.from_bytes(file.read(0x2), byteorder="little")
-commands_blob_size = int.from_bytes(file.read(0x4), byteorder="little")
-temp = file.tell()
-Main["HEADER"]["FUN_1"] = readString(file)
-file.seek(temp + string_size)
-
-Main["COMMANDS"] = []
-
-CMD_blob_end = file.tell() + commands_blob_size
-while(file.tell() < CMD_blob_end):
-	ID = int.from_bytes(file.read(0x2), byteorder="little")
-	check = ProcessCommands(ID, file)
-	if (check != None):
-		Main["COMMANDS"].append(check)
-
-file.seek(text_block_registration_offset)
-Main["HEADER"]["BLOCK_2_REGISTRATION"] = []
-for i in range(0, text_block_registration_entries):
-	entry = {}
-	temp = file.tell()
-	block_size = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["TYPE"] = int.from_bytes(file.read(0x2), byteorder="little")
-	entry["STRING"] = readString(file)
-	Main["HEADER"]["BLOCK_2_REGISTRATION"].append(entry)
-	file.seek(temp + block_size)
-
-file.seek(text_blob_start)
-
-Texts = []
-Texts.append("DUMMY")
-
-for i in range(0, text_count):
-	temp = file.tell()
-	temp += int.from_bytes(file.read(0x2), byteorder="little")
-	Texts.append(readString(file))
-	file.seek(temp)
-
-i = 0
-while(i < len(Main["COMMANDS"]) - 1):
-	if (Main["COMMANDS"][i]["TYPE"] == "Text"):
-		ID = Main["COMMANDS"][i]["U32"][0]
-		Main["COMMANDS"][i].pop("U32")
-		Main["COMMANDS"][i]["STRING"] = []
-		Main["COMMANDS"][i]["STRING"].append(Texts[ID])
-	elif (Main["COMMANDS"][i]["TYPE"] == "NewLine"):
-		if (Main["COMMANDS"][i-1]["TYPE"] == "Text" and Main["COMMANDS"][i+1]["TYPE"] == "Text"):
-			ID = Main["COMMANDS"][i+1]["U32"][0]
-			Main["COMMANDS"][i-1]["STRING"].append(Texts[ID])
-			Main["COMMANDS"].pop(i)
-			Main["COMMANDS"].pop(i)
-			continue
-	i += 1
-
+files = glob.glob("KGO/*.kgo")
 
 os.makedirs("jsons", exist_ok=True)
-new_file = open("jsons/%s.json" % sys.argv[1][:-4], "w", encoding="UTF-8")
-json.dump(Main, new_file, indent="\t", ensure_ascii=False)
+
+for y in range(0, len(files)):
+
+	file = open(files[y], "rb")
+
+	if (file.read(0x4) != b"SR10"): #0x0
+		print("WRONG MAGIC!")
+		sys.exit()
+
+	Main = {}
+	Main["HEADER"] = {}
+
+	SIZE = int.from_bytes(file.read(0x4), byteorder="little") #0x4
+	Main["HEADER"]["FILE_ID"] = int.from_bytes(file.read(0x4), byteorder="little") #0x8
+	Main["HEADER"]["CRC"] = file.read(0x4).hex().upper() #0xC
+	registration_offset = int.from_bytes(file.read(0x4), byteorder="little") #0x10
+	registration_size = int.from_bytes(file.read(0x4), byteorder="little") #0x14
+	registration_entries = int.from_bytes(file.read(0x4), byteorder="little") #0x18
+	command_block_offset = int.from_bytes(file.read(0x4), byteorder="little") #0x1C
+	command_block_size = int.from_bytes(file.read(0x4), byteorder="little") #0x20
+	command_block_entries = int.from_bytes(file.read(0x4), byteorder="little") #0x24
+	text_block_registration_offset = int.from_bytes(file.read(0x4), byteorder="little") #0x28
+	text_block_registration_size = int.from_bytes(file.read(0x4), byteorder="little") #0x2C
+	text_block_registration_entries = int.from_bytes(file.read(0x4), byteorder="little") #0x30
+	text_blob_start = int.from_bytes(file.read(0x4), byteorder="little") #0x34
+	text_blob_size = int.from_bytes(file.read(0x4), byteorder="little") #0x38
+	text_count = int.from_bytes(file.read(0x4), byteorder="little") #0x3C
+
+	file.seek(registration_offset)
+	Main["HEADER"]["REGISTRATION_BLOCK"] = []
+	for i in range(0, registration_entries):
+		entry = {}
+		temp = file.tell()
+		block_size = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
+		string_size = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["UNK1"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["UNK2"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["UNK3"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["UNK4"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["UNK5"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["UNK6"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["UNK7"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["STRING"] = readString(file)
+		Main["HEADER"]["REGISTRATION_BLOCK"].append(entry)
+		file.seek(temp+block_size)
+
+	file.seek(command_block_offset)
+	block_size = int.from_bytes(file.read(0x4), byteorder="little")
+
+	string_size = int.from_bytes(file.read(0x2), byteorder="little")
+	commands_blob_size = int.from_bytes(file.read(0x4), byteorder="little")
+	temp = file.tell()
+	Main["HEADER"]["FUN_1"] = readString(file)
+	file.seek(temp + string_size)
+
+	Main["COMMANDS"] = []
+
+	CMD_blob_end = file.tell() + commands_blob_size
+	while(file.tell() < CMD_blob_end):
+		ID = int.from_bytes(file.read(0x2), byteorder="little")
+		check = ProcessCommands(ID, file)
+		if (check != None):
+			Main["COMMANDS"].append(check)
+
+	file.seek(text_block_registration_offset)
+	Main["HEADER"]["BLOCK_2_REGISTRATION"] = []
+	for i in range(0, text_block_registration_entries):
+		entry = {}
+		temp = file.tell()
+		block_size = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["TYPE"] = int.from_bytes(file.read(0x2), byteorder="little")
+		entry["STRING"] = readString(file)
+		Main["HEADER"]["BLOCK_2_REGISTRATION"].append(entry)
+		file.seek(temp + block_size)
+
+	file.seek(text_blob_start)
+
+	Texts = []
+	Texts.append("DUMMY")
+
+	for i in range(0, text_count):
+		temp = file.tell()
+		temp += int.from_bytes(file.read(0x2), byteorder="little")
+		Texts.append(readString(file))
+		file.seek(temp)
+
+	i = 0
+	while(i < len(Main["COMMANDS"]) - 1):
+		if (Main["COMMANDS"][i]["TYPE"] == "Text"):
+			ID = Main["COMMANDS"][i]["U32"][0]
+			Main["COMMANDS"][i].pop("U32")
+			Main["COMMANDS"][i]["STRING"] = []
+			Main["COMMANDS"][i]["STRING"].append(Texts[ID])
+		elif (Main["COMMANDS"][i]["TYPE"] == "NewLine"):
+			if (Main["COMMANDS"][i-1]["TYPE"] == "Text" and Main["COMMANDS"][i+1]["TYPE"] == "Text"):
+				ID = Main["COMMANDS"][i+1]["U32"][0]
+				Main["COMMANDS"][i-1]["STRING"].append(Texts[ID])
+				Main["COMMANDS"].pop(i)
+				Main["COMMANDS"].pop(i)
+				continue
+		i += 1
+
+	new_file = open("jsons/%s.json" % files[y][4:-4], "w", encoding="UTF-8")
+	json.dump(Main, new_file, indent="\t", ensure_ascii=False)
