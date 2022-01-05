@@ -422,7 +422,7 @@ while(i < len(Main["COMMANDS"]) - 1):
 			ID = Main["COMMANDS"][i+1]["U32"][0]
 			Main["COMMANDS"][i-1]["STRING"].append(Texts[ID])
 			Main["COMMANDS"].pop(i)
-			Main["COMMANDS"].pop(i+1)
+			Main["COMMANDS"].pop(i)
 			continue
 	i += 1
 
