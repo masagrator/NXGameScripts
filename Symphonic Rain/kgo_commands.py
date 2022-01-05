@@ -82,6 +82,38 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def ADD():
+        entry = {}
+        entry["TYPE"] = "ADD"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SUB():
+        entry = {}
+        entry["TYPE"] = "SUB"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def LT():
+        entry = {}
+        entry["TYPE"] = "LT"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def LE():
+        entry = {}
+        entry["TYPE"] = "LE"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def GE():
         entry = {}
         entry["TYPE"] = "GE"
@@ -101,6 +133,14 @@ class Disassemble:
     def NE():
         entry = {}
         entry["TYPE"] = "NE"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def LAND():
+        entry = {}
+        entry["TYPE"] = "LAND"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -141,6 +181,22 @@ class Disassemble:
     def GETSF():
         entry = {}
         entry["TYPE"] = "GETSF"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SETV():
+        entry = {}
+        entry["TYPE"] = "SETV"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def GETV():
+        entry = {}
+        entry["TYPE"] = "GETV"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -258,6 +314,14 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def VoiceVol():
+        entry = {}
+        entry["TYPE"] = "VoiceVol"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def VoicePos():
         entry = {}
         entry["TYPE"] = "VoicePos"
@@ -274,9 +338,57 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def SongVol():
+        entry = {}
+        entry["TYPE"] = "SongVol"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def SEPlay():
         entry = {}
         entry["TYPE"] = "SEPlay"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SEStop():
+        entry = {}
+        entry["TYPE"] = "SEStop"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SEVol():
+        entry = {}
+        entry["TYPE"] = "SEVol"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SEPos():
+        entry = {}
+        entry["TYPE"] = "SEPos"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def EnvVol():
+        entry = {}
+        entry["TYPE"] = "EnvVol"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def EnvPos():
+        entry = {}
+        entry["TYPE"] = "EnvPos"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -293,6 +405,14 @@ class Disassemble:
     def SetBlack():
         entry = {}
         entry["TYPE"] = "SetBlack"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SetChar():
+        entry = {}
+        entry["TYPE"] = "SetChar"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -322,6 +442,14 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def WhiteOut():
+        entry = {}
+        entry["TYPE"] = "WhiteOut"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def BlackOut():
         entry = {}
         entry["TYPE"] = "BlackOut"
@@ -346,6 +474,14 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def AllMoveChartoActionChar2():
+        entry = {}
+        entry["TYPE"] = "AllMoveChartoActionChar2"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def AllHideChar():
         entry = {}
         entry["TYPE"] = "AllHideChar"
@@ -354,9 +490,49 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def Effect():
+        entry = {}
+        entry["TYPE"] = "Effect"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def ShowCursor():
+        entry = {}
+        entry["TYPE"] = "ShowCursor"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def HideCursor():
+        entry = {}
+        entry["TYPE"] = "HideCursor"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def ShowPlace():
         entry = {}
         entry["TYPE"] = "ShowPlace"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SetDate():
+        entry = {}
+        entry["TYPE"] = "SetDate"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def GetDate():
+        entry = {}
+        entry["TYPE"] = "GetDate"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -402,6 +578,22 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def ShowEnding():
+        entry = {}
+        entry["TYPE"] = "ShowEnding"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def GoTitle():
+        entry = {}
+        entry["TYPE"] = "GoTitle"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def UNK_x7D():
         entry = {}
         entry["TYPE"] = "UNK_x7D"
@@ -434,6 +626,14 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def AddDay():
+        entry = {}
+        entry["TYPE"] = "AddDay"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def AddMin():
         entry = {}
         entry["TYPE"] = "AddMin"
@@ -445,6 +645,22 @@ class Disassemble:
     def RainVol():
         entry = {}
         entry["TYPE"] = "RainVol"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def AllMoveChartoActionChar():
+        entry = {}
+        entry["TYPE"] = "AllMoveChartoActionChar"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SetChangeChar():
+        entry = {}
+        entry["TYPE"] = "SetChangeChar"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -506,6 +722,14 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def SongStop():
+        entry = {}
+        entry["TYPE"] = "SongStop"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def EnvPlay():
         entry = {}
         entry["TYPE"] = "EnvPlay"
@@ -538,9 +762,49 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def GetRainPower():
+        entry = {}
+        entry["TYPE"] = "GetRainPower"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SetRainLevel():
+        entry = {}
+        entry["TYPE"] = "SetRainLevel"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def AddRainPower():
         entry = {}
         entry["TYPE"] = "AddRainPower"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SubRainPower():
+        entry = {}
+        entry["TYPE"] = "SubRainPower"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def AddRainPowLv():
+        entry = {}
+        entry["TYPE"] = "AddRainPowLv"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
+    def SubRainPowLv():
+        entry = {}
+        entry["TYPE"] = "SubRainPowLv"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []

@@ -14,7 +14,10 @@ def readString(myfile):
 def ProcessCommands(ID, file):
 	match(ID):
 		case 0:
-			return Disassemble.NOP()
+			print("NOP detected. Something went wrong.")
+			print("0x%x" % (file.tell() - 2))
+			sys.exit()
+			#return Disassemble.NOP()
 		
 		case 1:
 			return Disassemble.GetU32(file)
@@ -43,6 +46,18 @@ def ProcessCommands(ID, file):
 		case 0x10:
 			return Disassemble.LNOT()
 		
+		case 0x16:
+			return Disassemble.ADD()
+		
+		case 0x17:
+			return Disassemble.SUB()
+		
+		case 0x18:
+			return Disassemble.LT()
+		
+		case 0x19:
+			return Disassemble.LE()
+		
 		case 0x1B:
 			return Disassemble.GE()
 		
@@ -51,6 +66,9 @@ def ProcessCommands(ID, file):
 		
 		case 0x1D:
 			return Disassemble.NE()
+		
+		case 0x1E:
+			return Disassemble.LAND()
 		
 		case 0x1F:
 			return Disassemble.LOR()
@@ -66,6 +84,12 @@ def ProcessCommands(ID, file):
 		
 		case 0x23:
 			return Disassemble.GETSF()
+		
+		case 0x24:
+			return Disassemble.SETV()
+			
+		case 0x25:
+			return Disassemble.GETV()
 		
 		case 0x2A:
 			return Disassemble.SETRES()
@@ -112,14 +136,35 @@ def ProcessCommands(ID, file):
 		case 0x4B:
 			return Disassemble.Voice()
 		
+		case 0x4c:
+			return Disassemble.VoiceVol()
+		
 		case 0x4D:
 			return Disassemble.VoicePos()
 		
 		case 0x50:
 			return Disassemble.BGMVol()
 		
+		case 0x53:
+			return Disassemble.SongVol()
+		
 		case 0x54:
 			return Disassemble.SEPlay()
+		
+		case 0x55:
+			return Disassemble.SEStop()
+		
+		case 0x56:
+			return Disassemble.SEVol()
+		
+		case 0x57:
+			return Disassemble.SEPos()
+		
+		case 0x5A:
+			return Disassemble.EnvVol()
+		
+		case 0x5B:
+			return Disassemble.EnvPos()
 		
 		case 0x5C:
 			return Disassemble.SetBG()
@@ -127,11 +172,17 @@ def ProcessCommands(ID, file):
 		case 0x5E:
 			return Disassemble.SetBlack()
 		
+		case 0x5F:
+			return Disassemble.SetChar()
+		
 		case 0x61:
 			return Disassemble.Fade()
 		
 		case 0x62:
 			return Disassemble.FadeBGtoSetBG()
+		
+		case 0x63:
+			return Disassemble.WhiteOut()
 		
 		case 0x64:
 			return Disassemble.BlackOut()
@@ -142,11 +193,29 @@ def ProcessCommands(ID, file):
 		case 0x66:
 			return Disassemble.HideChar()
 		
+		case 0x67:
+			return Disassemble.AllMoveChartoActionChar2()
+		
 		case 0x68:
 			return Disassemble.AllHideChar()
 		
+		case 0x69:
+			return Disassemble.Effect()
+		
+		case 0x6A:
+			return Disassemble.ShowCursor()
+		
+		case 0x6B:
+			return Disassemble.HideCursor()
+		
 		case 0x6C:
 			return Disassemble.ShowPlace()
+		
+		case 0x6D:
+			return Disassemble.SetDate()
+		
+		case 0x6E:
+			return Disassemble.GetDate()
 		
 		case 0x71:
 			return Disassemble.GetWeek()
@@ -163,6 +232,12 @@ def ProcessCommands(ID, file):
 		case 0x79:
 			return Disassemble.ShowOpening()
 		
+		case 0x7A:
+			return Disassemble.ShowEnding()
+		
+		case 0x7B:
+			return Disassemble.GoTitle()
+		
 		case 0x7C:
 			return Disassemble.MiniGame()
 		
@@ -175,11 +250,20 @@ def ProcessCommands(ID, file):
 		case 0x80:
 			return Disassemble.MapMove()
 		
+		case 0x81:
+			return Disassemble.AddDay()
+		
 		case 0x82:
 			return Disassemble.AddMin()
 		
 		case 0x83:
 			return Disassemble.RainVol()
+		
+		case 0x84:
+			return Disassemble.AllMoveChartoActionChar()
+		
+		case 0x85:
+			return Disassemble.SetChangeChar()
 		
 		case 0x86:
 			return Disassemble.DateShow()
@@ -202,6 +286,9 @@ def ProcessCommands(ID, file):
 		case 0x8C:
 			return Disassemble.SongPlay()
 		
+		case 0x8D:
+			return Disassemble.SongStop()
+		
 		case 0x8E:
 			return Disassemble.EnvPlay()
 		
@@ -214,8 +301,23 @@ def ProcessCommands(ID, file):
 		case 0x91:
 			return Disassemble.SetRainPower()
 		
+		case 0x92:
+			return Disassemble.GetRainPower()
+
+		case 0x93:
+			return Disassemble.SetRainLevel()
+		
 		case 0x95:
 			return Disassemble.AddRainPower()
+		
+		case 0x96:
+			return Disassemble.SubRainPower()
+		
+		case 0x97:
+			return Disassemble.AddRainPowLv()
+		
+		case 0x98:
+			return Disassemble.SubRainPowLv()
 		
 		case _:
 			print("UNKNOWN COMMAND!")
@@ -287,15 +389,15 @@ while(file.tell() < CMD_blob_end):
 		Main["COMMANDS"].append(check)
 
 file.seek(text_block_registration_offset)
-Main["HEADER"]["BLOCK_2_STRINGS"] = []
+Main["HEADER"]["BLOCK_2_REGISTRATION"] = []
 for i in range(0, text_block_registration_entries):
+	entry = {}
+	temp = file.tell()
 	block_size = int.from_bytes(file.read(0x2), byteorder="little")
-	CMD = int.from_bytes(file.read(0x2), byteorder="little")
-	if (CMD != 0x3):
-		print("Registration Assert Failed!")
-		print("0x%x" % file.tell())
-		sys.exit()
-	Main["HEADER"]["BLOCK_2_STRINGS"].append(readString(file))
+	entry["TYPE"] = int.from_bytes(file.read(0x2), byteorder="little")
+	entry["STRING"] = readString(file)
+	Main["HEADER"]["BLOCK_2_REGISTRATION"].append(entry)
+	file.seek(temp + block_size)
 
 file.seek(text_blob_start)
 
