@@ -1,6 +1,9 @@
+import numpy
+
 class Storage:
 
     ints = []
+    Textcounter = 1
 
 class Disassemble:
 
@@ -298,6 +301,14 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def KeyWait():
+        entry = {}
+        entry["TYPE"] = "KeyWait"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def SkipDisable():
         entry = {}
         entry["TYPE"] = "SkipDisable"
@@ -413,14 +424,6 @@ class Disassemble:
     def SetChar():
         entry = {}
         entry["TYPE"] = "SetChar"
-        if (len(Storage.ints) > 0):
-            entry["U32"] = Storage.ints
-            Storage.ints = []
-        return entry
-    
-    def KeyWait():
-        entry = {}
-        entry["TYPE"] = "KeyWait"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -594,6 +597,14 @@ class Disassemble:
             Storage.ints = []
         return entry
 
+    def MiniGame():
+        entry = {}
+        entry["TYPE"] = "MiniGame"
+        if (len(Storage.ints) > 0):
+            entry["U32"] = Storage.ints
+            Storage.ints = []
+        return entry
+
     def UNK_x7D():
         entry = {}
         entry["TYPE"] = "UNK_x7D"
@@ -613,14 +624,6 @@ class Disassemble:
     def MapMove():
         entry = {}
         entry["TYPE"] = "MapMove"
-        if (len(Storage.ints) > 0):
-            entry["U32"] = Storage.ints
-            Storage.ints = []
-        return entry
-
-    def MiniGame():
-        entry = {}
-        entry["TYPE"] = "MiniGame"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -682,17 +685,17 @@ class Disassemble:
             Storage.ints = []
         return entry
 
-    def TimeHide():
+    def TimeShow():
         entry = {}
-        entry["TYPE"] = "TimeHide"
+        entry["TYPE"] = "TimeShow"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
         return entry
 
-    def TimeShow():
+    def TimeHide():
         entry = {}
-        entry["TYPE"] = "TimeShow"
+        entry["TYPE"] = "TimeHide"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
@@ -809,3 +812,1293 @@ class Disassemble:
             entry["U32"] = Storage.ints
             Storage.ints = []
         return entry
+
+class Assemble:
+
+    def POP(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(2))
+        return b"".join(bytes)
+
+    def JMP(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(3))
+        bytes.append(numpy.uint32(dict["ARG"]))
+        return b"".join(bytes)
+
+    def JZ(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(4))
+        bytes.append(numpy.uint32(dict["ARG"]))
+        return b"".join(bytes)
+
+    def CALL(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(6))
+        return b"".join(bytes)
+
+    def DUP(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(8))
+        return b"".join(bytes)
+
+    def SWAP2(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0xB))
+        return b"".join(bytes)
+    
+    def RET(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0xE))
+        return b"".join(bytes)
+
+    def LNOT(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x10))
+        return b"".join(bytes)
+
+    def ADD(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x16))
+        return b"".join(bytes)
+
+    def SUB(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x17))
+        return b"".join(bytes)
+
+    def LT(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x18))
+        return b"".join(bytes)
+
+    def LE(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x19))
+        return b"".join(bytes)
+
+    def GE(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x1B))
+        return b"".join(bytes)
+
+    def EQ(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x1C))
+        return b"".join(bytes)
+
+    def NE(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x1D))
+        return b"".join(bytes)
+
+    def LAND(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x1E))
+        return b"".join(bytes)
+
+    def LOR(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x1F))
+        return b"".join(bytes)
+
+    def SETF(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x20))
+        return b"".join(bytes)
+
+    def GETF(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x21))
+        return b"".join(bytes)
+
+    def SETSF(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x22))
+        return b"".join(bytes)
+
+    def GETSF(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x23))
+        return b"".join(bytes)
+
+    def SETV(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x24))
+        return b"".join(bytes)
+
+    def GETV(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x25))
+        return b"".join(bytes)
+
+    def SETRES(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x2A))
+        return b"".join(bytes)
+
+    def GETRES(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x2B))
+        return b"".join(bytes)
+
+    def SCNCHG(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x30))
+        return b"".join(bytes)
+
+    def Text(dict):
+        bytes = []
+        for i in range(0, len(dict["STRING"])):
+            bytes.append(numpy.uint16(1))
+            bytes.append(numpy.uint32(Storage.Textcounter))
+            bytes.append(numpy.uint16(0x40))
+            Storage.Textcounter += 1
+            if (i < len(dict["STRING"]) - 1):
+                NewLineDict = {"TYPE": "NewLine"}
+                bytes.append(Assemble.NewLine(NewLineDict))
+        return b"".join(bytes)
+
+    def NewLine(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x41))
+        return b"".join(bytes)
+
+    def NewPage(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x42))
+        return b"".join(bytes)
+
+    def TextShow(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x43))
+        return b"".join(bytes)
+
+    def TextHide(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x44))
+        return b"".join(bytes)
+
+    def TextSpeed(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x45))
+        return b"".join(bytes)
+
+    def NovelMode(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x46))
+        return b"".join(bytes)
+
+    def Locate(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x47))
+        return b"".join(bytes)
+
+    def Wait(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x48))
+        return b"".join(bytes)
+
+    def KeyWait(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x49))
+        return b"".join(bytes)
+
+    def SkipDisable(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x4A))
+        return b"".join(bytes)
+
+    def Voice(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x4B))
+        return b"".join(bytes)
+
+    def VoiceVol(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x4C))
+        return b"".join(bytes)
+
+    def VoicePos(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x4D))
+        return b"".join(bytes)
+
+    def BGMVol(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x50))
+        return b"".join(bytes)
+
+    def SongVol(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x53))
+        return b"".join(bytes)
+
+    def SEPlay(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x54))
+        return b"".join(bytes)
+
+    def SEStop(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x55))
+        return b"".join(bytes)
+
+    def SEVol(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x56))
+        return b"".join(bytes)
+
+    def SEPos(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x57))
+        return b"".join(bytes)
+
+    def EnvVol(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x5A))
+        return b"".join(bytes)
+
+    def EnvPos(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x5B))
+        return b"".join(bytes)
+
+    def SetBG(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x5C))
+        return b"".join(bytes)
+
+    def SetBlack(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x5E))
+        return b"".join(bytes)
+
+    def SetChar(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x5F))
+        return b"".join(bytes)
+
+    def Fade(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x61))
+        return b"".join(bytes)
+
+    def FadeBGtoSetBG(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x62))
+        return b"".join(bytes)
+
+    def WhiteOut(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x63))
+        return b"".join(bytes)
+
+    def BlackOut(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x64))
+        return b"".join(bytes)
+
+    def MoveChar(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x65))
+        return b"".join(bytes)
+
+    def HideChar(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x66))
+        return b"".join(bytes)
+
+    def AllMoveChartoActionChar2(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x67))
+        return b"".join(bytes)
+
+    def AllHideChar(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x68))
+        return b"".join(bytes)
+
+    def Effect(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x69))
+        return b"".join(bytes)
+
+    def ShowCursor(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x6A))
+        return b"".join(bytes)
+
+    def HideCursor(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x6B))
+        return b"".join(bytes)
+
+    def ShowPlace(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x6C))
+        return b"".join(bytes)
+
+    def SetDate(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x6D))
+        return b"".join(bytes)
+
+    def GetDate(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x6E))
+        return b"".join(bytes)
+
+    def GetWeek(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x71))
+        return b"".join(bytes)
+
+    def SetTime(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x72))
+        return b"".join(bytes)
+
+    def SetWeather(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x76))
+        return b"".join(bytes)
+
+    def Select(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x78))
+        return b"".join(bytes)
+
+    def ShowOpening(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x79))
+        return b"".join(bytes)
+
+    def ShowEnding(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x7A))
+        return b"".join(bytes)
+
+    def GoTitle(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x7B))
+        return b"".join(bytes)
+
+    def MiniGame(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x7C))
+        return b"".join(bytes)
+
+    def UNK_x7D(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x7D))
+        return b"".join(bytes)
+
+    def UNK_x7F(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x7F))
+        return b"".join(bytes)
+
+    def MapMove(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x80))
+        return b"".join(bytes)
+
+    def AddDay(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x81))
+        return b"".join(bytes)
+
+    def AddMin(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x82))
+        return b"".join(bytes)
+
+    def RainVol(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x83))
+        return b"".join(bytes)
+
+    def AllMoveChartoActionChar(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x84))
+        return b"".join(bytes)
+
+    def SetChangeChar(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x85))
+        return b"".join(bytes)
+
+    def DateShow(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x86))
+        return b"".join(bytes)
+
+    def DateHide(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x87))
+        return b"".join(bytes)
+
+    def TimeShow(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x88))
+        return b"".join(bytes)
+
+    def TimeHide(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x89))
+        return b"".join(bytes)
+
+    def BGMPlay(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x8A))
+        return b"".join(bytes)
+
+    def BGMStop(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x8B))
+        return b"".join(bytes)
+
+    def SongPlay(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x8C))
+        return b"".join(bytes)
+
+    def SongStop(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x8D))
+        return b"".join(bytes)
+
+    def EnvPlay(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x8E))
+        return b"".join(bytes)
+
+    def EnvStop(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x8F))
+        return b"".join(bytes)
+
+    def SongEnable(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x90))
+        return b"".join(bytes)
+
+    def SetRainPower(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x91))
+        return b"".join(bytes)
+
+    def GetRainPower(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x92))
+        return b"".join(bytes)
+
+    def SetRainLevel(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x93))
+        return b"".join(bytes)
+
+    def AddRainPower(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x95))
+        return b"".join(bytes)
+
+    def SubRainPower(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x96))
+        return b"".join(bytes)
+
+    def AddRainPowLv(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x97))
+        return b"".join(bytes)
+
+    def SubRainPowLv(dict):
+        bytes = []
+        try:
+            dict["U32"]
+        except:
+            pass
+        else:
+            for i in range(0, len(dict["U32"])):
+                bytes.append(numpy.uint16(1))
+                bytes.append(numpy.uint32(dict["U32"][i]))
+        bytes.append(numpy.uint16(0x98))
+        return b"".join(bytes)
