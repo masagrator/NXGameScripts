@@ -362,14 +362,14 @@ files = glob.glob("jsons/*.json")
 os.makedirs("New_KGO", exist_ok=True)
 
 for y in range(0, len(files)):
+	print(files[y])
 	file = open(files[y], "r", encoding="UTF-8")
 	dump = json.load(file)
 	file.close()
 
 	Storage.Textcounter = 1
 	registration_block = []
-	commands_block = []
-	commands_block_true = []
+	main_commands_block = []
 	ProcessCommands.text_blob = []
 	text_block_registration = []
 
@@ -395,26 +395,33 @@ for y in range(0, len(files)):
 			entry.append(b"\x00")
 		entry[0] = numpy.uint16(len(b"".join(entry)))
 		registration_block.append(b"".join(entry))
-	
-	commands_block.append(numpy.uint32(0)) # Size
-	length = len(dump["HEADER"]["FUN_1"].encode("UTF-8")) + 1
-	if (length % 2 != 0):
-		length += 1
-	commands_block.append(numpy.uint16(length))
 
-	
 	for i in range(0, len(dump["COMMANDS"])):
-		commands_block_true.append(ProcessCommands(dump["COMMANDS"][i]))
-	
-	commands_block.append(numpy.uint32(len(b"".join(commands_block_true))))
-	commands_block.append(dump["HEADER"]["FUN_1"].encode("UTF-8") + b"\x00")
-	if (len(dump["HEADER"]["FUN_1"].encode("UTF-8") + b"\x00") != 0):
-		commands_block.append(b"\x00")
 
-	while((len(b"".join(commands_block)) + len(b"".join(commands_block_true))) % 16 != 0):
-		commands_block_true.append(b"\x00")
+		commands_block = []
+		commands_block_true = []
 	
-	commands_block[0] = numpy.uint32(len(b"".join(commands_block)) + len(b"".join(commands_block_true)))
+		commands_block.append(numpy.uint32(0)) # Size
+		length = len(dump["HEADER"]["FUNS"][i].encode("UTF-8")) + 1
+		if (length % 2 != 0):
+			length += 1
+		commands_block.append(numpy.uint16(length))
+
+		
+		for a in range(0, len(dump["COMMANDS"][i])):
+			commands_block_true.append(ProcessCommands(dump["COMMANDS"][i][a]))
+		
+		commands_block.append(numpy.uint32(len(b"".join(commands_block_true))))
+		commands_block.append(dump["HEADER"]["FUNS"][i].encode("UTF-8") + b"\x00")
+		if (len(dump["HEADER"]["FUNS"][i].encode("UTF-8") + b"\x00") % 2 != 0):
+			commands_block.append(b"\x00")
+
+		while((len(b"".join(commands_block)) + len(b"".join(commands_block_true))) % 16 != 0):
+			commands_block_true.append(b"\x00")
+		
+		commands_block[0] = numpy.uint32(len(b"".join(commands_block)) + len(b"".join(commands_block_true)))
+
+		main_commands_block.append(b"".join(commands_block) + b"".join(commands_block_true))
 	
 	for i in range(0, len(dump["HEADER"]["BLOCK_2_REGISTRATION"])):
 		entry = []
@@ -437,9 +444,9 @@ for y in range(0, len(files)):
 	while(offset % 16 != 0):
 		offset += 1
 	file.write(numpy.uint32(offset))
-	file.write(numpy.uint32(len(b"".join(commands_block)) + len(b"".join(commands_block_true))))
-	file.write(numpy.uint32(1))
-	offset += len(b"".join(commands_block)) + len(b"".join(commands_block_true))
+	file.write(numpy.uint32(len(b"".join(main_commands_block))))
+	file.write(numpy.uint32(len(main_commands_block)))
+	offset += len(b"".join(main_commands_block))
 	while(offset % 16 != 0):
 		offset += 1
 	file.write(numpy.uint32(offset))
@@ -454,8 +461,7 @@ for y in range(0, len(files)):
 	file.write(b"".join(registration_block))
 	while(file.tell() % 16 != 0):
 		file.seek(1, 1)
-	file.write(b"".join(commands_block))
-	file.write(b"".join(commands_block_true))
+	file.write(b"".join(main_commands_block))
 	while(file.tell() % 16 != 0):
 		file.seek(1, 1)
 	file.write(b"".join(text_block_registration))

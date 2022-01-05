@@ -332,6 +332,7 @@ os.makedirs("jsons", exist_ok=True)
 
 for y in range(0, len(files)):
 
+	print(files[y])
 	file = open(files[y], "rb")
 
 	if (file.read(0x4) != b"SR10"): #0x0
@@ -377,22 +378,29 @@ for y in range(0, len(files)):
 		file.seek(temp+block_size)
 
 	file.seek(command_block_offset)
-	block_size = int.from_bytes(file.read(0x4), byteorder="little")
-
-	string_size = int.from_bytes(file.read(0x2), byteorder="little")
-	commands_blob_size = int.from_bytes(file.read(0x4), byteorder="little")
-	temp = file.tell()
-	Main["HEADER"]["FUN_1"] = readString(file)
-	file.seek(temp + string_size)
 
 	Main["COMMANDS"] = []
+	Main["HEADER"]["FUNS"] = []
 
-	CMD_blob_end = file.tell() + commands_blob_size
-	while(file.tell() < CMD_blob_end):
-		ID = int.from_bytes(file.read(0x2), byteorder="little")
-		check = ProcessCommands(ID, file)
-		if (check != None):
-			Main["COMMANDS"].append(check)
+	for i in range(0, command_block_entries):
+		entry = []
+		block_size = int.from_bytes(file.read(0x4), byteorder="little")
+
+		string_size = int.from_bytes(file.read(0x2), byteorder="little")
+		commands_blob_size = int.from_bytes(file.read(0x4), byteorder="little")
+		temp = file.tell()
+		Main["HEADER"]["FUNS"].append(readString(file))
+		file.seek(temp + string_size)
+
+		CMD_blob_end = file.tell() + commands_blob_size
+		while(file.tell() < CMD_blob_end):
+			ID = int.from_bytes(file.read(0x2), byteorder="little")
+			check = ProcessCommands(ID, file)
+			if (check != None):
+				entry.append(check)
+		Main["COMMANDS"].append(entry)
+		while(file.tell() % 16 != 0):
+			file.seek(1, 1)
 
 	file.seek(text_block_registration_offset)
 	Main["HEADER"]["BLOCK_2_REGISTRATION"] = []
@@ -416,27 +424,28 @@ for y in range(0, len(files)):
 		Texts.append(readString(file))
 		file.seek(temp)
 
-	i = 0
-	while(i < len(Main["COMMANDS"]) - 1):
-		if (Main["COMMANDS"][i]["TYPE"] == "Text"):
-			ID = Main["COMMANDS"][i]["U32"][0]
-			Main["COMMANDS"][i].pop("U32")
-			Main["COMMANDS"][i]["STRING"] = []
-			Main["COMMANDS"][i]["STRING"].append(Texts[ID])
-		elif (Main["COMMANDS"][i]["TYPE"] == "NewLine"):
-			if (Main["COMMANDS"][i-1]["TYPE"] == "Text" and Main["COMMANDS"][i+1]["TYPE"] == "Text"):
-				ID = Main["COMMANDS"][i+1]["U32"][0]
-				Main["COMMANDS"][i-1]["STRING"].append(Texts[ID])
-				Main["COMMANDS"].pop(i)
-				Main["COMMANDS"].pop(i)
-				continue
-		elif (Main["COMMANDS"][i]["TYPE"] == "Select"):
-			Main["COMMANDS"][i]["STRINGS"] = []
-			for x in range(0, len(Main["COMMANDS"][i]["U32"])):
-				if (Main["COMMANDS"][i]["U32"][x] > 0):
-					Main["COMMANDS"][i]["STRINGS"].append(Texts[Main["COMMANDS"][i]["U32"][x]])
-			Main["COMMANDS"][i].pop("U32")
-		i += 1
+	for a in range(0, len(Main["COMMANDS"])):
+		i = 0
+		while(i < (len(Main["COMMANDS"][a]) - 1)):
+			if (Main["COMMANDS"][a][i]["TYPE"] == "Text"):
+				ID = Main["COMMANDS"][a][i]["U32"][0]
+				Main["COMMANDS"][a][i].pop("U32")
+				Main["COMMANDS"][a][i]["STRING"] = []
+				Main["COMMANDS"][a][i]["STRING"].append(Texts[ID])
+			elif (Main["COMMANDS"][a][i]["TYPE"] == "NewLine"):
+				if (Main["COMMANDS"][a][i-1]["TYPE"] == "Text" and Main["COMMANDS"][a][i+1]["TYPE"] == "Text"):
+					ID = Main["COMMANDS"][a][i+1]["U32"][0]
+					Main["COMMANDS"][a][i-1]["STRING"].append(Texts[ID])
+					Main["COMMANDS"][a].pop(i)
+					Main["COMMANDS"][a].pop(i)
+					continue
+			elif (Main["COMMANDS"][a][i]["TYPE"] == "Select"):
+				Main["COMMANDS"][a][i]["STRINGS"] = []
+				for x in range(0, len(Main["COMMANDS"][a][i]["U32"])):
+					if (Main["COMMANDS"][a][i]["U32"][x] > 0):
+						Main["COMMANDS"][a][i]["STRINGS"].append(Texts[Main["COMMANDS"][a][i]["U32"][x]])
+				Main["COMMANDS"][a][i].pop("U32")
+			i += 1
 
 	new_file = open("jsons/%s.json" % files[y][4:-4], "w", encoding="UTF-8")
 	json.dump(Main, new_file, indent="\t", ensure_ascii=False)
