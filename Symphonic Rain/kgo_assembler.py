@@ -14,14 +14,14 @@ def ProcessCommands(dict, Offsets = None):
 			if (Offsets == None):
 				offset = 4
 			else:
-				offset = int(Offsets[dict["JUMP_TO_LABEL"]]) - int(Offsets[dict["LABEL"]])
+				offset = Offsets[dict["JUMP_TO_LABEL"]] - Offsets[dict["LABEL"]]
 			return Assemble.JMP(dict, offset)
 		
 		case "JZ":
 			if (Offsets == None):
 				offset = 4
 			else:
-				offset = int(Offsets[dict["JUMP_TO_LABEL"]]) - int(Offsets[dict["LABEL"]])
+				offset = Offsets[dict["JUMP_TO_LABEL"]] - Offsets[dict["LABEL"]]
 			return Assemble.JZ(dict, offset)
 		
 		case "CALL":
