@@ -16,7 +16,7 @@ class Disassemble:
         return entry
 
     def GetU32(file):
-        Storage.ints.append(int.from_bytes(file.read(0x4), byteorder="little"))
+        Storage.ints.append(int.from_bytes(file.read(0x4), byteorder="little", signed = True))
         return None
 
     def POP():
@@ -27,22 +27,24 @@ class Disassemble:
             Storage.ints = []
         return entry
 
-    def JMP(file):
+    def JMP(file, pos):
         entry = {}
         entry["TYPE"] = "JMP"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
-        entry["ARG"] = int.from_bytes(file.read(0x4), byteorder="little")
+        offset = int.from_bytes(file.read(0x4), byteorder="little")
+        entry["JUMP_TO_LABEL"] = "0x%x" % (pos + offset)
         return entry
 
-    def JZ(file):
+    def JZ(file, pos):
         entry = {}
         entry["TYPE"] = "JZ"
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
-        entry["ARG"] = int.from_bytes(file.read(0x4), byteorder="little")
+        offset = int.from_bytes(file.read(0x4), byteorder="little")
+        entry["JUMP_TO_LABEL"] = "0x%x" % (pos + offset)
         return entry
 
     def CALL():

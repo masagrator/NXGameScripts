@@ -12,7 +12,7 @@ def readString(myfile):
 			return str(b"".join(chars).decode("UTF-8"))
 		chars.append(c)
 
-def ProcessCommands(ID, file):
+def ProcessCommands(ID, file, pos):
 	match(ID):
 		case 0:
 			print("NOP detected. Something went wrong.")
@@ -27,10 +27,10 @@ def ProcessCommands(ID, file):
 			return Disassemble.POP()
 		
 		case 3:
-			return Disassemble.JMP(file)
+			return Disassemble.JMP(file, pos)
 		
 		case 4:
-			return Disassemble.JZ(file)
+			return Disassemble.JZ(file, pos)
 		
 		case 6:
 			return Disassemble.CALL()
@@ -393,10 +393,21 @@ for y in range(0, len(files)):
 		file.seek(temp + string_size)
 
 		CMD_blob_end = file.tell() + commands_blob_size
+		label = 0
+		label_update = True
 		while(file.tell() < CMD_blob_end):
+			pos = file.tell()
 			ID = int.from_bytes(file.read(0x2), byteorder="little")
-			check = ProcessCommands(ID, file)
+			if (ID == 1 and label_update == True):
+				label = pos
+				label_update = False
+			check = ProcessCommands(ID, file, pos)
 			if (check != None):
+				if (label_update == False):
+					check = {"LABEL" : "0x%x" % label, **check}
+					label_update = True
+				else:
+					check = {"LABEL" : "0x%x" % pos, **check}
 				entry.append(check)
 		Main["COMMANDS"].append(entry)
 		while(file.tell() % 16 != 0):
