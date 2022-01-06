@@ -2,7 +2,14 @@ import sys
 import os
 import json
 import glob
+from PIL import ImageFont
 from kgo_commands import *
+
+def GetTextSize(text):
+	size = GetTextSize.font.getsize(text)
+	return size[0]
+
+GetTextSize.font = ImageFont.truetype("Nintendo_Switch_UI_Font.ttf", 38)
 
 def ProcessCommands(dict, Offsets = None):
 	match(dict["TYPE"]):
@@ -98,6 +105,18 @@ def ProcessCommands(dict, Offsets = None):
 				return Assemble.Text(dict, Offsets)
 			else:
 				for i in range(0, len(dict["STRING"])):
+					TextSize = GetTextSize(dict["STRING"][i].replace("\t", ""))
+					if (TextSize > 1080):
+						string = dict["STRING"][i].replace("\t", "")
+						OriginalWidth = TextSize
+						while(TextSize > 1080):
+							string = string[:-1]
+							TextSize = GetTextSize(string)
+						print("String is too long by %0.2f %s!" % ((OriginalWidth / 1080) * 100 - 100, "%"))
+						print("String: \n%s" % dict["STRING"][i])
+						print("String that fits: \n%s" % string)
+						print("ABORTING...!")
+						sys.exit()
 					bytes = []
 					text = dict["STRING"][i].encode("UTF-8")
 					length = len(text) + 2 + 1
