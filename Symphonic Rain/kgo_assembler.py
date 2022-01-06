@@ -4,17 +4,25 @@ import json
 import glob
 from kgo_commands import *
 
-def ProcessCommands(dict):
+def ProcessCommands(dict, Offsets = None):
 	match(dict["TYPE"]):
 		
 		case "POP":
 			return Assemble.POP(dict)
 		
 		case "JMP":
-			return Assemble.JMP(dict)
+			if (Offsets == None):
+				offset = 4
+			else:
+				offset = int(Offsets[dict["JUMP_TO_LABEL"]]) - int(Offsets[dict["LABEL"]])
+			return Assemble.JMP(dict, offset)
 		
 		case "JZ":
-			return Assemble.JZ(dict)
+			if (Offsets == None):
+				offset = 4
+			else:
+				offset = int(Offsets[dict["JUMP_TO_LABEL"]]) - int(Offsets[dict["LABEL"]])
+			return Assemble.JZ(dict, offset)
 		
 		case "CALL":
 			return Assemble.CALL(dict)
@@ -86,21 +94,24 @@ def ProcessCommands(dict):
 			return Assemble.SCNCHG(dict)
 
 		case "Text":
-			for i in range(0, len(dict["STRING"])):
-				bytes = []
-				text = dict["STRING"][i].encode("UTF-8")
-				length = len(text) + 2 + 1
-				if (length % 2 != 0):
-					bytes.append(numpy.uint16(length + 1))
-				else:
-					bytes.append(numpy.uint16(length))
-				bytes.append(text)
-				if (length % 2 != 0):
-					bytes.append(b"\x00\x00")
-				else:
-					bytes.append(b"\x00")
-				ProcessCommands.text_blob.append(b"".join(bytes))
-			return Assemble.Text(dict)
+			if (Offsets == None):
+				return Assemble.Text(dict, Offsets)
+			else:
+				for i in range(0, len(dict["STRING"])):
+					bytes = []
+					text = dict["STRING"][i].encode("UTF-8")
+					length = len(text) + 2 + 1
+					if (length % 2 != 0):
+						bytes.append(numpy.uint16(length + 1))
+					else:
+						bytes.append(numpy.uint16(length))
+					bytes.append(text)
+					if (length % 2 != 0):
+						bytes.append(b"\x00\x00")
+					else:
+						bytes.append(b"\x00")
+					ProcessCommands.text_blob.append(b"".join(bytes))
+				return Assemble.Text(dict, Offsets)
 		
 		case "NewLine":
 			return Assemble.NewLine(dict)
@@ -226,21 +237,24 @@ def ProcessCommands(dict):
 			return Assemble.SetWeather(dict)
 		
 		case "Select":
-			for i in range(0, len(dict["STRINGS"])):
-				bytes = []
-				text = dict["STRINGS"][i].encode("UTF-8")
-				length = len(text) + 2 + 1
-				if (length % 2 != 0):
-					bytes.append(numpy.uint16(length + 1))
-				else:
-					bytes.append(numpy.uint16(length))
-				bytes.append(text)
-				if (length % 2 != 0):
-					bytes.append(b"\x00\x00")
-				else:
-					bytes.append(b"\x00")
-				ProcessCommands.text_blob.append(b"".join(bytes))
-			return Assemble.Select(dict)
+			if (Offsets == None):
+				return Assemble.Select(dict, Offsets)
+			else:
+				for i in range(0, len(dict["STRINGS"])):
+					bytes = []
+					text = dict["STRINGS"][i].encode("UTF-8")
+					length = len(text) + 2 + 1
+					if (length % 2 != 0):
+						bytes.append(numpy.uint16(length + 1))
+					else:
+						bytes.append(numpy.uint16(length))
+					bytes.append(text)
+					if (length % 2 != 0):
+						bytes.append(b"\x00\x00")
+					else:
+						bytes.append(b"\x00")
+					ProcessCommands.text_blob.append(b"".join(bytes))
+				return Assemble.Select(dict, Offsets)
 		
 		case "ShowOpening":
 			return Assemble.ShowOpening(dict)
@@ -372,6 +386,7 @@ for y in range(0, len(files)):
 	main_commands_block = []
 	ProcessCommands.text_blob = []
 	text_block_registration = []
+	Precalculation_offsets = {}
 
 	for i in range(0, len(dump["HEADER"]["REGISTRATION_BLOCK"])):
 		entry = []
@@ -407,9 +422,13 @@ for y in range(0, len(files)):
 			length += 1
 		commands_block.append(numpy.uint16(length))
 
+		CommandOffset = 0
+		for a in range(0, len(dump["COMMANDS"][i])):
+			Precalculation_offsets[dump["COMMANDS"][i][a]["LABEL"]] = CommandOffset
+			CommandOffset += len(ProcessCommands(dump["COMMANDS"][i][a]))
 		
 		for a in range(0, len(dump["COMMANDS"][i])):
-			commands_block_true.append(ProcessCommands(dump["COMMANDS"][i][a]))
+			commands_block_true.append(ProcessCommands(dump["COMMANDS"][i][a], Precalculation_offsets))
 		
 		commands_block.append(numpy.uint32(len(b"".join(commands_block_true))))
 		commands_block.append(dump["HEADER"]["FUNS"][i].encode("UTF-8") + b"\x00")

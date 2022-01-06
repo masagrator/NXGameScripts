@@ -33,7 +33,7 @@ class Disassemble:
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
-        offset = int.from_bytes(file.read(0x4), byteorder="little")
+        offset = int.from_bytes(file.read(0x4), byteorder="little", signed = True)
         entry["JUMP_TO_LABEL"] = "0x%x" % (pos + offset)
         return entry
 
@@ -43,7 +43,7 @@ class Disassemble:
         if (len(Storage.ints) > 0):
             entry["U32"] = Storage.ints
             Storage.ints = []
-        offset = int.from_bytes(file.read(0x4), byteorder="little")
+        offset = int.from_bytes(file.read(0x4), byteorder="little", signed = True)
         entry["JUMP_TO_LABEL"] = "0x%x" % (pos + offset)
         return entry
 
@@ -830,7 +830,7 @@ class Assemble:
         bytes.append(numpy.uint16(2))
         return b"".join(bytes)
 
-    def JMP(dict):
+    def JMP(dict, offset):
         bytes = []
         try:
             dict["U32"]
@@ -841,10 +841,10 @@ class Assemble:
                 bytes.append(numpy.uint16(1))
                 bytes.append(numpy.uint32(dict["U32"][i]))
         bytes.append(numpy.uint16(3))
-        bytes.append(numpy.uint32(dict["ARG"]))
+        bytes.append(numpy.int32(offset))
         return b"".join(bytes)
 
-    def JZ(dict):
+    def JZ(dict, offset):
         bytes = []
         try:
             dict["U32"]
@@ -855,7 +855,7 @@ class Assemble:
                 bytes.append(numpy.uint16(1))
                 bytes.append(numpy.uint32(dict["U32"][i]))
         bytes.append(numpy.uint16(4))
-        bytes.append(numpy.uint32(dict["ARG"]))
+        bytes.append(numpy.int32(offset))
         return b"".join(bytes)
 
     def CALL(dict):
@@ -1157,13 +1157,14 @@ class Assemble:
         bytes.append(numpy.uint16(0x30))
         return b"".join(bytes)
 
-    def Text(dict):
+    def Text(dict, Offsets):
         bytes = []
         for i in range(0, len(dict["STRING"])):
             bytes.append(numpy.uint16(1))
             bytes.append(numpy.uint32(Storage.Textcounter))
             bytes.append(numpy.uint16(0x40))
-            Storage.Textcounter += 1
+            if (Offsets != None):
+                Storage.Textcounter += 1
             if (i < len(dict["STRING"]) - 1):
                 NewLineDict = {"TYPE": "NewLine"}
                 bytes.append(Assemble.NewLine(NewLineDict))
@@ -1702,12 +1703,13 @@ class Assemble:
         bytes.append(numpy.uint16(0x76))
         return b"".join(bytes)
 
-    def Select(dict):
+    def Select(dict, Offsets):
         bytes = []
         for i in range(0, len(dict["STRINGS"])):
             bytes.append(numpy.uint16(1))
             bytes.append(numpy.uint32(Storage.Textcounter))
-            Storage.Textcounter += 1
+            if (Offsets != None):
+                Storage.Textcounter += 1
         for i in range(0, 4-len(dict["STRINGS"])):
             bytes.append(numpy.uint16(1))
             bytes.append(numpy.uint32(0))
