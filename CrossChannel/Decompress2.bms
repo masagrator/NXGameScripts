@@ -1,0 +1,5 @@
+Comtype PUYO_LZ01
+Get ZSIZE asize
+Get FILENAME basename
+String FILENAME + "_dec.bin"
+CLog FILENAME 0 ZSIZE 10000000

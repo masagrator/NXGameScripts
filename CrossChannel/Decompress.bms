@@ -1,0 +1,7 @@
+Comtype PUYO_LZ01
+Get SIZE Long
+Get ZSIZE asize
+Math ZSIZE - 4
+Get FILENAME basename
+String FILENAME + "_dec.bin"
+CLog FILENAME 4 ZSIZE SIZE
