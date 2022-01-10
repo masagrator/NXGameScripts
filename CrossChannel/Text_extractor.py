@@ -13,19 +13,32 @@ def readString(myfile):
 def ProcessText(file, command, messagenumber):
     entry = {}
     entry["TYPE"] = command
+    entry["SUBTYPE"] = "STRING"
     entry["ID"] = messagenumber
     entry["STRING"] = readString(file)
     return entry
 
+def ProcessName(file, command):
+    entry = {}
+    entry["TYPE"] = command
+    entry["SUBTYPE"] = "NAME"
+    entry["STRING"] = readString(file)
+    return entry
 
 def SearchInFile(file, size):
     entry = []
     while(file.tell() < size):
         byte = int.from_bytes(file.read(0x1), byteorder="little")
         if (0x45 <= byte <= 0x47):
-            if (file.read(0x2) == b"\xFF\xFF"):
-                messagenumber = int.from_bytes(file.read(0x2), byteorder="little")
-                entry.append(ProcessText(file, byte, messagenumber))
+            check = file.read(0x2)
+            match(check):
+                case b"\xFF\xFF":
+                    messagenumber = int.from_bytes(file.read(0x2), byteorder="little")
+                    entry.append(ProcessText(file, byte, messagenumber))
+                case b"\x0D\x00":
+                    if (byte == 0x47):
+                        entry.append(ProcessName(file, byte))
+
     return entry
 
 
