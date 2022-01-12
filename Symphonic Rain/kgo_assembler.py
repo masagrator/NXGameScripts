@@ -2,14 +2,7 @@ import sys
 import os
 import json
 import glob
-from PIL import ImageFont
 from kgo_commands import *
-
-def GetTextSize(text):
-	size = GetTextSize.font.getsize(text)
-	return size[0]
-
-GetTextSize.font = ImageFont.truetype("Nintendo_Switch_UI_Font.ttf", 38)
 
 def ProcessCommands(dict, Offsets = None):
 	match(dict["TYPE"]):
@@ -105,18 +98,6 @@ def ProcessCommands(dict, Offsets = None):
 				return Assemble.Text(dict, Offsets)
 			else:
 				for i in range(0, len(dict["STRING"])):
-					TextSize = GetTextSize(dict["STRING"][i].replace("\t", ""))
-					if (TextSize > 1080):
-						string = dict["STRING"][i].replace("\t", "")
-						OriginalWidth = TextSize
-						while(TextSize > 1080):
-							string = string[:-1]
-							TextSize = GetTextSize(string)
-						print("String is too long by %0.2f %s!" % ((OriginalWidth / 1080) * 100 - 100, "%"))
-						print("String: \n%s" % dict["STRING"][i])
-						print("String that fits: \n%s" % string)
-						print("ABORTING...!")
-						sys.exit()
 					bytes = []
 					text = dict["STRING"][i].encode("UTF-8")
 					length = len(text) + 2 + 1
@@ -390,7 +371,7 @@ Offsets["text_blob_start"] = 0x34
 Offsets["text_blob_size"] = 0x38
 Offsets["text_count"] = 0x3C
 
-files = glob.glob("jsons/*.json")
+files = glob.glob("jsons_new/*.json")
 
 os.makedirs("New_KGO", exist_ok=True)
 
@@ -428,9 +409,15 @@ for y in range(0, len(files)):
 		if (len(string) != string_size):
 			entry.append(b"\x00")
 		entry[0] = numpy.uint16(len(b"".join(entry)))
-		registration_block.append(b"".join(entry))
+		registration_block.append(entry)
 
 	for i in range(0, len(dump["COMMANDS"])):
+
+		if (len(registration_block) != 0):
+			if (registration_block[i][10] != b"da07_2\x00"):
+				registration_block[i][4] = numpy.uint16(len(b"".join(main_commands_block)))
+			else:
+				registration_block[i][4] = numpy.uint16(0)
 
 		commands_block = []
 		commands_block_true = []
@@ -470,15 +457,18 @@ for y in range(0, len(files)):
 		entry[0] = numpy.uint16(len(b"".join(entry)))
 		text_block_registration.append(b"".join(entry))
 
-	file = open("New_KGO/%s.kgo" % files[y][6:-5], "wb")
+	file = open("New_KGO/%s.kgo" % files[y][10:-5], "wb")
 	file.write(b"SR10")
 	file.write(b"\x00" * 4)
 	file.write(numpy.uint32(dump["HEADER"]["FILE_ID"]))
 	file.write(bytes.fromhex(dump["HEADER"]["CRC"]))
 	file.write(numpy.uint32(0x40))
-	file.write(numpy.uint32(len(b"".join(registration_block))))
+	size = 0
+	for i in range(0, len(registration_block)):
+		size += len(b"".join(registration_block[i]))
+	file.write(numpy.uint32(size))
 	file.write(numpy.uint32(len(dump["HEADER"]["REGISTRATION_BLOCK"])))
-	offset = 0x40 + len(b"".join(registration_block))
+	offset = 0x40 + size
 	while(offset % 16 != 0):
 		offset += 1
 	file.write(numpy.uint32(offset))
@@ -496,7 +486,8 @@ for y in range(0, len(files)):
 	file.write(numpy.uint32(offset))
 	file.write(numpy.uint32(len(b"".join(ProcessCommands.text_blob))))
 	file.write(numpy.uint32(Storage.Textcounter-1))
-	file.write(b"".join(registration_block))
+	for i in range(0, len(registration_block)):
+		file.write(b"".join(registration_block[i]))
 	while(file.tell() % 16 != 0):
 		file.write(b"\x00")
 	file.write(b"".join(main_commands_block))

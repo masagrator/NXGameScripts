@@ -11,10 +11,16 @@ for i in range(0, len(files)):
     dump = json.load(file)
     file.close()
 
-    textlist = []
+    textlist = {}
+    textlist["TEXT"] = []
+    textlist["SELECT"] = []
     for x in range(0, len(dump["COMMANDS"])):
-        if (dump["COMMANDS"][x]["TYPE"] == "Text"):
-            textlist.append(dump["COMMANDS"][x]["STRING"])
+        for y in range(0, len(dump["COMMANDS"][x])):
+            match(dump["COMMANDS"][x][y]["TYPE"]):
+                case "Text":
+                    textlist["TEXT"].append(dump["COMMANDS"][x][y]["STRING"])
+                case "Select":
+                    textlist["SELECT"].append(dump["COMMANDS"][x][y]["STRINGS"])
     
     file_new = open("jsons_texts/%s" % files[i][6:], "w", encoding="UTF-8")
     json.dump(textlist, file_new, indent="\t", ensure_ascii=False)
