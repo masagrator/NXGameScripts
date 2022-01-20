@@ -400,10 +400,10 @@ for y in range(0, len(files)):
 		entry.append(numpy.uint16(Registration_dump["UNK1"]))
 		entry.append(numpy.uint16(Registration_dump["UNK2"]))
 		entry.append(numpy.uint16(Registration_dump["UNK3"]))
-		entry.append(numpy.uint16(Registration_dump["UNK4"]))
-		entry.append(numpy.uint16(Registration_dump["UNK5"]))
-		entry.append(numpy.uint16(Registration_dump["UNK6"]))
-		entry.append(numpy.uint16(Registration_dump["UNK7"]))
+		entry.append(numpy.uint16(Registration_dump["DATE_START"]))
+		entry.append(numpy.uint16(Registration_dump["HOUR_START"]))
+		entry.append(numpy.uint16(Registration_dump["DATE_END"]))
+		entry.append(numpy.uint16(Registration_dump["HOUR_END"]))
 		string = Registration_dump["STRING"].encode("UTF-8") + b"\x00"
 		entry.append(string)
 		if (len(string) != string_size):
