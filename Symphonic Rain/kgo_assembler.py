@@ -413,11 +413,14 @@ for y in range(0, len(files)):
 
 	for i in range(0, len(dump["COMMANDS"])):
 
+		# Hack for scr0174 to get proper assembly
 		if (len(registration_block) != 0):
 			if (registration_block[i][10] != b"da07_2\x00"):
 				registration_block[i][4] = numpy.uint16(len(b"".join(main_commands_block)))
 			else:
 				registration_block[i][4] = numpy.uint16(0)
+				registration_block[i+1][4] = numpy.uint16(len(b"".join(main_commands_block)))
+				registration_block[i+2][4] = numpy.uint16(len(b"".join(main_commands_block)))
 
 		commands_block = []
 		commands_block_true = []
