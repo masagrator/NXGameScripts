@@ -1,7 +1,11 @@
 import json
 import os
+from pstats import SortKey
 import sys
 import glob
+
+def Sort(elem):
+	return elem
 
 def readString(myfile):
 	chars = []
@@ -14,6 +18,8 @@ def readString(myfile):
 files = glob.glob("sn/*.bin")
 
 os.makedirs("jsons", exist_ok=True)
+
+Check = []
 
 for i in range(len(files)):
 	if (files[i][3:7] == "0316"):
@@ -34,6 +40,8 @@ for i in range(len(files)):
 		entry = {}
 		entry["LABEL"] = "0x%x" % file.tell()
 		cmd = int.from_bytes(file.read(0x1), byteorder="little")
+		if (cmd not in Check):
+			Check.append(cmd)
 		match(cmd):
 			case 0:
 				entry["CMD"] = "%x" % cmd
@@ -50,9 +58,9 @@ for i in range(len(files)):
 			case 2:
 				entry["TYPE"] = "JUMP_TO_ID"
 				entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
-			case 3:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
+			# case 3:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
 			case 4:
 				entry["TYPE"] = "JUMP_TO_ID2"
 				entry["DATA"] = file.read(0x2).hex()
@@ -74,9 +82,9 @@ for i in range(len(files)):
 			case 8:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x8).hex()
-			case 9:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x8).hex()
+			# case 9:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x8).hex()
 			case 0xA:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x8).hex()
@@ -123,21 +131,21 @@ for i in range(len(files)):
 			case 0x14:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
-			case 0x15:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x16:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x17:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x18:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x19:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x8).hex()
+			# case 0x15:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x16:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x17:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x18:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x19:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x8).hex()
 			case 0x1A:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
@@ -174,31 +182,31 @@ for i in range(len(files)):
 			case 0x25:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
-			case 0x26:
-				entry["CMD"] = "%x" % cmd
-				pass
-			case 0x27:
-				entry["CMD"] = "%x" % cmd
-				pass
-			case 0x28:
-				entry["CMD"] = "%x" % cmd
-				print("DETECTED 0x28")
-				input()
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x29:
-				entry["CMD"] = "%x" % cmd
-				print("DETECTED 0x29")
-				input()
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x2A:
-				entry["CMD"] = "%x" % cmd
-				pass
-			case 0x2B:
-				entry["CMD"] = "%x" % cmd
-				pass
-			case 0x2C:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
+			# case 0x26:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
+			# case 0x27:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
+			# case 0x28:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	print("DETECTED 0x28")
+			# 	input()
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x29:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	print("DETECTED 0x29")
+			# 	input()
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x2A:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
+			# case 0x2B:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
+			# case 0x2C:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
 			case 0x2D:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
@@ -244,18 +252,18 @@ for i in range(len(files)):
 			case 0x34:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0xA).hex()
-			case 0x35:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
+			# case 0x35:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
 			case 0x36:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x3).hex()
-			case 0x37:
-				entry["CMD"] = "%x" % cmd
-				pass
-			case 0x38:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
+			# case 0x37:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
+			# case 0x38:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
 			case 0x39:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
@@ -268,12 +276,12 @@ for i in range(len(files)):
 			case 0x3C:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x2).hex()
-			case 0x3D:
-				entry["CMD"] = "%x" % cmd
-				pass
-			case 0x3E:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
+			# case 0x3D:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
+			# case 0x3E:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
 			case 0x3F:
 				entry["CMD"] = "%x" % cmd
 				print("0x3F is a nullsub! Disassembling failed!")
@@ -284,6 +292,9 @@ for i in range(len(files)):
 				print("0x40 is a nullsub! Disassembling failed!")
 				print("Offset: 0x%x" % file.tell())
 				sys.exit()
+			# case 0x41:
+			# 	entry["CMD"] = "%x" % cmd
+			#	pass
 			case 0x42:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x8).hex()
@@ -320,18 +331,18 @@ for i in range(len(files)):
 					print("UNKNOWN 0x45 TYPE! %x" % type)
 					print("0x%x" % file.tell())
 					sys.exit()
-			case 0x46:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-				type = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
-				if (type == -1):
-					entry["TYPE"] = "MESSAGE"
-					ID = int.from_bytes(file.read(0x2), byteorder="little")
-					entry["STRING"] = readString(file)
-				else:
-					print("UNKNOWN 0x46 TYPE! %x" % type)
-					print("0x%x" % file.tell())
-					sys.exit()
+			# case 0x46:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# 	type = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
+			# 	if (type == -1):
+			# 		entry["TYPE"] = "MESSAGE"
+			# 		ID = int.from_bytes(file.read(0x2), byteorder="little")
+			# 		entry["STRING"] = readString(file)
+			# 	else:
+			# 		print("UNKNOWN 0x46 TYPE! %x" % type)
+			# 		print("0x%x" % file.tell())
+			# 		sys.exit()
 			case 0x47:
 				entry["CMD"] = "TEXT"
 				type = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
@@ -361,84 +372,84 @@ for i in range(len(files)):
 			case 0x4C:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x6).hex()
-			case 0x4D:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0xA).hex()
-			case 0x4E:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
+			# case 0x4D:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0xA).hex()
+			# case 0x4E:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
 			case 0x4F:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
-			case 0x50:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
+			# case 0x50:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
 			case 0x51:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x6).hex()
-			case 0x52:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0xA).hex()
-			case 0x53:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x54:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x8).hex()
-			case 0x55:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x56:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x57:
-				entry["CMD"] = "%x" % cmd
-				pass
-			case 0x58:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x59:
-				entry["CMD"] = "%x" % cmd
-				pass
+			# case 0x52:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0xA).hex()
+			# case 0x53:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x54:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x8).hex()
+			# case 0x55:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x56:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x57:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
+			# case 0x58:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x59:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
 			case 0x5A:
 				entry["CMD"] = "%x" % cmd
 				pass
-			case 0x5B:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0xA).hex()
-			case 0x5C:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x6).hex()
-			case 0x5D:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x5E:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
+			# case 0x5B:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0xA).hex()
+			# case 0x5C:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x6).hex()
+			# case 0x5D:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x5E:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
 			case 0x5F:
 				entry["CMD"] = "%x" % cmd
 				pass
-			case 0x60:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x61:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x6).hex()
-			case 0x62:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x63:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0xA).hex()
-			case 0x64:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x6).hex()
-			case 0x65:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x66:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
+			# case 0x60:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x61:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x6).hex()
+			# case 0x62:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x63:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0xA).hex()
+			# case 0x64:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x6).hex()
+			# case 0x65:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x66:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
 			case 0x67:
 				entry["CMD"] = "%x" % cmd
 				print("0x67 is a nullsub! Disassembling failed!")
@@ -453,33 +464,33 @@ for i in range(len(files)):
 			case 0x6A:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
-			case 0x6B:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
+			# case 0x6B:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
 			case 0x6C:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x10).hex()
-			case 0x6D:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
+			# case 0x6D:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
 			case 0x6E:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
-			case 0x6F:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x6).hex()
-			case 0x70:
-				entry["CMD"] = "%x" % cmd
-				pass
+			# case 0x6F:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x6).hex()
+			# case 0x70:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
 			case 0x71:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x6).hex()
 			case 0x72:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
-			case 0x73:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0xA).hex()
+			# case 0x73:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0xA).hex()
 			case 0x74:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x6).hex()
@@ -491,36 +502,36 @@ for i in range(len(files)):
 				print("0x76 is a nullsub! Disassembling failed!")
 				print("Offset: 0x%x" % file.tell())
 				sys.exit()
-			case 0x77:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x78:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x79:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x7A:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x6).hex()
+			# case 0x77:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x78:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x79:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x7A:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x6).hex()
 			case 0x7B:
 				entry["CMD"] = "%x" % cmd
 				entry["DATA"] = file.read(0x4).hex()
-			case 0x7C:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x7D:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x7E:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x7F:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x80:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
+			# case 0x7C:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x7D:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x7E:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x7F:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x80:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
 			case 0x81:
 				entry["CMD"] = "%x" % cmd
 				print("0x81 is a nullsub! Disassembling failed!")
@@ -560,18 +571,18 @@ for i in range(len(files)):
 				print("0x89 is a nullsub! Disassembling failed!")
 				print("Offset: 0x%x" % file.tell())
 				sys.exit()
-			case 0x8A:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x2).hex()
-			case 0x8B:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x8C:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x8D:
-				entry["CMD"] = "%x" % cmd
-				pass
+			# case 0x8A:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x2).hex()
+			# case 0x8B:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x8C:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x8D:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	pass
 			case 0x8E:
 				entry["CMD"] = "%x" % cmd
 				print("0x8E is a nullsub! Disassembling failed!")
@@ -582,21 +593,21 @@ for i in range(len(files)):
 				print("0x90is a nullsub! Disassembling failed!")
 				print("Offset: 0x%x" % file.tell())
 				sys.exit()
-			case 0x90:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-			case 0x91:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-				entry["STRING"] = readString(file)
-			case 0x92:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-				entry["STRING"] = readString(file)
-			case 0x93:
-				entry["CMD"] = "%x" % cmd
-				entry["DATA"] = file.read(0x4).hex()
-				entry["STRING"] = readString(file)
+			# case 0x90:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# case 0x91:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# 	entry["STRING"] = readString(file)
+			# case 0x92:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# 	entry["STRING"] = readString(file)
+			# case 0x93:
+			# 	entry["CMD"] = "%x" % cmd
+			# 	entry["DATA"] = file.read(0x4).hex()
+			# 	entry["STRING"] = readString(file)
 			case _:
 				entry["CMD"] = "%x" % cmd
 				print("UNKNOWN COMMAND: 0x%x" % cmd)
@@ -607,3 +618,6 @@ for i in range(len(files)):
 	file_new = open("jsons/%s.json" % files[i][3:-4], "w", encoding="UTF-8")
 	json.dump(OUTPUT, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
+
+Check.sort(key=Sort)
+print(Check)
