@@ -1,11 +1,7 @@
 import json
 import os
-from pstats import SortKey
 import sys
 import glob
-
-def Sort(elem):
-	return elem
 
 def readString(myfile):
 	chars = []
@@ -18,8 +14,6 @@ def readString(myfile):
 files = glob.glob("sn/*.bin")
 
 os.makedirs("jsons", exist_ok=True)
-
-Check = []
 
 for i in range(len(files)):
 	if (files[i][3:7] == "0316"):
@@ -40,8 +34,6 @@ for i in range(len(files)):
 		entry = {}
 		entry["LABEL"] = "0x%x" % file.tell()
 		cmd = int.from_bytes(file.read(0x1), byteorder="little")
-		if (cmd not in Check):
-			Check.append(cmd)
 		match(cmd):
 			case 0:
 				entry["CMD"] = "%x" % cmd
@@ -618,6 +610,3 @@ for i in range(len(files)):
 	file_new = open("jsons/%s.json" % files[i][3:-4], "w", encoding="UTF-8")
 	json.dump(OUTPUT, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
-
-Check.sort(key=Sort)
-print(Check)
