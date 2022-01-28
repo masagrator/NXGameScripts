@@ -341,10 +341,12 @@ for i in range(len(files)):
 						print("0x%X" % file.tell())
 						sys.exit()
 				case 0x45:
-					entry["CMD"] = "MC_TEXT"
+					entry["CMD"] = "TEXT2"
 					type = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
 					if (type == -1):
-						entry["ID"] = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
+						ID = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
+						if (ID < 0):
+							entry["ID"] = ID
 						entry["STRING"] = readString(file)
 					else:
 						print("UNKNOWN 0x45 TYPE! %X" % type)

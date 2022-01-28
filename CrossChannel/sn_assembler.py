@@ -216,10 +216,12 @@ def ProcessCommands(dict, precalcs = None):
 				print("UNKNOWN VOICE TYPE!")
 				print(dict["TYPE"])
 				sys.exit()
-		case "MC_TEXT":
+		case "TEXT2":
 			entry.append(numpy.uint8(0x45))
 			entry.append(numpy.int16(-1))
-			if (dict["ID"] > -1):
+			try:
+				dict["ID"]
+			except:
 				entry.append(numpy.uint16(Utils.text_counter))
 				Utils.text_counter += 1
 			else:
