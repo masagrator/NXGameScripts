@@ -30,8 +30,7 @@ def ProcessCommands(dict, precalcs = None):
 			entry.append(numpy.uint32(dict["ID"]))
 		case "JMP4":
 			entry.append(numpy.uint8(4))
-			entry.append(bytes.fromhex(dict["DATA"]))
-			entry.append(numpy.uint16(dict["ID"]))
+			entry.append(numpy.uint32(dict["ID"]))
 		case "RETURN":
 			entry.append(numpy.uint8(5))
 			try:
@@ -323,7 +322,10 @@ for i in range(0, 316):
 	OUTPUT = []
 	PrecalculateOffsets = {}
 	print(i)
-	file = open("jsons/%04d.json" % i, "r", encoding="UTF-8")
+	try:
+		file = open("jsons_new/%04d.json" % i, "r", encoding="UTF-8")
+	except:
+		file = open("jsons/%04d.json" % i, "r", encoding="UTF-8")
 	dump = json.load(file)
 	file.close()
 
