@@ -26,20 +26,32 @@ def SearchInFile(file, size):
     name = ""
     while (file.tell() < size):
         check = file.read(1)
+        entry = {}
         if (check == b"c"):
             if (file.read(4) == b"har\x00"):
-                entry = {}
-                entry["TYPE"] = "STRING"
-                if (name != ""):
-                    entry["NAME"] = name
-                    name = ""
-                entry["STRING"] = readString(file).replace("¥d", "").replace("%K", "").replace("%P", "").replace("¥n", "\n")
+                entry["TYPE"] = "MESSAGE"
+                entry["STRING"] = readString(file).replace("¥d", "").replace("%K", "").replace("%P", "").replace("¥n", "%N")
                 dump.append(entry)
             else:
                 file.seek(-4, 1)
-        if (check == b"%"):
+        elif (check == b"%"):
             if (file.read(2) == b"LC"):
-                name = readString(file)
+                entry["TYPE"] = "NAME"
+                entry["STRING"] = readString(file)
+                dump.append(entry)
+            else:
+                file.seek(-2, 1)
+        elif (check == b"\x0E"):
+            if (file.read(2) == b"\x0B\x00"):
+                entry["TYPE"] = "SELECT2"
+                count = int.from_bytes(file.read(2), byteorder="little")
+                file.seek(-5, 1)
+                entry2 = []
+                for x in range(0, count):
+                    file.seek(10, 1)
+                    entry2.append(readString(file))
+                entry["STRINGS"] = entry2
+                dump.append(entry)
             else:
                 file.seek(-2, 1)
     return dump
@@ -59,6 +71,6 @@ for i in range(0, len(files)):
     else:
         print(files[i])
         dump = SearchInFile(file, GetFileSize(file))
-        file_new = open("rio_txt/%s.json" % files[i][4:-4], "w", encoding="UTF-8")
+        file_new = open("rio_txt/%s.json" % files[i][4:-7], "w", encoding="UTF-8")
         json.dump(dump, file_new, indent="\t", ensure_ascii=False)
         file_new.close()
