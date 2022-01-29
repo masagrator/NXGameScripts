@@ -23,11 +23,11 @@ for i in range(0, len(files)):
         match(ORIG_DUMP["COMMANDS"][x]["CMD"]):
             case "31":
                 for y in range(0, len(ORIG_DUMP["COMMANDS"][x]["LIST"])):
-                    ORIG_DUMP["COMMANDS"][x]["LIST"][y] = TEXT_DUMP[a]["STRINGS"][y]
+                    ORIG_DUMP["COMMANDS"][x]["LIST"][y]["STRING"] = TEXT_DUMP[a]["STRINGS"][y]
                 a += 1
             case "SELECT":
                 for y in range(0, len(ORIG_DUMP["COMMANDS"][x]["LIST"])):
-                    ORIG_DUMP["COMMANDS"][x]["LIST"][y] = TEXT_DUMP[a]["STRINGS"][y]
+                    ORIG_DUMP["COMMANDS"][x]["LIST"][y]["STRING"] = TEXT_DUMP[a]["STRINGS"][y]
                 a += 1
             case "VOICE":
                 if (ORIG_DUMP["COMMANDS"][x]["TYPE"] == "WITH_TEXT"):
