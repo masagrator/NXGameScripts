@@ -46,15 +46,27 @@ def ProcessCommands(dict, precalcs = None):
 				entry.append(numpy.uint32(0))
 			else:
 				entry.append(numpy.uint32(precalcs[dict["TO_LABEL"]]))
-		case "7":
+		case "IFGOTO7":
 			entry.append(numpy.uint8(7))
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "8":
+			if (precalcs == None):
+				entry.append(numpy.uint32(0))
+			else:
+				entry.append(numpy.uint32(precalcs[dict["TO_LABEL"]]))
+		case "IFGOTO8":
 			entry.append(numpy.uint8(8))
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "A":
+			if (precalcs == None):
+				entry.append(numpy.uint32(0))
+			else:
+				entry.append(numpy.uint32(precalcs[dict["TO_LABEL"]]))
+		case "IFGOTOA":
 			entry.append(numpy.uint8(0xA))
 			entry.append(bytes.fromhex(dict["DATA"]))
+			if (precalcs == None):
+				entry.append(numpy.uint32(0))
+			else:
+				entry.append(numpy.uint32(precalcs[dict["TO_LABEL"]]))
 		case "IFGOTOB":
 			entry.append(numpy.uint8(0xB))
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -62,9 +74,13 @@ def ProcessCommands(dict, precalcs = None):
 				entry.append(numpy.uint32(0))
 			else:
 				entry.append(numpy.uint32(precalcs[dict["TO_LABEL"]]))
-		case "C":
+		case "IFGOTOC":
 			entry.append(numpy.uint8(0xC))
 			entry.append(bytes.fromhex(dict["DATA"]))
+			if (precalcs == None):
+				entry.append(numpy.uint32(0))
+			else:
+				entry.append(numpy.uint32(precalcs[dict["TO_LABEL"]]))
 		case "GOTO":
 			entry.append(numpy.uint8(0xD))
 			entry.append(bytes.fromhex(dict["DATA"]))

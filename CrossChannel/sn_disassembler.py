@@ -88,8 +88,7 @@ for i in range(len(files)):
 				# 	entry["DATA"] = file.read(0x4).hex()
 				case 4:
 					entry["CMD"] = "JMP4"
-					entry["DATA"] = file.read(0x2).hex()
-					entry["ID"] = int.from_bytes(file.read(0x2), byteorder="little")
+					entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
 				case 5:
 					entry["CMD"] = "RETURN"
 					if (file.read(0x1) == b"\x05"):
@@ -102,24 +101,28 @@ for i in range(len(files)):
 					entry["DATA"] = file.read(0x4).hex()
 					entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				case 7:
-					entry["CMD"] = "%X" % cmd
-					entry["DATA"] = file.read(0x8).hex()
+					entry["CMD"] = "IFGOTO7"
+					entry["DATA"] = file.read(0x4).hex()
+					entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				case 8:
-					entry["CMD"] = "%X" % cmd
-					entry["DATA"] = file.read(0x8).hex()
+					entry["CMD"] = "IFGOTO8"
+					entry["DATA"] = file.read(0x4).hex()
+					entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				# case 9:
 				# 	entry["CMD"] = "%X" % cmd
 				# 	entry["DATA"] = file.read(0x8).hex()
 				case 0xA:
-					entry["CMD"] = "%X" % cmd
-					entry["DATA"] = file.read(0x8).hex()
+					entry["CMD"] = "IFGOTOA"
+					entry["DATA"] = file.read(0x4).hex()
+					entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				case 0xB:
 					entry["CMD"] = "IFGOTOB"
 					entry["DATA"] = file.read(0x4).hex()
 					entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				case 0xC:
-					entry["CMD"] = "%X" % cmd
-					entry["DATA"] = file.read(0x6).hex()
+					entry["CMD"] = "IFGOTOC"
+					entry["DATA"] = file.read(0x2).hex()
+					entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				case 0xD:
 					entry["CMD"] = "GOTO"
 					entry["DATA"] = file.read(0x2).hex()
