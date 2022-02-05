@@ -91,29 +91,29 @@ def CalcGoto(file, entry, end):
 			continue
 		match(control):
 			case 0:
-				entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 			
 			case 0x1E:
-				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
 
 			case 0x1F:
-				entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
 
 			case 0x20:
-				entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
 			
 			case 0x21:
-				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little")]
-				entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
 
 			case 0x23:
-				entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
 			
 			case 0x24:
-				entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 
 			case 0x25:
-				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little")]
+				entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
 			
 			case 0x1C:
 				cmd = int.from_bytes(file.read(1), byteorder="little")
@@ -131,11 +131,12 @@ def CalcGoto(file, entry, end):
 def GenerateCommand(cmd, file, end):
 	entry = {}
 	entry["LABEL"] = "0x%x" % (file.tell() - 1)
-	print("0x%x" % cmd)
+	#print("0x%x" % cmd)
 	match(cmd):
 		case 0:
 			if ((end - file.tell()) < 4):
 				file.seek(end)
+				return None
 			else:
 				print("NOP DETECTED. DISASSEMBLING FAILED")
 				print("OFFSET: 0x%x" % (file.tell() - 1))
@@ -159,11 +160,13 @@ def GenerateCommand(cmd, file, end):
 
 		case 5:
 			entry["TYPE"] = "GOTO5"
+			entry["UNK"] = []
 			CalcGoto(file, entry, end)
 			entry["TO_LABEL"] = "0x%x" % int.from_bytes(file.read(4), byteorder="little")
 		
 		case 6:
 			entry["TYPE"] = "GOTO6"
+			entry["UNK"] = []
 			CalcGoto(file, entry, end)
 			count = int.from_bytes(file.read(1), byteorder="little")
 			entry["TO_LABELS"] = []
@@ -178,6 +181,7 @@ def GenerateCommand(cmd, file, end):
 		
 		case 8:
 			entry["TYPE"] = "0x8"
+			entry["UNK"] = []
 			CalcGoto(file, entry, end)
 		
 		case 0xA:
@@ -640,7 +644,7 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
 			entry["UNK"] = []
 			if (entry["CONTROL"] in [0, 0x10]):
-				return
+				return entry
 			match(entry["CONTROL"]):
 				case 2:
 					entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
@@ -787,7 +791,7 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
 			check = [7]
 			if (entry["CONTROL"] in check):
-				return
+				return entry
 			match(entry["CONTROL"]):
 				case 0:
 					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
@@ -834,12 +838,12 @@ def GenerateCommand(cmd, file, end):
 			match(entry["CONTROL"]):
 				case 0xFE:
 					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
-					return
+					return entry
 				case 0xFF:
 					entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
 					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
-					return
+					return entry
 			if (entry["CONTROL"] in [0, 0x32]):
 				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 				entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
@@ -1136,7 +1140,7 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
 			entry["UNK"] = []
 			if (entry["CONTROL"] in [0xB, 0xE, 0xF, 0x10, 0x11, 0x12, 0x16, 0x1D, 0x1E, 0x20, 0x25]):
-				return
+				return entry
 			first_type = [10, 4, 3, 2, 1, 0]
 			if (entry["CONTROL"] in first_type):
 				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
@@ -1147,7 +1151,7 @@ def GenerateCommand(cmd, file, end):
 				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
-				return
+				return entry
 			match(entry["CONTROL"]):
 				case 0xD:
 					entry["STRINGS"] = [readString(file), readString(file)]
@@ -1331,7 +1335,7 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
 			entry["STRINGS"] = [readString(file)]
 			if (entry["CONTROL"] in [5, 6, 9]):
-				return
+				return entry
 			match(entry["CONTROL"]):
 				case 0:
 					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
@@ -1649,7 +1653,7 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
 			check = [0, 1]
 			if (entry["CONTROL"] in check):
-				return
+				return entry
 			match(entry["CONTROL"]):
 				case 3:
 					entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
@@ -1989,11 +1993,11 @@ def GenerateCommand(cmd, file, end):
 	return entry
 
 def GenerateMonsters(file, until_offset = None):
-	print("READING MONSTERS")
-	print("OFFSET: 0x%x" % file.tell())
+	#print("READING MONSTERS")
+	#print("OFFSET: 0x%x" % file.tell())
 	entry = {}
-	entry["UNK"] = []
 	entry["TYPE"] = "CREATE_MONSTERS"
+	entry["UNK"] = []
 	firstByte = file.read(1)
 	file.seek(-1, 1)
 	if (firstByte == b"\xFF"):
@@ -2047,6 +2051,10 @@ os.makedirs("jsons", exist_ok=True)
 
 for y in range(0, len(files)):
 	print(files[y])
+	if (files[y] == "nx\\a1700.dat"):
+		print("For some reason script stucks at this file.")
+		print("When you see that script doesn't continue, in cmd press 'Ctrl+C'.")
+		print("This won't cease process, script will continue working.")
 	file = open(files[y], "rb")
 
 	DUMP = {}
@@ -2105,14 +2113,18 @@ for y in range(0, len(files)):
 				except:
 					file.seek(tell_pos)
 					cmd = int.from_bytes(file.read(1), byteorder="little")
-					DUMP["FUNCTIONS"]["%04d" % i].append(GenerateCommand(cmd, file, end))
+					CMD_ENTRY = GenerateCommand(cmd, file, end)
+					if (CMD_ENTRY != None):
+						DUMP["FUNCTIONS"]["%04d" % i].append(CMD_ENTRY)
 				else:
 					file.seek(tell_pos)
 					if ((len(string) == 6) and (ord(string[0]) >= 0x20)):
 						DUMP["FUNCTIONS"]["%04d" % i].append(GenerateMonsters(file, end))
 					else:
 						cmd = int.from_bytes(file.read(1), byteorder="little")
-						DUMP["FUNCTIONS"]["%04d" % i].append(GenerateCommand(cmd, file, end))
+						CMD_ENTRY = GenerateCommand(cmd, file, end)
+						if (CMD_ENTRY != None):
+							DUMP["FUNCTIONS"]["%04d" % i].append(CMD_ENTRY)
 
 	file.close()
 
