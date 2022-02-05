@@ -1472,41 +1472,35 @@ def GenerateMonsters(file, until_offset = None):
 	#print("OFFSET: 0x%x" % file.tell())
 	entry = {}
 	entry["TYPE"] = "CREATE_MONSTERS"
-	entry["UNK"] = []
 	firstByte = file.read(1)
 	file.seek(-1, 1)
 	if (firstByte == b"\xFF"):
-		entry["UNK"].append(file.read(0x1C).hex().upper())
+		entry["UNK0"] = file.read(0x1C).hex().upper()
 		return entry
 	entry["MAP"] = readString(file)
 	file.seek(0x10 - (len(entry["MAP"]) + 1), 1)
-	entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
-	entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
-	entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
-	entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
-	entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
-	entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
-	entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+	entry["UNK0"] = file.read(16).hex().upper()
+	entry["TABLE"] = []
 	while(True):
-		entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
-		entry["STRINGS"] = []
+		entry2 = {}
+		entry2["UNK0"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
+		entry2["STRINGS1"] = []
 		for i in range(0, 8):
 			string = readString(file)
-			entry["STRINGS"].append(string)
+			entry2["STRINGS1"].append(string)
 			file.seek(0x10 - (len(string) + 1), 1)
-		for i in range(0, 8):
-			entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+		entry2["UNK1"] = file.read(8).hex().upper()
 		check = int.from_bytes(file.read(4), byteorder="little", signed=True)
 		file.seek(-4, 1)
 		if (check == 0):
-			entry["UNK"].append(file.read(8).hex().upper())
+			entry2["UNK1"] += file.read(8).hex().upper()
 		else:
-			string = readString(file)
-			entry["STRINGS"].append(string)
-			file.seek(12 - (len(string) + 1), 1)
+			entry2["STRINGS2"] = [readString(file)]
+			file.seek(12 - (len(entry2["STRINGS2"][0]) + 1), 1)
 
 		check = file.read(1)
 		file.seek(-1, 1)
+		entry["TABLE"].append(entry2)
 		if (check == b"\xFF"): break
 		if (file.tell() == (until_offset - 4)): break
 	
@@ -1517,7 +1511,7 @@ def GenerateMonsters(file, until_offset = None):
 			print("OFFSET: 0x%x" % (file.tell() - 4))
 			sys.exit()
 	else:
-		entry["UNK"].append(file.read(0x1C).hex().upper())
+		entry["UNK1"] = file.read(0x1C).hex().upper()
 	return entry
 
 
