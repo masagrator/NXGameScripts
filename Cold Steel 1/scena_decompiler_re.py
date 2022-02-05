@@ -44,7 +44,7 @@ def ReadDialog(file, entry):
 	entry["DIALOG"]["STRINGS"] = []
 	while(True):
 		control = int.from_bytes(file.read(1), byteorder="little")
-		type_check = [7, 8, 9, 0xB, 0xC, 0xF]
+		type_check = [8, 9, 0xB, 0xC, 0xF]
 		if (control in type_check):
 			entry["DIALOG"]["STRINGS"].append('CMD: %d' % control)
 			entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
