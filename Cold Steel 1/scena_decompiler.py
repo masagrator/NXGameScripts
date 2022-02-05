@@ -40,42 +40,59 @@ def readStringDialog(myfile):
 			return str(b"".join(chars).decode("UTF-8"))
 
 def ReadDialog(file, entry):
-	entry["CONTROLS"] = []
-	entry["STRINGS"] = []
+	entry["DIALOG"] = {}
+	entry["DIALOG"]["STRINGS"] = []
 	while(True):
-		entry["CONTROLS"].append(int.from_bytes(file.read(1), byteorder="little"))
-		type_check = [1, 3, 6, 7, 8, 9, 0xB, 0xC, 0xF]
-		if (entry["CONTROLS"][len(entry["CONTROLS"]) - 1] in type_check):
-			entry["STRINGS"].append(readStringDialog(file))
+		control = int.from_bytes(file.read(1), byteorder="little")
+		type_check = [7, 8, 9, 0xB, 0xC, 0xF]
+		if (control in type_check):
+			entry["DIALOG"]["STRINGS"].append('CMD: %d' % control)
+			entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
 			continue
-		match(entry["CONTROLS"][len(entry["CONTROLS"]) - 1]):
+		match(control):
 			case 0:
 				return
 			
-			case 2:
-				pass
+			case 1:
+				entry["DIALOG"]["STRINGS"][len(entry["DIALOG"]["STRINGS"]) - 1] += "\n"
+				entry["DIALOG"]["STRINGS"][len(entry["DIALOG"]["STRINGS"]) - 1] += readStringDialog(file)
 			
+			case 2:
+				entry["DIALOG"]["STRINGS"].append("KEY_WAIT")
+			
+			case 3:
+				entry["DIALOG"]["STRINGS"].append("CLEAR_TEXT")
+				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
+			
+			case 6:
+				entry["DIALOG"]["STRINGS"].append("SHOW_ALL")
+				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
+			
+			case 7:
+				entry["DIALOG"]["STRINGS"].append("SET_COLOR")
+				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
+
 			case 0x10:
-				entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little"))
+				entry["DIALOG"]["STRINGS"].append("ITEM_ID: %d" % int.from_bytes(file.read(2), byteorder="little"))
 
 			case 0x11:
-				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little"))
-				entry["STRINGS"].append(readStringDialog(file))
+				entry["DIALOG"]["STRINGS"].append("VOICE_FILE_ID: %d" % int.from_bytes(file.read(4), byteorder="little"))
+				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
 			
 			case 0x12:
-				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little"))
-				entry["STRINGS"].append(readStringDialog(file))
+				entry["DIALOG"]["UNK"] = [int.from_bytes(file.read(4), byteorder="little")]
+				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
 			
 			case 0x23:
 				file.seek(-1, 1)
-				entry["STRINGS"].append(readStringDialog(file))
+				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
 			
 			case _:
-				if (entry["CONTROLS"][len(entry["CONTROLS"]) - 1] >= 0x20):
+				if (control  >= 0x20):
 					file.seek(-1, 1)
-					entry["STRINGS"].append(readStringDialog(file))
+					entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
 				else:
-					print("UNKNOWN DIALOG COMMAND: 0x%x" % entry["CONTROLS"][len(entry["CONTROLS"]) - 1])
+					print("UNKNOWN DIALOG COMMAND: 0x%x" % control)
 					print("OFFSET: 0x%x" % (file.tell() - 1))
 					sys.exit()
 
@@ -302,19 +319,19 @@ def GenerateCommand(cmd, file, end):
 					sys.exit()
 		
 		case 0x1A:
-			entry["TYPE"] = "0x1A"
-			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+			entry["TYPE"] = "MESSAGE"
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little", signed=True)
 			ReadDialog(file, entry)
 
 		case 0x1B:
 			entry["TYPE"] = "0x1B"
 			
 		case 0x1C:
-			entry["TYPE"] = "0x1C"
+			entry["TYPE"] = "REMOVE_TEXT_BOX"
 		
 		case 0x1D:
-			entry["TYPE"] = "0x1D"
-			entry["STRINGS"] = [readString(file)]
+			entry["TYPE"] = "CUSTOM_DIALOG_NAME"
+			entry["NAME"] = [readString(file)]
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0x1E:
