@@ -44,7 +44,7 @@ def ReadDialog(file, entry):
 	entry["STRINGS"] = []
 	while(True):
 		entry["CONTROLS"].append(int.from_bytes(file.read(1), byteorder="little"))
-		type_check = [1, 3, 6, 7, 8, 9, 0xB, 0xC]
+		type_check = [1, 3, 6, 7, 8, 9, 0xB, 0xC, 0xF]
 		if (entry["CONTROLS"][len(entry["CONTROLS"]) - 1] in type_check):
 			entry["STRINGS"].append(readStringDialog(file))
 			continue
@@ -83,7 +83,7 @@ def CalcGoto(file, entry, end):
 	entry["CONTROLS"] = []
 	control = int.from_bytes(file.read(1), byteorder="little")
 	entry["CONTROLS"].append(control)
-	passing = [2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x10, 0x12, 0x13, 0x22]
+	passing = [2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x10, 0x11, 0x12, 0x13, 0x17, 0x22]
 	while (control != 1):
 		if (control in passing):
 			control = int.from_bytes(file.read(1), byteorder="little")
@@ -294,7 +294,8 @@ def GenerateCommand(cmd, file, end):
 				
 				case _:
 					print("UNKNOWN 0x19 CONTROL: 0x%x" % entry["CONTROL"])
-					print("OFFSET: 0x%x" % (file.tell - 2))
+					print("OFFSET: 0x%x" % (file.tell() - 2))
+					sys.exit()
 		
 		case 0x1A:
 			entry["TYPE"] = "0x1A"
@@ -473,7 +474,145 @@ def GenerateCommand(cmd, file, end):
 						print("UNKNOWN 0x27 CONTROL: 0x%x" % entry["CONTROL"])
 						print("OFFSET: 0x%x" % (file.tell() - 2))
 						sys.exit()
-					
+		
+		case 0x28:
+			entry["TYPE"] = "0x28"
+			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
+
+			match(entry["CONTROL"]):
+				case 0:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+				case 1:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case 0xE:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case 0x12:
+					entry["UNK"] = []
+					for x in range(0, 9):
+						entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				case 0x13:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case 0x15:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case 0x32:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+				case 0x35:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case 0x36:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				case 0x37:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+				case ord("<"):
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case ord("F"):
+					entry["UNK"] = [struct.unpack("<f", file.read(4))[0]]
+					entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+					entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+				case ord("P"):
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["STRINGS"] = [readString(file)]
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["STRINGS"].append(readString(file))
+				case ord("["):
+					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case ord("\\"):
+					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+				case ord("a"):
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case ord("d"):
+					entry["STRINGS"] = [readString(file)]
+				case ord("n"):
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				case ord("r"):
+					entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+				case ord("{"):
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				case ord("i"):
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["STRINGS"] = [readString(file), readString(file)]
+				case ord("j"):
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+				case _:
+					if (entry["CONTROL"] in [ord("\b"), 6, 4, 2]):
+						entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					elif (entry["CONTROL"] in [ord("\a"), 5]):
+						entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+						entry["STRINGS"] = [readString(file)]
+					elif (entry["CONTROL"] in [ord("m"), ord("l"), ord("k"), ord("f"), ord("e"), ord("c"), 0x1C, 0x1A, 0x17, 0x19, 0x14, ord("\r"), 0x10, ord("H"), ord("]"), ord("\t"), ord("^"), ord("_"), ord("`"), ord("s"), ord("t"), ord("u"), ord("y")]):
+						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					elif (entry["CONTROL"] in [ord("\n"), 0xF]):
+						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					elif (entry["CONTROL"] in [ord("\f"), 4, ord("Z"), ord("\v")]):
+						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+					elif (entry["CONTROL"] in [ord("b"), 0x11, ord("z")]):
+						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+					elif (entry["CONTROL"] in [ord("~"), ord("q")]):
+						entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
+						entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+						entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+					else:
+						print("UNKNOWN 0x28 CONTROL: 0x%x" % entry["CONTROL"])
+						print("OFFSET: 0x%x" % (file.tell() - 2))
+						sys.exit()
+
 		case 0x29:
 			entry["TYPE"] = "0x29"
 			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
@@ -618,6 +757,11 @@ def GenerateCommand(cmd, file, end):
 				
 				case 0x17:
 					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				
+				case 0x1B:
+					entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+					entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+
 				
 				case _:
 					print("UNKNOWN 0x2D CONTROL BYTE: 0x%x" % entry["CONTROL"])
@@ -897,6 +1041,15 @@ def GenerateCommand(cmd, file, end):
 				entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
 				entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
 		
+		case 0x40:
+			entry["TYPE"] = "0x40"
+			entry["UNK"] = [struct.unpack("<f", file.read(4))[0]]
+			entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+			entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+			entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+			entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+			entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+		
 		case 0x41:
 			entry["TYPE"] = "0x41"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
@@ -968,6 +1121,11 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 			entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+		
+		case 0x47:
+			entry["TYPE"] = "0x47"
+			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+			entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
 
 		case 0x48:
 			entry["TYPE"] = "0x48"
@@ -977,7 +1135,7 @@ def GenerateCommand(cmd, file, end):
 			entry["TYPE"] = "0x49"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
 			entry["UNK"] = []
-			if (entry["CONTROL"] in [0xE, 0x10, 0x11, 0x12, 0x16, 0x20]):
+			if (entry["CONTROL"] in [0xB, 0xE, 0xF, 0x10, 0x11, 0x12, 0x16, 0x1D, 0x1E, 0x20, 0x25]):
 				return
 			first_type = [10, 4, 3, 2, 1, 0]
 			if (entry["CONTROL"] in first_type):
@@ -1172,6 +1330,8 @@ def GenerateCommand(cmd, file, end):
 			entry["TYPE"] = "0x5D"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
 			entry["STRINGS"] = [readString(file)]
+			if (entry["CONTROL"] in [5, 6, 9]):
+				return
 			match(entry["CONTROL"]):
 				case 0:
 					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
@@ -1189,12 +1349,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK"] = [struct.unpack("<f", file.read(4))[0]]
 					entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
 					entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
-				
-				case 5:
-					pass
 
-				case 6:
-					pass
 				case 7:
 					entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
 					entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
@@ -1540,6 +1695,11 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 		
+		case 0x7A:
+			entry["TYPE"] = "0x7A"
+			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+			entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+		
 		case 0x7B:
 			entry["TYPE"] = "0x7B"
 			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
@@ -1638,6 +1798,11 @@ def GenerateCommand(cmd, file, end):
 			if (entry["CONTROL"] == 0):
 				entry["STRINGS"] = [readString(file), readString(file)]
 		
+		case 0x8B:
+			entry["TYPE"] = "0x8B"
+			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+			entry["UNK"].append(int.from_bytes(file.read(1), byteorder="little", signed=True))
+		
 		case 0x8C:
 			entry["TYPE"] = "0x8C"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
@@ -1706,6 +1871,32 @@ def GenerateCommand(cmd, file, end):
 		case 0x99:
 			entry["TYPE"] = "0x99"
 		
+		case 0x9A:
+			entry["TYPE"] = "0x9A"
+			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
+			if (entry["CONTROL"] in [1, 2]):
+				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+				entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+			elif (entry["CONTROL"] in [3, 4]):
+				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+			else:
+				print("UNKNOWN 0x9A CONTROL: 0x%x" % entry["CONTROL"])
+				print("OFFSET: 0x%x" % (file.tell() - 2))
+				sys.exit()
+		
+		case 0x9B:
+			entry["TYPE"] = "0x9B"
+			entry["TYPE"] = "0x96"
+			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+		
 		case 0x9E:
 			entry["TYPE"] = "0x9E"
 			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
@@ -1744,16 +1935,51 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 			entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
 		
+		case 0xA4:
+			entry["TYPE"] = "0xA4"
+			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+			entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+		
 		case 0xA5:
 			entry["TYPE"] = "0xA5"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0xA6:
-			entry["TYPE"] = "0xA5"
-			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
-			entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
-			entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
-			entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+			entry["TYPE"] = "0xA6"
+			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
+			match(entry["CONTROL"]):
+				case 0x32:
+					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["STRINGS"] = [readString(file)]
+				case 0x3A:
+					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(struct.unpack("<f", file.read(4))[0])
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				case 0x3C:
+					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+					entry["UNK"].append(int.from_bytes(file.read(2), byteorder="little", signed=True))
+				case _:
+					print("UNKNOWN 0xA6 CONTROL: 0x%x" % entry["CONTROL"])
+					print("OFFSET: 0x%x" % (file.tell() - 2))
+					sys.exit()
+		
+		case 0xFF:
+			entry["TYPE"] = "0xFF"
+			test = file.read(3).hex().upper()
+			if (test == "FFFFFF"):
+				entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+				entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+			else:
+				print("UNKNOWN 0xFF PATTERN: %s" % test)
+				print("OFFSET: 0x%x" % (file.tell() - 2))
+				sys.exit() 
 
 		case _:
 			print("UNKNOWN COMMAND: 0x%x" % cmd)
