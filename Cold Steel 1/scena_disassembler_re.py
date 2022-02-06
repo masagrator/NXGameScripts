@@ -54,8 +54,7 @@ def ReadDialog(file, entry):
 				return
 			
 			case 1:
-				entry["DIALOG"]["STRINGS"][len(entry["DIALOG"]["STRINGS"]) - 1] += "\n"
-				entry["DIALOG"]["STRINGS"][len(entry["DIALOG"]["STRINGS"]) - 1] += readStringDialog(file)
+				entry["DIALOG"]["STRINGS"].append("NEW_LINE")
 			
 			case 2:
 				entry["DIALOG"]["STRINGS"].append("KEY_WAIT")
@@ -80,7 +79,8 @@ def ReadDialog(file, entry):
 				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
 			
 			case 0x12:
-				entry["DIALOG"]["UNK"] = [int.from_bytes(file.read(4), byteorder="little")]
+				entry["DIALOG"]["STRINGS"].append('CMD: %d' % control)
+				entry["DIALOG"]["STRINGS"].append('CMD12_ARG: %d' % int.from_bytes(file.read(4), byteorder="little"))
 				entry["DIALOG"]["STRINGS"].append(readStringDialog(file))
 			
 			case 0x23:
@@ -163,7 +163,7 @@ def GenerateCommand(cmd, file, end):
 			entry["TYPE"] = "RETURN"
 		
 		case 2:
-			entry["TYPE"] = "0x2"
+			entry["TYPE"] = "JUMP_TO_FUNCTION"
 			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
 			entry["STRINGS"] = [readString(file)]
 		
@@ -211,7 +211,7 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0xD:
-			entry["TYPE"] = "0xC"
+			entry["TYPE"] = "0xD"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0xE:
@@ -227,7 +227,7 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0x11:
-			entry["TYPE"] = "0x10"
+			entry["TYPE"] = "0x11"
 			entry["UNK"] = file.read(4).hex().upper()
 
 		case 0x12:
@@ -303,7 +303,7 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0x1E:
-			entry["TYPE"] = "JUMP_TO"
+			entry["TYPE"] = "JUMP_TO_ID"
 			entry["STRINGS"] = [readString(file), readString(file)]
 
 		case 0x1F:
@@ -317,7 +317,7 @@ def GenerateCommand(cmd, file, end):
 				
 				case 1:
 					entry["STRINGS"] = [readString(file)]
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				
 				case 2:
 					entry["UNK"] = file.read(5).hex().upper()
@@ -326,19 +326,19 @@ def GenerateCommand(cmd, file, end):
 					pass
 				
 				case 4:
-					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(1).hex().upper()
 				
 				case 5:
 					entry["UNK"] = file.read(4).hex().upper()
 				
 				case 6:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				
 				case 7:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				
 				case 0xC:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				
 				case _:
 					print("UNKNOWN 0x19 CONTROL: 0x%x" % entry["CONTROL"])
@@ -402,7 +402,7 @@ def GenerateCommand(cmd, file, end):
 				case 0x12:
 					entry["UNK"] = file.read(5).hex().upper()
 				case 0x15:
-					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(1).hex().upper()
 					entry["STRINGS"] = [readString(file)]
 				case _:
 					if (entry["CONTROL"] in [0x11, 0x10, 0xF, 0xB, 0xD, 0xE]):
@@ -449,11 +449,11 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK0"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 					entry["STRING1"] = [readString(file)]
 					entry["UNK1"] = file.read(20).hex().upper()
-					entry["STRING2"].append(readString(file))
+					entry["STRING2"] = [readString(file)]
 				case ord("["):
 					entry["UNK"] = file.read(5).hex().upper()
 				case ord("\\"):
-					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(1).hex().upper()
 				case ord("a"):
 					entry["UNK"] = file.read(7).hex().upper()
 				case ord("d"):
@@ -465,23 +465,22 @@ def GenerateCommand(cmd, file, end):
 				case ord("{"):
 					entry["UNK"] = file.read(4).hex().upper()
 				case ord("i"):
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 					entry["STRINGS"] = [readString(file), readString(file)]
 				case ord("j"):
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				case _:
 					if (entry["CONTROL"] in [ord("\b"), 6, 4, 2]):
-						entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(1).hex().upper()
 					elif (entry["CONTROL"] in [ord("\a"), 5]):
-						entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(1).hex().upper()
 						entry["STRINGS"] = [readString(file)]
 					elif (entry["CONTROL"] in [ord("m"), ord("l"), ord("k"), ord("f"), ord("e"), ord("c"), 0x1C, 0x1A, 0x17, 0x19, 0x14, ord("\r"), 0x10, ord("H"), ord("]"), ord("\t"), ord("^"), ord("_"), ord("`"), ord("s"), ord("t"), ord("u"), ord("y")]):
-						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(2).hex().upper()
 					elif (entry["CONTROL"] in [ord("\n"), 0xF]):
 						entry["UNK"] = file.read(4).hex().upper()
 					elif (entry["CONTROL"] in [ord("\f"), 4, ord("Z"), ord("\v")]):
-						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
-						entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
+						entry["UNK"] = file.read(6).hex().upper()
 					elif (entry["CONTROL"] in [ord("b"), 0x11, ord("z")]):
 						entry["UNK"] = file.read(3).hex().upper()
 					elif (entry["CONTROL"] in [ord("~"), ord("q")]):
@@ -533,7 +532,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK0"] = file.read(7).hex().upper()
 				
 				case 7:
-					entry["UNK0"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK0"] = file.read(2).hex().upper()
 				
 				case 8:
 					entry["UNK0"] = file.read(3).hex().upper()
@@ -560,7 +559,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK0"] = file.read(16).hex().upper()
 				
 				case 0x12:
-					entry["UNK0"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK0"] = file.read(2).hex().upper()
 				
 				case 0x13:
 					entry["UNK0"] = file.read(18).hex().upper()
@@ -572,7 +571,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK0"] = file.read(7).hex().upper()
 				
 				case 0x17:
-					entry["UNK0"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK0"] = file.read(2).hex().upper()
 				
 				case 0x1B:
 					entry["UNK0"] = file.read(8).hex().upper()
@@ -605,7 +604,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK"] = file.read(3).hex().upper()
 				
 				case 2:
-					entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(1).hex().upper()
 				
 				case 3:
 					entry["UNK"] = file.read(7).hex().upper()
@@ -617,7 +616,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK"] = file.read(4).hex().upper()
 				
 				case 6:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				
 				case _:
 					print("UNKNOWN 0x30 CONTROL: 0x%x" % entry["CONTROL"])
@@ -630,7 +629,7 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
 			match(entry["CONTROL"]):
 				case 0xFE:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 					return entry
 				case 0xFF:
 					entry["UNK"] = file.read(12).hex().upper()
@@ -643,7 +642,7 @@ def GenerateCommand(cmd, file, end):
 				entry["UNK"] = file.read(4).hex().upper()
 			
 			elif (entry["CONTROL"] in [0x96, 0x39, 6, 0x38, 5, 0x37, 0x34, 2]):
-				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+				entry["UNK"] = file.read(2).hex().upper()
 			
 			elif(entry["CONTROL"] in [0x35, 3]):
 				entry["UNK"] = file.read(8).hex().upper()
@@ -658,7 +657,12 @@ def GenerateCommand(cmd, file, end):
 				entry["UNK"] = file.read(56).hex().upper()
 			
 			elif(entry["CONTROL"] == 0xFD):
-				entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+				entry["UNK"] = file.read(1).hex().upper()
+			
+			else:
+				print("UNKNOWN 0x31 CONTROL: 0x%x" % entry["CONTROL"])
+				print("OFFSET: 0x%x" % (file.tell() - 2))
+				sys.exit()
 
 
 		case 0x32:
@@ -766,9 +770,9 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
 			type1 = [9, 10, 11, 1, 6, 5, 4, 0, 8]
 			if (entry["CONTROL"] in type1):
-				entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+				entry["UNK"] = file.read(2).hex().upper()
 			if (entry["CONTROL"] == 8):
-				entry["UNK"] = file.read(4).hex().upper()
+				entry["UNK"] += file.read(4).hex().upper()
 		
 		case 0x40:
 			entry["TYPE"] = "0x40"
@@ -865,20 +869,19 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK"] = file.read(4).hex().upper()
 				
 				case 0x21:
-					entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(4).hex().upper()
 				
 				case 0x23:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
-
+					entry["UNK"] = file.read(2).hex().upper()
 				case 0x24:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				
 				case 0x26:
 					entry["UNK"] = file.read(9).hex().upper()
 					entry["STRINGS"] = [readString(file)]
 
 				case 0x28:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				
 				case 0x29:
 					entry["UNK"] = file.read(3).hex().upper()
@@ -975,9 +978,9 @@ def GenerateCommand(cmd, file, end):
 				return entry
 			match(entry["CONTROL"]):
 				case 0:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				case 1:
-					entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK"] = file.read(2).hex().upper()
 				case 2:
 					entry["UNK"] = file.read(12).hex().upper()
 				case 3:
@@ -1006,7 +1009,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK"] = file.read(5).hex().upper()
 				case _:
 					if (entry["CONTROL"] in [0xB, 9, 7, 8, 4, 1]):
-						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(2).hex().upper()
 					elif (entry["CONTROL"] in [5, 3, 2]):
 						entry["UNK"] = file.read(6).hex().upper()
 					elif (entry["CONTROL"] in [0xD, 0xC]):
@@ -1101,9 +1104,9 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
 			match(entry["CONTROL"]):
 				case 1:
-					entry["UNK1"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+					entry["UNK1"] = file.read(2).hex().upper()
 				case 0:
-					entry["UNK1"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+					entry["UNK1"] = file.read(1).hex().upper()
 				case _:
 					print("UNKNOWN 0x68 CONTROL: 0x%x" % entry["CONTROL"])
 					print("OFFSET: 0x%x" % (file.tell() - 2))
@@ -1144,19 +1147,19 @@ def GenerateCommand(cmd, file, end):
 						entry["UNK"] = file.read(6).hex().upper()
 					case 1:
 						entry["STRINGS"] = [readString(file)]
-						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(2).hex().upper()
 					case 2:
 						entry["UNK"] = file.read(5).hex().upper()
 					case 3:
 						pass
 					case 4:
-						entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(1).hex().upper()
 					case 5:
 						entry["UNK"] = file.read(4).hex().upper()
 					case 6:
-						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(2).hex().upper()
 					case 7:
-						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(2).hex().upper()
 					case _:
 						print("UNKNOWN 0x6A CONTROL: 0x%x" % entry["CONTROLS"][0])
 						print("OFFSET: 0x%x" % (file.tell() - 3))
@@ -1224,10 +1227,10 @@ def GenerateCommand(cmd, file, end):
 				case 3:
 					entry["UNK"] = file.read(12).hex().upper()
 				case 5:
-					entry["UNK"] = [struct.unpack("<f", file.read(4))[0]]
+					entry["UNK"] = file.read(4).hex().upper()
 				case _:
 					if (entry["CONTROL"] in [6, 2, 4]):
-						entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+						entry["UNK"] = file.read(2).hex().upper()
 					else:
 						print("UNKNOWN 0x73 CONTROL: 0x%x" % entry["CONTROL"])
 						print("OFFSET: 0x%x" % (file.tell() - 2))
@@ -1270,16 +1273,16 @@ def GenerateCommand(cmd, file, end):
 			entry["TYPE"] = "0x7F"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
 			if (entry["CONTROL"] in [-1, -2]):
-				entry["UNK0"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+				entry["UNK0"] = file.read(2).hex().upper()
 				entry["STRINGS"] = [readString(file)]
-				entry["UNK1"] = [struct.unpack("<f", file.read(4))[0]]
+				entry["UNK1"] = file.read(4).hex().upper()
 			elif (entry["CONTROL"] in [0, 1]):
 				entry["UNK0"] = file.read(4).hex().upper()
 				entry["STRINGS"] = [readString(file), readString(file)]
 			else:
-				entry["UNK0"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
+				entry["UNK0"] = file.read(2).hex().upper()
 				entry["STRINGS"] = [readString(file)]
-				entry["UNK1"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
+				entry["UNK1"] = file.read(4).hex().upper()
 		
 		case 0x81:
 			entry["TYPE"] = "0x81"
