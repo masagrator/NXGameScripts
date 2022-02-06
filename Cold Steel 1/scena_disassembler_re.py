@@ -261,7 +261,7 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little", signed=True)]
 
 		case 0x18:
-			entry["TYPE"] = "0x18"
+			entry["TYPE"] = "TEXT18"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 			ReadDialog(file, entry)
 

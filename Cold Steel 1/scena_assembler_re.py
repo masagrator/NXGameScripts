@@ -161,7 +161,7 @@ def GenerateCommand(entry, Offset_dict = None):
 		case "0x17":
 			ret_entry.append(numpy.uint8(0x17))
 			ret_entry.append(numpy.int8(entry["UNK"][0]))
-		case "0x18":
+		case "TEXT18":
 			ret_entry.append(numpy.uint8(0x18))
 			ret_entry.append(numpy.int16(entry["UNK"][0]))
 			ret_entry.append(WriteDialog(entry["DIALOG"]))
