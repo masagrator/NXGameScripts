@@ -45,16 +45,20 @@ for i in range(0, len(files)):
                     entry["UNK2"].append(int.from_bytes(file.read(2), byteorder="little"))
             
             case "AttachTableData":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "BattleUIData":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "bgm":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "QSBookScp":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "QSChapter":
                 entry["TYPE"] = type
@@ -78,7 +82,8 @@ for i in range(0, len(files)):
                 entry["UNK1"] = int.from_bytes(file.read(2), byteorder="little")
             
             case "AtBonus":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "CardTableData":
                 entry["TYPE"] = type
@@ -94,13 +99,16 @@ for i in range(0, len(files)):
                 entry["STRINGS"] = [readString(file), readString(file)]
             
             case "FaceSupplementTableData":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "fish_pnt":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "rod_lst":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "text_lst":
                 entry["TYPE"] = type
@@ -108,7 +116,8 @@ for i in range(0, len(files)):
                 entry["STRING"] = readString(file)
             
             case "FootStepData":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "hkitugi_lst":
                 entry["TYPE"] = type
@@ -143,7 +152,8 @@ for i in range(0, len(files)):
                 entry["STRINGS"] = [readString(file), readString(file)]
             
             case "LinkLevelExp":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "magic":
                 entry["TYPE"] = type
@@ -155,10 +165,12 @@ for i in range(0, len(files)):
                 entry["STRINGS"] = [readString(file), readString(file)]
             
             case "MapBgmTableData":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "MG02Title":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "MG02Text":
                 entry["TYPE"] = type
@@ -170,7 +182,8 @@ for i in range(0, len(files)):
                 entry["UNK3"] = int.from_bytes(file.read(4), byteorder="little", signed=True)
             
             case "SMG04TableData":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "status":
                 entry["TYPE"] = type
@@ -187,10 +200,12 @@ for i in range(0, len(files)):
                 entry["STRINGS"] = [readString(file), readString(file)]
 
             case "MasterQuartzBase":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "MasterQuartzData":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "MasterQuartzMemo":
                 entry["TYPE"] = type
@@ -243,7 +258,7 @@ for i in range(0, len(files)):
                     entry["UNK1"].append(struct.unpack("<f", file.read(4))[0])
                 entry["UNK2"] = file.read(0x52).hex()
                 entry["STRING2"] = readString(file)
-                entry["UNK2"] = file.read(0x3E).hex()
+                entry["UNK3"] = file.read(0x3E).hex()
             
             case "QSHelp":
                 entry["TYPE"] = type
@@ -252,16 +267,20 @@ for i in range(0, len(files)):
                 entry["STRING"] = readString(file)
 
             case "QSMons":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "BaseList":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "OrbLineList":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "PTBadTerm":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "PlaceTableData":
                 entry["TYPE"] = type
@@ -272,7 +291,8 @@ for i in range(0, len(files)):
                 entry["STRING2"] = readString(file)
             
             case "QuartzCost":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "QSRank":
                 entry["TYPE"] = type
@@ -281,13 +301,16 @@ for i in range(0, len(files)):
                 entry["UNK0"] = file.read(0x6).hex()
             
             case "preset":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "se":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "ShopGoods":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "ShopTitle":
                 entry["TYPE"] = type
@@ -297,34 +320,44 @@ for i in range(0, len(files)):
                 entry["UNK1"] = file.read(8).hex()
             
             case "ShopItem":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "HoriItem":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "FPointItem":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "SlotEp":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
 
             case "SlotCost":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
 
             case "growth":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "trade":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "VoiceTimingInfo":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "VoiceTiming":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
 
             case "voice":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "QSTitle":
                 entry["TYPE"] = type
@@ -342,13 +375,16 @@ for i in range(0, len(files)):
                 entry["UNK1"] = int.from_bytes(file.read(1), byteorder="little")
             
             case "char_revise":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case "weapon_attribute":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
 
             case "status_revise":
-                file.seek(entry_size, 1)
+                entry["TYPE"] = type
+                entry["UNK"] = file.read(entry_size).hex().upper()
             
             case _:
                 print("UNKNOWN TYPE! %s" % type)
