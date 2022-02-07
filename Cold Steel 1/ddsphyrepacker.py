@@ -14,7 +14,10 @@ for i in range(0, len(files)):
     file.seek((0x42) * -1, 1)
     width = int.from_bytes(file.read(4), byteorder="little")
     height = int.from_bytes(file.read(4), byteorder="little")
-    file.seek(0x10, 1)
+    file.seek(0, 2)
+    file.seek((0x4A) * -1, 1)
+    mipmaps = int.from_bytes(file.read(1), byteorder="little")
+    file.seek(0x1F, 1)
     type = file.read(4).decode("ASCII")
     file.seek(0, 0)
     header = file.read()
@@ -29,12 +32,13 @@ for i in range(0, len(files)):
         sys.exit()
     elif (img.height != height):
         print("PNG height is wrong!")
-        print("EXPECTED: %d px, GOT: %d px" % (width, img.width))
+        print("EXPECTED: %d px, GOT: %d px" % (height, img.height))
         sys.exit()
     
     img.compression = type.lower()
     img.format = "dds"
-    img.options['dds:mipmaps'] = '0'
+    print(mipmaps)
+    img.options['dds:mipmaps'] = "%d" % mipmaps
     blob = img.make_blob()
     img.close()
 

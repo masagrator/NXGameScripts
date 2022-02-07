@@ -35,15 +35,12 @@ for i in range(0, len(files)):
 	height = int.from_bytes(file.read(4), byteorder="little")
 	width = int.from_bytes(file.read(4), byteorder="little")
 
-	file.seek(start_image + 4)
+	file.seek(0)
+	header = file.read(start_image + 4)
 
 	match(type):
 		case "DXT1":
 			size = int((width * height) / 2)
-			file.seek(0, 2)
-			filesize = file.tell()
-			file.seek(0)
-			header = file.read(filesize - size)
 			data = file.read(size)
 			file.close()
 			os.makedirs(os.path.dirname("UNPACKED/%s" % files[i]), exist_ok=True)
@@ -51,10 +48,6 @@ for i in range(0, len(files)):
 			file_new.write(DXT1)
 		case "DXT5":
 			size = int(width * height)
-			file.seek(0, 2)
-			filesize = file.tell()
-			file.seek(0)
-			header = file.read(filesize - size)
 			data = file.read(size)
 			file.close()
 			os.makedirs(os.path.dirname("UNPACKED/%s" % files[i]), exist_ok=True)
