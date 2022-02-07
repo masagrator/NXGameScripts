@@ -34,6 +34,7 @@ for i in range(0, len(files)):
     
     img.compression = type.lower()
     img.format = "dds"
+    img.options['dds:mipmaps'] = '0'
     blob = img.make_blob()
     img.close()
 
