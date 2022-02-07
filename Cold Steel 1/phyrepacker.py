@@ -4,6 +4,7 @@ import os
 import sys
 
 files = glob.glob("UNPACKED/*/*.dds.header")
+files = glob.glob("UNPACKED/*/*.png.header")
 
 os.makedirs("REPACKED", exist_ok=True)
 
@@ -35,6 +36,7 @@ for i in range(0, len(files)):
         print("EXPECTED: %d px, GOT: %d px" % (height, img.height))
         sys.exit()
     
+    img.flip()
     img.compression = type.lower()
     img.format = "dds"
     print(mipmaps)
@@ -45,5 +47,8 @@ for i in range(0, len(files)):
     os.makedirs("REPACKED/%s" % os.path.dirname(files[i][9:]), exist_ok=True)
     file = open("REPACKED/%s.phyre" % files[i][9:-7], "wb")
     file.write(header)
-    file.write(blob[0x80:])
+    if (type == "RGBA"):
+        file.write(blob[0x94:])
+    else:
+        file.write(blob[0x80:])
     file.close()
