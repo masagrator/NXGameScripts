@@ -129,7 +129,7 @@ def GenerateCommand(entry, Offset_dict = None):
 		case "0xF":
 			ret_entry.append(numpy.uint8(0xF))
 			ret_entry.append(numpy.int32(entry["UNK"][0]))
-		case "0x10":
+		case "WAIT":
 			ret_entry.append(numpy.uint8(0x10))
 			ret_entry.append(numpy.int16(entry["UNK"][0]))
 		case "0x11":
@@ -294,9 +294,14 @@ def GenerateCommand(entry, Offset_dict = None):
 		case "0x31":
 			ret_entry.append(numpy.uint8(0x31))
 			ret_entry.append(numpy.uint8(entry["CONTROL"]))
-			ret_entry.append(bytes.fromhex(entry["UNK"]))
-			if (entry["CONTROL"] in [0, 0x32]):
-				ret_entry.append(entry["STRINGS"][0].encode("UTF-8") + b"\x00")
+			if (entry["CONTROL"]  == 0x32):
+				ret_entry.append(numpy.uint16(entry["VOICE_FILE_ID"]))
+			elif (entry["CONTROL"] == 0x34):
+				ret_entry.append(numpy.uint16(entry["VOICE_FILE_ID"]))
+			if (entry["CONTROL"] != 0x34):
+				ret_entry.append(bytes.fromhex(entry["UNK"]))
+				if (entry["CONTROL"] in [0, 0x32]):
+					ret_entry.append(entry["STRINGS"][0].encode("UTF-8") + b"\x00")
 		case "0x32":
 			ret_entry.append(numpy.uint8(0x32))
 			ret_entry.append(numpy.uint8(entry["CONTROL"]))
@@ -779,7 +784,7 @@ for i in range(0, len(files)):
 	# Write Header
 	file_new = open("new_nx/%s.dat" % files[i][6:-5], "wb")
 	file_new.write(numpy.uint32(0x20)) #0x0 always starting with 0x20
-	file_new.write(numpy.uint32(0x20)) #0x4 always starting with 0x20
+	file_new.write(numpy.uint32(0x20)) #0x4 we want to always start with 0x20 for easier management
 	functions_pointer = 0x20 + len(DUMP["HEADER"]["ID"]) + 1
 	file_new.write(numpy.uint32(functions_pointer)) #0x08
 	size_of_functions_pointer_table = len(DUMP["FUNCTIONS"]) * 4

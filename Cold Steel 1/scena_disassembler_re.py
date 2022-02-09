@@ -223,7 +223,7 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
 		
 		case 0x10:
-			entry["TYPE"] = "0x10"
+			entry["TYPE"] = "WAIT"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0x11:
@@ -634,14 +634,19 @@ def GenerateCommand(cmd, file, end):
 				case 0xFF:
 					entry["UNK"] = file.read(12).hex().upper()
 					return entry
-			if (entry["CONTROL"] in [0, 0x32]):
+			if (entry["CONTROL"] == 0):
 				entry["UNK"] = file.read(36).hex().upper()
 				entry["STRINGS"] = [readString(file)]
-
+			elif (entry["CONTROL"] == 0x32):
+				entry["VOICE_FILE_ID"] = int.from_bytes(file.read(2), byteorder="little")
+				entry["UNK"] = file.read(34).hex().upper()
+				entry["STRINGS"] = [readString(file)]
+			elif (entry["CONTROL"] == 0x34):
+				entry["VOICE_FILE_ID"] = int.from_bytes(file.read(2), byteorder="little")
 			elif (entry["CONTROL"]  in [1, 0x33]):
 				entry["UNK"] = file.read(4).hex().upper()
 			
-			elif (entry["CONTROL"] in [0x96, 0x39, 6, 0x38, 5, 0x37, 0x34, 2]):
+			elif (entry["CONTROL"] in [0x96, 0x39, 6, 0x38, 5, 0x37, 2]):
 				entry["UNK"] = file.read(2).hex().upper()
 			
 			elif(entry["CONTROL"] in [0x35, 3]):
