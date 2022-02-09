@@ -302,11 +302,13 @@ def GenerateCommand(entry, Offset_dict = None):
 				ret_entry.append(bytes.fromhex(entry["UNK"]))
 				if (entry["CONTROL"] in [0, 0x32]):
 					ret_entry.append(entry["STRINGS"][0].encode("UTF-8") + b"\x00")
-		case "0x32":
+		case "SET_NAME_ID":
 			ret_entry.append(numpy.uint8(0x32))
 			ret_entry.append(numpy.uint8(entry["CONTROL"]))
-			ret_entry.append(bytes.fromhex(entry["UNK"]))
-			if (entry["CONTROL"] in [1, 3, 4]):
+			ret_entry.append(numpy.uint16(entry["NAME_ID"]))
+			if (entry["CONTROL"] == 2):
+				ret_entry.append(bytes.fromhex(entry["UNK"]))
+			elif (entry["CONTROL"] in [1, 3, 4]):
 				for i in range(0, len(entry["STRINGS"])):
 					ret_entry.append(entry["STRINGS"][i].encode("UTF-8") + b"\x00")
 		case "0x33":
@@ -314,6 +316,7 @@ def GenerateCommand(entry, Offset_dict = None):
 			ret_entry.append(bytes.fromhex(entry["UNK"]))
 		case "0x34":
 			ret_entry.append(numpy.uint8(0x34))
+			ret_entry.append(numpy.uint16(entry["NAME_ID"]))
 			ret_entry.append(bytes.fromhex(entry["UNK"]))
 		case "0x35":
 			ret_entry.append(numpy.uint8(0x35))
@@ -325,7 +328,8 @@ def GenerateCommand(entry, Offset_dict = None):
 			ret_entry.append(bytes.fromhex(entry["UNK1"]))
 		case "0x37":
 			ret_entry.append(numpy.uint8(0x37))
-			ret_entry.append(bytes.fromhex(entry["UNK"]))
+			ret_entry.append(numpy.uint16(entry["NAME_ID"]))
+			ret_entry.append(numpy.uint8(entry["UNK"][0]))
 		case "0x38":
 			ret_entry.append(numpy.uint8(0x38))
 			ret_entry.append(bytes.fromhex(entry["UNK"]))
@@ -341,7 +345,8 @@ def GenerateCommand(entry, Offset_dict = None):
 			ret_entry.append(bytes.fromhex(entry["UNK"]))
 		case "0x3C":
 			ret_entry.append(numpy.uint8(0x3C))
-			for i in range(0, 3):
+			ret_entry.append(numpy.uint16(entry["NAME_ID"]))
+			for i in range(0, 2):
 				ret_entry.append(numpy.uint16(entry["CONTROLS"][i]))
 			try:
 				ret_entry.append(bytes.fromhex(entry["UNK"]))

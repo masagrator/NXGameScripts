@@ -671,15 +671,15 @@ def GenerateCommand(cmd, file, end):
 
 
 		case 0x32:
-			entry["TYPE"] = "0x32"
+			entry["TYPE"] = "SET_NAME_ID"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
-			entry["UNK"] = file.read(2).hex().upper()
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little")
 			match(entry["CONTROL"]):
 				case 1:
 					entry["STRINGS"] = [readString(file), readString(file)]
 				
 				case 2:
-					entry["UNK"] += file.read(4).hex().upper()
+					entry["UNK"] = file.read(4).hex().upper()
 				
 				case 3:
 					entry["STRINGS"] = [readString(file), readString(file), readString(file), readString(file)]
@@ -704,7 +704,8 @@ def GenerateCommand(cmd, file, end):
 		
 		case 0x34:
 			entry["TYPE"] = "0x34"
-			entry["UNK"] = file.read(9).hex().upper()
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little")
+			entry["UNK"] = file.read(7).hex().upper()
 		
 		case 0x35:
 			entry["TYPE"] = "0x35"
@@ -721,7 +722,8 @@ def GenerateCommand(cmd, file, end):
 
 		case 0x37:
 			entry["TYPE"] = "0x37"
-			entry["UNK"] = file.read(3).hex().upper()
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little")
+			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little")]
 		
 		case 0x38:
 			entry["TYPE"] = "0x38"
@@ -745,19 +747,19 @@ def GenerateCommand(cmd, file, end):
 		
 		case 0x3C:
 			entry["TYPE"] = "0x3C"
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little")
 			entry["CONTROLS"] = [int.from_bytes(file.read(2), byteorder="little")]
-			entry["CONTROLS"].append(int.from_bytes(file.read(2), byteorder="little"))
 			entry["CONTROLS"].append(int.from_bytes(file.read(2), byteorder="little"))
 			flag1 = False
 			flag2 = False
 
-			if ((entry["CONTROLS"][0] >= 0x10) and(entry["CONTROLS"][0] != 0xFFFD)):
+			if ((entry["NAME_ID"] >= 0x10) and(entry["NAME_ID"] != 0xFFFD)):
 				flag1 = True
-			if ((entry["CONTROLS"][1] >= 0x10) and(entry["CONTROLS"][1] != 0xFFFD)):
+			if ((entry["CONTROLS"][0] >= 0x10) and(entry["CONTROLS"][0] != 0xFFFD)):
 				flag2 = True
 
 			if ((flag1 == False) or (flag2 == False) or (flag1 == flag2)):
-				if (entry["CONTROLS"][1] == 0xFFFF):
+				if (entry["CONTROLS"][0] == 0xFFFF):
 					entry["UNK"] = file.read(12).hex().upper()
 		
 		case 0x3D:
