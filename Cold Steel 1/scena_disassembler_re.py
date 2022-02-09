@@ -223,7 +223,7 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
 		
 		case 0x10:
-			entry["TYPE"] = "WAIT"
+			entry["TYPE"] = "0x10"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 		
 		case 0x11:

@@ -129,7 +129,7 @@ def GenerateCommand(entry, Offset_dict = None):
 		case "0xF":
 			ret_entry.append(numpy.uint8(0xF))
 			ret_entry.append(numpy.int32(entry["UNK"][0]))
-		case "WAIT":
+		case "0x10":
 			ret_entry.append(numpy.uint8(0x10))
 			ret_entry.append(numpy.int16(entry["UNK"][0]))
 		case "0x11":
