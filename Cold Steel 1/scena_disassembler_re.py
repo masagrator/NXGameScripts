@@ -722,7 +722,7 @@ def GenerateCommand(cmd, file, end):
 
 		case 0x37:
 			entry["TYPE"] = "0x37"
-			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little")
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little", signed=True)
 			entry["UNK"] = [int.from_bytes(file.read(1), byteorder="little")]
 		
 		case 0x38:
@@ -747,7 +747,7 @@ def GenerateCommand(cmd, file, end):
 		
 		case 0x3C:
 			entry["TYPE"] = "0x3C"
-			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little")
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little", signed=True)
 			entry["CONTROLS"] = [int.from_bytes(file.read(2), byteorder="little")]
 			entry["CONTROLS"].append(int.from_bytes(file.read(2), byteorder="little"))
 			flag1 = False

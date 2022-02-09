@@ -328,7 +328,7 @@ def GenerateCommand(entry, Offset_dict = None):
 			ret_entry.append(bytes.fromhex(entry["UNK1"]))
 		case "0x37":
 			ret_entry.append(numpy.uint8(0x37))
-			ret_entry.append(numpy.uint16(entry["NAME_ID"]))
+			ret_entry.append(numpy.int16(entry["NAME_ID"]))
 			ret_entry.append(numpy.uint8(entry["UNK"][0]))
 		case "0x38":
 			ret_entry.append(numpy.uint8(0x38))
@@ -345,7 +345,7 @@ def GenerateCommand(entry, Offset_dict = None):
 			ret_entry.append(bytes.fromhex(entry["UNK"]))
 		case "0x3C":
 			ret_entry.append(numpy.uint8(0x3C))
-			ret_entry.append(numpy.uint16(entry["NAME_ID"]))
+			ret_entry.append(numpy.int16(entry["NAME_ID"]))
 			for i in range(0, 2):
 				ret_entry.append(numpy.uint16(entry["CONTROLS"][i]))
 			try:
