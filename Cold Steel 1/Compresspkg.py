@@ -5,6 +5,7 @@ import time
 import glob
 import sys
 import shutil
+import xml.etree.ElementTree as ET
 
 def ReturnIndex(dec_buffer, dec_indx, window_size, file_size):
 	dec_offset = dec_indx - window_size
@@ -112,14 +113,19 @@ if (len(sys.argv) != 2):
 	print("Compresspkg.py [folder_path]")
 	sys.exit()
 
+tree = ET.parse("%s/asset_GNX.xml" % sys.argv[1])
+root = tree.getroot()
+files = ["asset_GNX.xml"]
+for child in root:
+	files.append(os.path.basename(child[0].attrib["path"]))
+
 os.makedirs("tmp", exist_ok=True)
 
-files = glob.glob("%s/*.*"  % sys.argv[1])
 for i in range(0, len(files)):
 	print("---->%s" % files[i])
-	file_new = open(files[i], "rb")
+	file_new = open("%s/%s" % (sys.argv[1], files[i]), "rb")
 	uncompressed_size = GetFileSize(file_new)
-	file_new2 = open("tmp/%s" % os.path.basename(files[i]), "wb")
+	file_new2 = open("tmp/%s" % files[i], "wb")
 	start_time = time.time()
 	file_new2.write(LZ77Compress(file_new))
 	print("Time: %s s" % (time.time() - start_time))
@@ -137,8 +143,8 @@ blob_offset = 8 + (0x50 * len(files))
 blob_sizes = []
 for i in range(0, len(files)):
 	entry = []
-	unc_file = open(files[i], "rb")
-	com_file = open("tmp/%s" % os.path.basename(files[i]), "rb")
+	unc_file = open("%s/%s" % (sys.argv[1], files[i]), "rb")
+	com_file = open("tmp/%s" % files[i], "rb")
 	unc_size = GetFileSize(unc_file)
 	com_size = GetFileSize(com_file) + 8
 	unc_file.close()
@@ -156,7 +162,7 @@ for i in range(0, len(files)):
 	blob_sizes.append((numpy.uint32(unc_size), numpy.uint32(com_size)))
 pkg_new.write(b"".join(header_block))
 for i in range(0, len(files)):
-	com_file = open("tmp/%s" % os.path.basename(files[i]), "rb")
+	com_file = open("tmp/%s" % files[i], "rb")
 	pkg_new.write(blob_sizes[i][0])
 	pkg_new.write(blob_sizes[i][1])
 	pkg_new.write(com_file.read())
