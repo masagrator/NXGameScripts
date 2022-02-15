@@ -13,8 +13,8 @@ def ReturnIndex(dec_buffer, dec_indx, window_size, file_size):
 	if (dec_offset < 0):
 		dec_offset = 0
 	old_dec_indx = dec_indx
-	Sizes = []
-	Offsets = []
+	Size = 0
+	Offset = 0
 	iterator = 3
 	if (dec_indx+iterator >= (file_size - iterator)):
 		pass
@@ -23,27 +23,19 @@ def ReturnIndex(dec_buffer, dec_indx, window_size, file_size):
 			iterator += 1
 			idx = dec_buffer.rfind(dec_buffer[dec_indx:dec_indx+iterator], dec_offset, dec_indx)
 			if (idx != -1):
-				Sizes.append(iterator)
-				Offsets.append(idx)
+				Size = iterator
+				Offset = idx
 			else:
 				break
 			if (dec_indx+iterator >= file_size):
 				break
 
 
-	if (len(Sizes) == 0):
+	if (Size == 0):
 		return None, None, dec_indx
 	else:
-		best = max(Sizes)
-		count = Sizes.count(best)
-		if (count == 1):
-			index = Sizes.index(best)
-		else:
-			Sizes.reverse()
-			Offsets.reverse()
-			index = Sizes.index(best)
-		dec_indx = old_dec_indx + Sizes[index]
-		return (Offsets[index], Sizes[index], dec_indx)
+		dec_indx = old_dec_indx + Size
+		return (Offset, Size, dec_indx)
 	
 
 def GetFileSize(src):
@@ -116,8 +108,9 @@ if (len(sys.argv) != 2):
 tree = ET.parse("%s/asset_GNX.xml" % sys.argv[1])
 root = tree.getroot()
 files = ["asset_GNX.xml"]
-for child in root:
-	files.append(os.path.basename(child[0].attrib["path"]))
+for x in range(0, len(root)):
+	for y in range(0, len(root[x])):
+		files.append(os.path.basename(root[x][y].attrib["path"]))
 
 os.makedirs("tmp", exist_ok=True)
 
