@@ -59,7 +59,7 @@ for i in range(0, len(files)):
     os.makedirs("REPACKED/%s" % os.path.dirname(files[i][9:]), exist_ok=True)
     file = open("REPACKED/%s.phyre" % files[i][9:-7], "wb")
     file.write(header)
-    if (blob[0x54:0x58] != type.upper().encode("ASCII")):
+    if ((type != "no") and (blob[0x54:0x58] != type.upper().encode("ASCII"))):
         if (blob[0x54:0x58] == b"DXT1"):
             print("WAND didn't honour compression type. Changing from DXT5 to DXT1")
             file.seek(type_offset)
