@@ -29,6 +29,7 @@ for i in range(0, len(files)):
         file.seek((0x4B) * -1, 1)
     mipmaps = int.from_bytes(file.read(1), byteorder="little")
     file.seek(0x20, 1)
+    type_offset = file.tell()
     type = file.read(4).decode("ASCII")
     if (type == "RGBA"): type = "no"
     file.seek(0, 0)
@@ -46,18 +47,28 @@ for i in range(0, len(files)):
         print("PNG height is wrong!")
         print("EXPECTED: %d px, GOT: %d px" % (height, img.height))
         sys.exit()
-    
+    img.convert("RGBA")
     img.flip()
-    img.compression = type.lower()
     img.format = "dds"
     print(mipmaps)
     img.options['dds:mipmaps'] = "%d" % mipmaps
+    img.compression = type.lower()
     blob = img.make_blob()
     img.close()
 
     os.makedirs("REPACKED/%s" % os.path.dirname(files[i][9:]), exist_ok=True)
     file = open("REPACKED/%s.phyre" % files[i][9:-7], "wb")
     file.write(header)
+    if (blob[0x54:0x58] != type.upper().encode("ASCII")):
+        if (blob[0x54:0x58] == b"DXT1"):
+            print("WAND didn't honour compression type. Changing from DXT5 to DXT1")
+            file.seek(type_offset)
+            file.write(b"DXT1")
+            file.seek(0, 2)
+        else:
+            print("DETECTED WRONG UNSUPPORTED TYPE RETURNED BY WAND!")
+            print(blob[0x54:0x58])
+            sys.exit()
     blob = blob[0x80:]
     if (type == "no"):
         new_blob = []
