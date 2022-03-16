@@ -5,10 +5,10 @@ import numpy
 from PIL import Image, ImageOps
 import subprocess
 
-files = glob.glob("*\*.png.phyre")
-#PNGs = glob.glob("*\*.png.phyre")
+files = glob.glob("*\*.dds.phyre")
+PNGs = glob.glob("*\*.png.phyre")
 
-#files += PNGs
+files += PNGs
 os.makedirs("UNPACKED", exist_ok=True)
 
 for i in range(0, len(files)):
