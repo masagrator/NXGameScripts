@@ -640,7 +640,7 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK"] = file.read(8).hex().upper()
 				
 				case 0x1E:
-					entry["UNK0"] = file.read(10).hex().upper()
+					entry["UNK"] = file.read(10).hex().upper()
 
 				case _:
 					print("UNKNOWN 0x2D CONTROL BYTE: 0x%x" % entry["CONTROL"])
@@ -656,13 +656,14 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = file.read(4).hex().upper()
 			entry["STRINGS"] = [readString(file)]
 		
+		#New
 		case 0x30:
 			entry["TYPE"] = "0x30"
 			entry["UNK0"] = file.read(3).hex().upper()
 			entry["STRINGS"] = [readString(file)]
 			entry["UNK1"] = file.read(12).hex().upper()
 
-		#Changed
+		#Moved by 1
 		case 0x31:
 			entry["TYPE"] = "0x31"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
@@ -726,16 +727,16 @@ def GenerateCommand(cmd, file, end):
 					print("Possible 2 bytes")
 					sys.exit()
 		
-		#New
+		#NChanged
 		case 0x33:
-			entry["TYPE"] = "0x33"
+			entry["TYPE"] = "SET_NAME_ID"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little")
-			entry["UNK"] = file.read(2).hex().upper()
+			entry["NAME_ID"] = int.from_bytes(file.read(2), byteorder="little", signed=True)
 			match(entry["CONTROL"]):
 				case 1:
 					entry["STRINGS"] = [readString(file), readString(file)]
 				case 2:
-					entry["UNK"] += file.read(4).hex().upper()
+					entry["UNK"] = file.read(4).hex().upper()
 				case 3:
 					entry["STRINGS"] = [readString(file), readString(file), readString(file), readString(file)]
 				case 4:
@@ -746,8 +747,6 @@ def GenerateCommand(cmd, file, end):
 					print("UNKNOWN 0x33 CONTROL: 0x%x" % entry["CONTROL"])
 					print("OFFSET: 0x%x" % (file.tell() - 4))
 					sys.exit()
-
-		#Moved by 1
 		case 0x34:
 			entry["TYPE"] = "0x34"
 			entry["UNK"] = file.read(11).hex().upper()
@@ -1013,7 +1012,7 @@ def GenerateCommand(cmd, file, end):
 		
 		#New
 		case 0x51:
-			entry["TYPE"] = "0x51"
+			entry["TYPE"] = "GOTO51"
 			entry["UNK"] = file.read(3).hex().upper()
 			CalcGoto(file, entry, end)
 
@@ -1045,7 +1044,7 @@ def GenerateCommand(cmd, file, end):
 			entry["UNK"] = file.read(33).hex().upper()
 		
 		case 0x58:
-			entry["TYPE"] = "0x57"
+			entry["TYPE"] = "0x58"
 		
 		case 0x59:
 			entry["TYPE"] = "0x59"
@@ -1447,6 +1446,7 @@ def GenerateCommand(cmd, file, end):
 			entry["TYPE"] = "0x88"
 			entry["UNK"] = file.read(3).hex().upper()
 		
+		#Changed
 		case 0x89:
 			entry["TYPE"] = "0x89"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
@@ -1460,7 +1460,7 @@ def GenerateCommand(cmd, file, end):
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
 			if (entry["CONTROL"] == 0):
 				entry["UNK"] = [int.from_bytes(file.read(4), byteorder="little", signed=True)]
-		
+		#Changed
 		case 0x8B:
 			entry["TYPE"] = "0x8B"
 			entry["CONTROL"] = int.from_bytes(file.read(1), byteorder="little", signed=True)
@@ -1829,8 +1829,8 @@ def GenerateCommand(cmd, file, end):
 	return entry
 
 def GenerateMonsters(file, until_offset = None):
-	print("READING MONSTERS")
-	print("OFFSET: 0x%x" % file.tell())
+	#print("READING MONSTERS")
+	#print("OFFSET: 0x%x" % file.tell())
 	entry = {}
 	entry["TYPE"] = "CREATE_MONSTERS"
 	firstByte = file.read(1)
@@ -1969,6 +1969,8 @@ for y in range(0, len(files)):
 						if ((cmd == 0) and (DUMP["HEADER"]["ID"] == "infsys")):
 							file.seek(-1, 1)
 							entry = {}
+							entry["LABEL"] = "0x%x" % (file.tell() - 1)
+							entry["TYPE"] = "DUMP"
 							entry["DUMP"] = file.read(end - file.tell()).hex().upper()
 							CMD_ENTRY = entry
 						else: CMD_ENTRY = GenerateCommand(cmd, file, end)
