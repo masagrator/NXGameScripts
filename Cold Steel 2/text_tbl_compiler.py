@@ -333,11 +333,22 @@ for i in range(0, len(files)):
 	dump = json.load(file)
 	file.close()
 
+	COUNT = {}
+	for x in range(0, len(dump)):
+		if (dump[x]["TYPE"] not in COUNT.keys()):
+			COUNT[dump[x]["TYPE"]] = 1
+		else: COUNT[dump[x]["TYPE"]] += 1
+
 	OUTPUT = []
 	for x in range(0, len(dump)):
 		OUTPUT.append(GenerateData(dump[x]))
 	
 	file_new = open("new_nx/%s.tbl" % files[i][6:-5], "wb")
 	file_new.write(numpy.uint16(len(dump)))
+	file_new.write(numpy.uint32(len(COUNT.keys())))
+	lista = list(COUNT.keys())
+	for x in range(0, len(lista)):
+		file_new.write(lista[x].encode("UTF-8") + b"\x00")
+		file_new.write(numpy.uint32(COUNT[lista[x]]))
 	file_new.write(b"".join(OUTPUT))
 	file_new.close()
