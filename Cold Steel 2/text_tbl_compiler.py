@@ -84,10 +84,10 @@ def GenerateData(entry):
 		case "item":
 			temp.append(numpy.uint16(entry["ID"]))
 			temp.append(numpy.int16(entry["UNK0"]))
-			temp.append(entry["STRING"].encode("UTF-8") + b"\x00")
+			temp.append(entry["CATEGORY"].encode("UTF-8") + b"\x00")
 			temp.append(bytes.fromhex(entry["UNK1"]))
-			temp.append(entry["STRINGS"][0].encode("UTF-8") + b"\x00")
-			temp.append(entry["STRINGS"][1].encode("UTF-8") + b"\x00")
+			for x in range(0, len(entry["STRINGS"])):
+				temp.append(entry["STRINGS"][x].encode("UTF-8") + b"\x00")
 		
 		case "MapJumpData":
 			temp.append(numpy.uint16(entry["ID"]))
@@ -265,8 +265,9 @@ def GenerateData(entry):
 				temp.append(numpy.uint8(entry["MONSTERS"][x]["STATE"]))
 		
 		case "item_q":
-			temp.append(bytes.fromhex(entry["UNK"]))
-			temp.append(entry["STRING"].encode("UTF-8") + b"\x00")
+			temp.append(numpy.uint16(entry["ID"]))
+			temp.append(numpy.int16(entry["UNK"]))
+			temp.append(entry["CATEGORY"].encode("UTF-8") + b"\x00")
 			temp.append(bytes.fromhex(entry["UNK1"]))
 			for x in range(0, len(entry["STRINGS"])):
 				temp.append(entry["STRINGS"][x].encode("UTF-8") + b"\x00")

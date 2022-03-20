@@ -154,7 +154,7 @@ for i in range(0, len(files)):
                 entry["TYPE"] = type
                 entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
                 entry["UNK0"] = int.from_bytes(file.read(2), byteorder="little", signed=True)
-                entry["STRING"] = readString(file)
+                entry["CATEGORY"] = readString(file)
                 entry["UNK1"] = file.read(0x3C).hex()
                 entry["STRINGS"] = [readString(file), readString(file), readString(file), readString(file), readString(file), readString(file), readString(file), readString(file), readString(file), readString(file)]
             
@@ -463,8 +463,9 @@ for i in range(0, len(files)):
 
             case "item_q":
                 entry["TYPE"] = type
-                entry["UNK"] = file.read(0x4).hex().upper()
-                entry["STRING"] = readString(file)
+                entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
+                entry["UNK"] = int.from_bytes(file.read(2), byteorder="little", signed=True)
+                entry["CATEGORY"] = readString(file)
                 entry["UNK1"] = file.read(0x3C).hex().upper()
                 entry["STRINGS"] = [readString(file), readString(file)]
                 entry["UNK2"] = file.read(0x14).hex().upper()
