@@ -1912,7 +1912,6 @@ def GenerateCommand(cmd, file, end):
 		
 		case 0x9B:
 			entry["TYPE"] = "0x9B"
-			entry["TYPE"] = "0x96"
 			entry["UNK"] = [int.from_bytes(file.read(2), byteorder="little", signed=True)]
 			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
 			entry["UNK"].append(int.from_bytes(file.read(4), byteorder="little", signed=True))
