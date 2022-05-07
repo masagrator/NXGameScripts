@@ -1630,7 +1630,7 @@ def GenerateCommand(cmd, file, end):
 					sys.exit()
 		
 		case 0xA3:
-			entry["TYPE"] = "0xA2"
+			entry["TYPE"] = "0xA3"
 			entry["UNK"] = file.read(2).hex().upper()
 
 		#Changed
