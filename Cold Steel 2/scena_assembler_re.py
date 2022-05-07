@@ -524,7 +524,7 @@ def GenerateCommand(entry, Offset_dict = None):
 			ret_entry.append(bytes.fromhex(entry["UNK1"]))
 		case "GOTO51":
 			ret_entry.append(numpy.uint8(0x51))
-			ret_entry.append(numpy.int8(entry["UNK"][0]))
+			ret_entry.append(bytes.fromhex(entry["UNK"]))
 			ret_entry.append(CalcGoto(entry["TABLE"]))
 		case "0x52":
 			ret_entry.append(numpy.uint8(0x52))
