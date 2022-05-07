@@ -281,9 +281,13 @@ def GenerateCommand(entry, Offset_dict = None):
 			match(entry["CONTROL"]):
 				case 0 | 91 | 1 | 0x1D | 0x36 | 0x20 | 0x7D | 0x80 | 0x99 | 8 | 6 | 4 | 92 | 0x97 | 0x9D | 0x81 | 0x9B | 0x8F | 3 | 0x2C | 0x2D | 0x1F | 0x89 | 0x93 | 0x98 | 109 | 108 | 107 | 102 | 101 | 99 | 0x1C | 0x14 | 13 | 0x10 | 72 | 93 | 9 | 94 | 95 | 96 | 115 | 116 | 117 | 121 | 0x49 | 0xF | 0x8E | 10 | 123 | 0x91 | 0x1A | 0x19 | 0x83 | 0x2E | 0x9C | 0x17 | 12 | 0x34 | 90 | 11 | 0x96 | 0x95 | 0xA0 | 0xA1 | 0xA2 | 0xA3 | 0xA4 | 0xA5 | 0xE | 0x92 | 0x11 | 122 | 98 | 2 | 0x52 | 0x12 | 0x13 | 0x35 | 0x15 | 0x32 | 0x37 | 60 | 70 | 97 | 0x26 | 110 | 126 | 113 | 114:
 					ret_entry.append(bytes.fromhex(entry["UNK"]))
-				case 7 | 5 | 0x1E | 0x9E | 0x82:
+				case 7 | 5 | 0x9E | 0x82:
 					ret_entry.append(bytes.fromhex(entry["UNK"]))
 					ret_entry.append(entry["STRINGS"][0].encode("UTF-8") + b"\x00")
+				case 0x1E:
+					ret_entry.append(bytes.fromhex(entry["UNK"]))
+					ret_entry.append(entry["STRINGS"][0].encode("UTF-8") + b"\x00")
+					ret_entry.append(entry["STRINGS"][1].encode("UTF-8") + b"\x00")
 				case 0x51:
 					ret_entry.append(entry["STRINGS"][0].encode("UTF-8") + b"\x00")
 					ret_entry.append(bytes.fromhex(entry["UNK"]))
