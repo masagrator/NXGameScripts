@@ -316,24 +316,16 @@ def GenerateCommand(cmd, file, end):
 					entry["UNK0"] = file.read(10).hex().upper()
 					entry["STRINGS"] = [readString(file)]
 					entry["UNK1"] = file.read(13).hex().upper()
-				case 0x34:
+				case 0x34 | 0x36 | 0x3C | 0x68 | 0x65:
 					entry["UNK0"] = file.read(9).hex().upper()
 				case 0x35:
 					entry["UNK0"] = file.read(13).hex().upper()
-				case 0x36:
-					entry["UNK0"] = file.read(9).hex().upper()
-				case 0x37:
-					entry["UNK0"] = file.read(6).hex().upper()
-				case 0x3C | 0x68:
-					entry["UNK0"] = file.read(9).hex().upper()
 				case 0x3E:
 					entry["UNK0"] = file.read(3).hex().upper()
-				case 0x3F | 0x6C | 0x69:
+				case 0x3F | 0x6C | 0x69 | 0x39 | 0x3A | 0x43 | 0x44 | 0x6B | 0x37 | 0x71:
 					entry["UNK0"] = file.read(6).hex().upper()
 				case 0x40 | 0x72:
 					entry["UNK0"] = file.read(8).hex().upper()
-				case 0x65:
-					entry["UNK0"] = file.read(9).hex().upper()
 				case _:
 					if (entry["CONTROL"] in [0xD, 0x26, 0x32]):
 						entry["UNK0"] = file.read(2).hex().upper()
@@ -346,12 +338,8 @@ def GenerateCommand(cmd, file, end):
 					elif (entry["CONTROL"] in [0x38, 0x3B]):
 						entry["UNK0"] = file.read(2).hex().upper()
 						entry["STRINGS"] = [readString(file)]
-					elif (entry["CONTROL"] in [0x39, 0x3A]):
-						entry["UNK0"] = file.read(6).hex().upper()
 					elif (entry["CONTROL"] in [0x3D, 0x41, 0x73]):
 						entry["UNK0"] = file.read(4).hex().upper()
-					elif (entry["CONTROL"] in [0x43, 0x44, 0x6B]):
-						entry["UNK0"] = file.read(6).hex().upper()
 					else:
 						print("WRONG 0x13 CONTROL: 0x%x" % entry["CONTROL"])
 						print("OFFSET: 0x%x" % (file.tell() - 2))
