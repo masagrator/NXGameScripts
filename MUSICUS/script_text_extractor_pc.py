@@ -54,9 +54,7 @@ for i in range(0, len(files)):
         string = readString(file)
         offset += len(string.encode("shift_jis_2004")) + 1
         string = ReformatString(string)
-        list = string.split("\n")
-        for y in range(0, len(list)):
-            STRINGS.append(list[y])
+        STRINGS.append(string.split("\n"))
 
     file.close()
     os.makedirs("unpacked_en", exist_ok=True)
@@ -65,7 +63,7 @@ for i in range(0, len(files)):
     dump.close()
     CLEANEDUP = []
     for x in range(0, len(STRINGS)):
-        if (STRINGS[x] != ""):
+        if (STRINGS[x] not in [[""], ["music.dat"]]):
             CLEANEDUP.append(STRINGS[x])
     if (CLEANEDUP != []):
         os.makedirs("cleaned_en", exist_ok=True)
@@ -96,9 +94,7 @@ for i in range(0, len(files)):
         string = readString(file)
         offset += len(string.encode("shift_jis_2004")) + 1
         string = ReformatString(string)
-        list = string.split("\n")
-        for y in range(0, len(list)):
-            STRINGS.append(list[y])
+        STRINGS.append(string.split("\n"))
 
     file.close()
     os.makedirs("unpacked", exist_ok=True)
@@ -107,7 +103,7 @@ for i in range(0, len(files)):
     dump.close()
     CLEANEDUP = []
     for x in range(0, len(STRINGS)):
-        if (STRINGS[x] != ""):
+        if (STRINGS[x] not in [[""], ["music.dat"]]):
             CLEANEDUP.append(STRINGS[x])
     if (CLEANEDUP != []):
         os.makedirs("cleaned", exist_ok=True)
