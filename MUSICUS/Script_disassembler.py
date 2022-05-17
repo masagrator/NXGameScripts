@@ -1,8 +1,6 @@
 import json
 import glob
 import os
-import sys
-from turtle import bye
 
 def ProcessOpcode(opcode):
     assert(opcode <= 0x48)
