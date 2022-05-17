@@ -5,6 +5,28 @@ import numpy
 
 files = glob.glob("Script_disassembled/*.json")
 
+def ReformatString(string: str):
+    if (len(string) > 68):
+        entry = []
+        offset = 0
+        if (string[0:2] == "@v"):
+            entry.append(string[0:14])
+            offset = 14
+        while(True):
+            if (offset+68 >= len(string)):
+                entry.append(string[offset:])
+                break
+            offset_space = string.rfind(" ", offset, offset+68)
+            if (offset_space != -1):
+                entry.append(string[offset:offset_space])
+                entry.append("@n")
+                offset = offset_space + 1
+            else:
+                entry.append(string[offset:])
+                break
+        return "".join(entry).encode("UTF-8") + b"\x00"
+    return string.encode("UTF-8") + b"\x00"
+
 for i in range(0, len(files)):
     print(files[i])
     file = open(files[i], "r", encoding="UTF-8")
@@ -30,7 +52,7 @@ for i in range(0, len(files)):
     for x in range(0, strings_blocks_count):
         new_file.write(numpy.uint32(len(DUMP["STRINGS"][x])))
         for y in range(0, len(DUMP["STRINGS"][x])):
-            string = DUMP["STRINGS"][x][y].encode("UTF-8") + b"\x00"
+            string = ReformatString(DUMP["STRINGS"][x][y])
             new_file.write(numpy.uint32(len(string)))
             new_file.write(string)
     if (os.path.basename(files[i])[:-5] in ["eventmode", "replaymode", "system", "title"]):
@@ -67,7 +89,7 @@ for i in range(0, len(files)):
             for y in range(0, len(DUMP["SPECIAL"][x]["STRINGS"])):
                 new_file.write(numpy.uint32(len(DUMP["SPECIAL"][x]["STRINGS"][y])))
                 for z in range(0, len(DUMP["SPECIAL"][x]["STRINGS"][y])):
-                    string = DUMP["SPECIAL"][x]["STRINGS"][y][z].encode("UTF-8") + b"\x00"
+                    string = ReformatString(DUMP["SPECIAL"][x]["STRINGS"][y][z])
                     new_file.write(numpy.uint32(len(string)))
                     new_file.write(string)
             new_file.write(b"\x00" * 8)
