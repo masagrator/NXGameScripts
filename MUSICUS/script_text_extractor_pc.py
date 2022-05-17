@@ -98,7 +98,7 @@ for i in range(0, len(files)):
 
     file.close()
     os.makedirs("unpacked", exist_ok=True)
-    dump = open("unpacked/%s.json" % files[i][10:-4], "w", encoding="UTF-8")
+    dump = open("unpacked/%s.json" % files[i][7:-4], "w", encoding="UTF-8")
     json.dump(STRINGS, dump, indent="\t", ensure_ascii=False)
     dump.close()
     CLEANEDUP = []
@@ -107,6 +107,6 @@ for i in range(0, len(files)):
             CLEANEDUP.append(STRINGS[x])
     if (CLEANEDUP != []):
         os.makedirs("cleaned", exist_ok=True)
-        dump = open("cleaned/%s.json" % files[i][10:-4], "w", encoding="UTF-8")
+        dump = open("cleaned/%s.json" % files[i][7:-4], "w", encoding="UTF-8")
         json.dump(CLEANEDUP, dump, indent="\t", ensure_ascii=False)
         dump.close()
