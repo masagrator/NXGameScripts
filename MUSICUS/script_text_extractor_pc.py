@@ -14,6 +14,22 @@ def readString(myfile):
             return str(b"".join(chars).decode("shift_jis_2004"))
         chars.append(c)
 
+def ReformatString(string: str):
+    chars = []
+    i = 0
+    while(i < len(string)):
+        if (string[i] == "@"):
+            if (string[i+1] == "L"):
+                chars.append("\n")
+            i += 2
+        else:
+            chars.append(string[i])
+            i += 1
+    return "".join(chars)
+
+def ReformatString2(string: str):
+    return string.split("\n")
+
 header_size = 0x30
 files = glob.glob("script_en/*.dat")
 
@@ -36,8 +52,11 @@ for i in range(0, len(files)):
     for x in range(0, strings_count):
         assert((file.tell() - start) == offset)
         string = readString(file)
-        STRINGS.append(string)
         offset += len(string.encode("shift_jis_2004")) + 1
+        string = ReformatString(string)
+        list = string.split("\n")
+        for y in range(0, len(list)):
+            STRINGS.append(list[y])
 
     file.close()
     os.makedirs("unpacked_en", exist_ok=True)
@@ -75,8 +94,11 @@ for i in range(0, len(files)):
     for x in range(0, strings_count):
         assert((file.tell() - start) == offset)
         string = readString(file)
-        STRINGS.append(string)
         offset += len(string.encode("shift_jis_2004")) + 1
+        string = ReformatString(string)
+        list = string.split("\n")
+        for y in range(0, len(list)):
+            STRINGS.append(list[y])
 
     file.close()
     os.makedirs("unpacked", exist_ok=True)
