@@ -19,7 +19,7 @@ def ReformatString(string: str):
     i = 0
     while(i < len(string)):
         if (string[i] == "@"):
-            if (string[i+1] == "L"):
+            if (string[i+1] == "I"):
                 chars.append("\n")
             i += 2
         else:
@@ -64,6 +64,8 @@ for i in range(0, len(files)):
     CLEANEDUP = []
     for x in range(0, len(STRINGS)):
         if (STRINGS[x] not in [[""], ["music.dat"]]):
+            if (STRINGS[x][len(STRINGS[x])-1] == ""):
+                STRINGS[x].pop()
             CLEANEDUP.append(STRINGS[x])
     if (CLEANEDUP != []):
         os.makedirs("cleaned_en", exist_ok=True)
@@ -104,6 +106,8 @@ for i in range(0, len(files)):
     CLEANEDUP = []
     for x in range(0, len(STRINGS)):
         if (STRINGS[x] not in [[""], ["music.dat"]]):
+            if (STRINGS[x][len(STRINGS[x])-1] == ""):
+                STRINGS[x].pop()
             CLEANEDUP.append(STRINGS[x])
     if (CLEANEDUP != []):
         os.makedirs("cleaned", exist_ok=True)
