@@ -2,6 +2,7 @@ import json
 import glob
 import os
 import sys
+from turtle import bye
 
 def ProcessOpcode(opcode):
     assert(opcode <= 0x48)
@@ -80,6 +81,10 @@ for i in range(0, len(files)):
         file.seek(4, 1)
         DUMP["SPECIAL"].append(entry)
     file.close()
+    OUTPUT = {}
+    OUTPUT["STRINGS"] = DUMP["STRINGS"]
+    OUTPUT["INSTRUCTIONS"] = DUMP["INSTRUCTIONS"]
+    OUTPUT["SPECIAL"] = DUMP["SPECIAL"]
     new_file = open("Script_disassembled/%s.json" % files[i][7:-6], "w", encoding="UTF-8")
-    json.dump(DUMP, new_file, indent="\t", ensure_ascii=False)
+    json.dump(OUTPUT, new_file, indent="\t", ensure_ascii=False)
     new_file.close()    
