@@ -67,10 +67,11 @@ for i in range(0, len(files)):
         strings_count = int.from_bytes(file.read(4), byteorder="little")
         if (strings_count == 0): strings_count = -1
         while(strings_count != 0):
+            entry2 = []
             if (strings_count == -1):
                 strings_count = int.from_bytes(file.read(4), byteorder="little")
+                entry["STRINGS"].append(entry2)
                 continue
-            entry2 = []
             for x in range(0, strings_count):
                 string_size = int.from_bytes(file.read(4), byteorder="little")
                 entry2.append(file.read(string_size).decode("UTF-8")[:-1])
@@ -82,6 +83,7 @@ for i in range(0, len(files)):
     OUTPUT = {}
     OUTPUT["STRINGS"] = DUMP["STRINGS"]
     OUTPUT["INSTRUCTIONS"] = DUMP["INSTRUCTIONS"]
+    OUTPUT["FLAGS"] = DUMP["FLAGS"]
     OUTPUT["SPECIAL"] = DUMP["SPECIAL"]
     new_file = open("Script_disassembled/%s.json" % files[i][7:-6], "w", encoding="UTF-8")
     json.dump(OUTPUT, new_file, indent="\t", ensure_ascii=False)
