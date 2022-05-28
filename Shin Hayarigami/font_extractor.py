@@ -3,12 +3,6 @@ import json
 import numpy
 import os
 
-# Comment about fonts used in game:
-# 
-# System font have very detailed character table, but nothing of it is used in game except for glyph ID and UTF-8 LE character value.
-# Game is using internal width calculation in game code that for half width characters is using 24px, for full width 48 px. 
-# No kerning/margins at all.
-
 file = open(sys.argv[1], "rb")
 os.makedirs(sys.argv[1][:-4], exist_ok=True)
 buffer = numpy.fromfile(file, dtype=numpy.uint16, count=4)
