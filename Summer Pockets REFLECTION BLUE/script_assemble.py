@@ -352,11 +352,14 @@ def RETURN(entry):
 	array.append(bytes.fromhex(entry['Args']))
 	return b''.join(array)
 
-def GOSUB(entry):
+def GOSUB(entry, string):
 	array = []
 	array.append(Commands.GOSUB.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
 	array.append(bytes.fromhex(entry['Args']))
+	if (string == "COMMAND"):
+		array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+	else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
 def BGM(entry):
@@ -770,7 +773,7 @@ def Make_command(entry, string):
 		case "BMODE": return BMODE(entry)
 		case "ADD": return ADD(entry)
 		case "RETURN": return RETURN(entry)
-		case "GOSUB": return GOSUB(entry)
+		case "GOSUB": return GOSUB(entry, string)
 		case "BGM": return BGM(entry)
 		case "SE": return SE(entry)
 		case "MOVIE": return MOVIE(entry)

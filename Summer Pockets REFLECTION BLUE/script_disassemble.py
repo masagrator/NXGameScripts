@@ -389,7 +389,8 @@ def GOSUB(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['LABEL'] = "%s" % (hex(file.tell()-4))
 	entry['Type'] = "GOSUB"
 	entry['SUBCMD'] = SUBCMD
-	entry['Args'] = file.read(argsize).hex()
+	entry['Args'] = file.read(argsize-4).hex()
+	entry['GOTO_LABEL'] = "%s" % hex(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
 	MAIN_ENTRY.append(entry)
 
 def BGM(SUBCMD, MAIN_ENTRY, file, argsize):
