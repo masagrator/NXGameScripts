@@ -697,10 +697,32 @@ def LOG(SUBCMD, MAIN_ENTRY, file, argsize):
 		return
 	elif (string_size > 0):
 		string_size = string_size * 2
-		entry['JPN'] = file.read(string_size).decode("UTF-16-LE")
+		text = file.read(string_size).decode("UTF-16-LE")
+		if (text[0] == "`"):
+			char_count = 0
+			for i in range(1, 32):
+				if (text[i] == "@"): 
+					char_count = i
+					break
+			entry['NameJPN'] = text[1:char_count]
+			entry['JPN'] = text[char_count+1:]
+			entry['NameENG'] = ""
+		else:    
+			entry['JPN'] = text
 		file.seek(2, 1)
-	elif (string_size < 0):
-		entry['JPN'] = file.read(string_size).decode("UTF-8")
+	else:
+		text = file.read(string_size).decode("UTF-8")
+		if (text[0] == "`"):
+			char_count = 0
+			for i in range(1, 32):
+				if (text[i] == "@"): 
+					char_count = i
+					break
+			entry['NameJPN'] = text[1:char_count]
+			entry['JPN'] = text[char_count+1:]
+			entry['NameENG'] = ""
+		else:    
+			entry['JPN'] = text
 		file.seek(1, 1)
 	entry['ENG'] = ""
 	entry['Args2'] = file.read(1).hex()

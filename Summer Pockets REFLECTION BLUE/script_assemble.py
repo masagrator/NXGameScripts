@@ -600,18 +600,21 @@ def LOG(entry):
 		entry['JPN']
 	except:
 		return b''.join(array)
-	else:
-		if ((ENG == False) or (len(entry['ENG']) == 0)):
-			size = len(entry['JPN'].encode("UTF-16-LE"))
-			array.append(int(size / 2).to_bytes(2, byteorder='little'))
-			array.append(entry['JPN'].encode("UTF-16-LE"))
-		else:
-			size = len(entry['ENG'].encode("UTF-16-LE"))
-			array.append(int(size / 2).to_bytes(2, byteorder='little'))
-			array.append(entry['ENG'].encode("UTF-16-LE"))       
-		array.append(b"\x00\x00")
-		array.append(bytes.fromhex(entry['Args2'])) 
-		return b''.join(array)
+	Name = b''
+	try:
+		if ((ENG == False) or (len(entry['NameENG']) == 0)): Name = ("`%s@" % (entry['NameJPN'])).encode("UTF-16-LE")
+		else: Name = ("`%s@" % (entry['NameENG'])).encode("UTF-16-LE")
+	except:
+		pass
+	if ((ENG == False) or (len(entry["ENG"]) == 0)): Text = entry["JPN"].encode("UTF-16-LE")
+	else: Text = entry["ENG"].encode("UTF-16-LE")
+	size = (len(Name) + len(Text))
+	array.append(int(size / 2).to_bytes(2, byteorder='little'))
+	array.append(Name)
+	array.append(Text)
+	array.append(b"\x00\x00")
+	array.append(bytes.fromhex(entry['Args2']))
+	return b''.join(array)
 
 def LOG_END(entry):
 	array = []
@@ -921,7 +924,6 @@ while(True):
 for i in range(0, len(Filenames)):
 	script = open("%s/Compiled/%s.dat" % (sys.argv[2], Filenames[i]), "rb")
 	temp = script.read()
-	print("%s: %d" % (script.name, len(temp)))
 	new_file.write(temp)
 	if (len(temp) != (4 * round((scripts_size[i]+1) / 4))):
 		rest = (4 * round((scripts_size[i]+1) / 4) - len(temp))
