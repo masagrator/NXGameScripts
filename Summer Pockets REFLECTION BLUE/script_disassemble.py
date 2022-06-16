@@ -442,7 +442,7 @@ def FARCALL(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['SUBCMD'] = SUBCMD
 	entry['Args'] = file.read(4).hex()
 	entry["String"] = readString(file)
-	entry["Arg2"] = file.read(4).hex()
+	entry["Args2"] = file.read(4).hex()
 	MAIN_ENTRY.append(entry)
 
 def FLAGCLR(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -612,7 +612,7 @@ def MESSAGE(SUBCMD, MAIN_ENTRY, file, argsize):
 			text = file.read(string_size).decode("UTF-16-LE")
 			if (text[0] == "`"):
 				char_count = 0
-				for i in range(1, 16):
+				for i in range(1, 32):
 					if (text[i] == "@"): 
 						char_count = i
 						break
@@ -690,7 +690,12 @@ def LOG(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['SUBCMD'] = SUBCMD
 	entry['Args'] = file.read(7).hex()
 	string_size = numpy.fromfile(file, dtype=numpy.int16, count=1)[0]
-	if (string_size > 0):
+	if (string_size == 0):
+		file.seek(-9, 1)
+		entry['Args'] = file.read(argsize).hex()
+		MAIN_ENTRY.append(entry)
+		return
+	elif (string_size > 0):
 		string_size = string_size * 2
 		entry['JPN'] = file.read(string_size).decode("UTF-16-LE")
 		file.seek(2, 1)
@@ -864,7 +869,7 @@ def GOTO_COMMANDS(CMD, SUBCMD, file, cmdsize):
 		case Commands.ADD.value: ADD(SUBCMD, Dump['Main'], file, cmdsize-4)
 		case Commands.RETURN.value: RETURN(SUBCMD, Dump['Main'], file, cmdsize-4)
 		case Commands.GOSUB.value: GOSUB(SUBCMD, Dump['Main'], file, cmdsize-4)
-		case Commands.BGM.value: SE(SUBCMD, Dump['Main'], file, cmdsize-4)
+		case Commands.BGM.value: BGM(SUBCMD, Dump['Main'], file, cmdsize-4)
 		case Commands.SE.value: SE(SUBCMD, Dump['Main'], file, cmdsize-4)
 		case Commands.MOVIE.value: MOVIE(SUBCMD, Dump['Main'], file, cmdsize-4)
 		case Commands.SETBGMFLAG.value: SETBGMFLAG(SUBCMD, Dump['Main'], file, cmdsize-4)
