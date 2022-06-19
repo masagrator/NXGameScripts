@@ -849,7 +849,19 @@ def TASK(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['LABEL'] = "%s" % (hex(file.tell()-4))
 	entry['Type'] = "TASK"
 	entry['SUBCMD'] = SUBCMD
-	entry['Args'] = file.read(argsize).hex()
+	if (SUBCMD == 3):
+		entry['Args'] = file.read(4).hex()
+		entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
+		if (entry["ID"] == 1):
+			entry['Args2'] = file.read(10).hex()
+			character_count = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
+			entry["Strings"] = list(file.read(character_count * 2).decode("UTF-16-LE").split("$d"))
+			print(entry["Strings"])
+			file.seek(2, 1)
+		else:
+			entry['Args2'] = file.read(argsize-6).hex()
+	else:
+		entry['Args'] = file.read(argsize).hex()
 	MAIN_ENTRY.append(entry)
 
 def PRINTF(SUBCMD, MAIN_ENTRY, file, argsize):
@@ -956,6 +968,10 @@ def readString16(myfile):
 			return str(b"".join(chars).decode("UTF-16-LE"))
 		chars.append(c)
 
+def taskDecompile(file, filesize):
+	while (file.tell() < filesize):
+		Dump["Main"].append(readString(file))
+
 os.makedirs("%s/json" % os.path.basename(sys.argv[1])[:-4], exist_ok=True)
 os.makedirs("%s/new" % os.path.basename(sys.argv[1])[:-4], exist_ok=True)
 
@@ -1004,6 +1020,15 @@ for i in range(0, len(Filenames)):
 		print("%s in EXCEPTIONS. Ignoring..." % (Filenames[i]))
 		continue
 	print(Filenames[i])
+	if (Filenames[i] == "_TASK"):
+		taskDecompile(file, file_size)
+	else:
+		while (file.tell() < file_size):
+			command_size = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
+			GOTO_COMMANDS(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0], int(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0]), file, command_size)
+			end = file.tell()
+			if (end % 2 != 0):
+				file.seek(2 - (end % 2), 1)
 	file = open("%s/new/%s.dat" % (os.path.basename(sys.argv[1])[:-4], Filenames[i]), "rb")
 	file.seek(0, 2)
 	file_size = file.tell()
