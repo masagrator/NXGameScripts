@@ -435,7 +435,10 @@ def VARSTR(entry):
 	array.append(Commands.VARSTR.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
 	array.append(bytes.fromhex(entry['Args']))
-	array.append(entry["String16"].encode("UTF-16-LE") + b"\x00\x00")
+	if ((ENG == False) or (len(entry['ENG'][i]) == 0)):
+		array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
+	else:
+		array.append(entry["ENG"].encode("UTF-16-LE") + b"\x00\x00")
 	return b''.join(array)
 
 def GOTO(entry, string):

@@ -484,8 +484,11 @@ def VARSTR(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['LABEL'] = "%s" % (hex(file.tell()-4))
 	entry['Type'] = "VARSTR"
 	entry['SUBCMD'] = SUBCMD
-	entry['Args'] = file.read(6).hex()
-	entry["String16"] = readString16(file)
+	entry['Args'] = file.read(4).hex()
+	if (SUBCMD == 1):
+		entry['Args'] += file.read(2).hex()
+	entry["JPN"] = readString16(file)
+	entry["ENG"] = ""
 	MAIN_ENTRY.append(entry)
 
 # Jumps to offset in the same file.
