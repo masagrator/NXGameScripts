@@ -850,7 +850,7 @@ with open("%s/chapternames.json" % sys.argv[2], 'r', encoding="UTF-8") as f:
 
 for i in range(0, len(Filenames)):
 	offset_new = 0
-	EXCEPTIONS = ["_VOICE_PARAM", "_VARNUM", "_TASK", "_SCR_LABEL", "_CGMODE", "_BUILD_COUNT"]
+	EXCEPTIONS = ["_VOICE_PARAM", "_VARNUM", "_SCR_LABEL", "_CGMODE", "_BUILD_COUNT"]
 	if (Filenames[i] in EXCEPTIONS):
 		print("%s in EXCEPTIONS. Ignoring..." % (Filenames[i]))
 		shutil.copy("%s/new/%s.dat" % (sys.argv[2], Filenames[i]), "%s/Compiled/%s.dat" % (sys.argv[2], Filenames[i]))
@@ -858,20 +858,26 @@ for i in range(0, len(Filenames)):
 	print(Filenames[i])
 	file = open("%s/json/%s.json" % (sys.argv[2], Filenames[i]), "r", encoding="UTF-8")
 	DUMP = json.load(file)
-	COMMAND_OUTPUT_SIZE = []
 	file.close()
-	for x in range(0, len(DUMP)):
-		Size = Process("SIZE", DUMP[x], offset_new)
-		if (Size % 2 != 0): Size += 1
-		COMMAND_OUTPUT_SIZE.append(Size)
-		offset_new += Size + 2
-	file = open("%s/Compiled/%s.dat" % (sys.argv[2], Filenames[i]), "wb")
-	for x in range(0, len(DUMP)):
-		COM = Process("COMMAND", DUMP[x], offset_new)
-		file.write((len(COM)+2).to_bytes(2, byteorder='little'))
-		file.write(COM)
-		if (len(COM) % 2 != 0): file.write(b"\x00")
-	file.close()
+	if (Filenames[i] == "_TASK"):
+		file = open("%s/Compiled/%s.dat" % (sys.argv[2], Filenames[i]), "wb")
+		for x in range(0, len(DUMP)):
+			file.write(DUMP[x].encode("shift_jis_2004")+b"\x00")
+		file.close()
+	else:
+		COMMAND_OUTPUT_SIZE = []
+		for x in range(0, len(DUMP)):
+			Size = Process("SIZE", DUMP[x], offset_new)
+			if (Size % 2 != 0): Size += 1
+			COMMAND_OUTPUT_SIZE.append(Size)
+			offset_new += Size + 2
+		file = open("%s/Compiled/%s.dat" % (sys.argv[2], Filenames[i]), "wb")
+		for x in range(0, len(DUMP)):
+			COM = Process("COMMAND", DUMP[x], offset_new)
+			file.write((len(COM)+2).to_bytes(2, byteorder='little'))
+			file.write(COM)
+			if (len(COM) % 2 != 0): file.write(b"\x00")
+		file.close()
 
 unk0 = []
 
