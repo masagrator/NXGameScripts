@@ -731,7 +731,21 @@ def TASK(entry):
 	array = []
 	array.append(Commands.TASK.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
-	array.append(bytes.fromhex(entry['Args']))
+	if (entry['SUBCMD'] == 3):
+		array.append(bytes.fromhex(entry['Args']))
+		try:
+			array.append(numpy.uint16(entry['ID']))
+		except: 
+			return b''.join(array)
+		else:
+			array.append(bytes.fromhex(entry['Args2']))
+			if (entry['ID'] == 1):
+				string = "$d".join(entry["Strings"])
+				stringbytes = string.encode("UTF-16-LE") + b"\x00\x00"
+				array.append(numpy.uint16(len(stringbytes)))
+				array.append(stringbytes)
+	else:
+		array.append(bytes.fromhex(entry['Args']))
 	return b''.join(array)
 
 def PRINTF(entry):
