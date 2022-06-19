@@ -51,8 +51,6 @@ filename_table = []
 for i in range(0, file_count):
     filename_table.append(readString(file))
 
-chapter_names = open("%s_filenames.txt" % (sys.argv[1][:-4]), "w", encoding="UTF-8")
-
 file_extracted = 0
 dummy_files = 0
 for i in range(0, file_count):
@@ -62,10 +60,10 @@ for i in range(0, file_count):
     file.seek(file_table['offset'][i], 0)
     file_new = open("%s\%s.dat" % (sys.argv[1][:-4], filename_table[i]), "wb")
     file_new.write(file.read(file_table['size'][i]))
-    chapter_names.write("%s\n" % (filename_table[i]))
     file_new.close()
     file_extracted += 1
 
+file.close()
 print("Extracted %d/%d files." % (file_extracted, file_count))
 print("Counted %d dummies" % dummy_files)
 
