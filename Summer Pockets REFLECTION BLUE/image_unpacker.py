@@ -38,6 +38,16 @@ flag2 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag3 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 offset_start_file_names = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 
+if (flag0 != 0 or flag2 != 0 or flag3 != 0):
+    print("UNSUPPORTED PAK TYPE")
+    sys.exit()
+
+if (flag1 not in [2, 3]):
+    print("UNSUPPORTED PAK TYPE")
+    sys.exit()
+
+
+
 file_table = {}
 file_table['offset'] = []
 file_table['size'] = []
@@ -45,6 +55,8 @@ file_table['size'] = []
 for i in range(0, file_count):
     file_table['offset'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]*round_to)
     file_table['size'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
+
+file.seek(offset_start_file_names)
 
 filename_table = []
 
@@ -63,7 +75,6 @@ for i in range(0, file_count):
     file_new.close()
     file_extracted += 1
 
-file.close()
 print("Extracted %d/%d files." % (file_extracted, file_count))
 print("Counted %d dummies" % dummy_files)
 
@@ -77,6 +88,7 @@ for i in range(0, len(files)):
     if (magic[0:2] == b"CZ"):
         print(subprocess.run(["LucaSystemTool/LucaSystemTools.exe", "-t", magic[0:3].decode("ascii").lower(), "-m", "export", "-f", files[i]], capture_output=True))
     elif (magic[1:4] == b"PNG"):
+        print("%s.png" % files[i][:-4])
         os.rename(files[i], "%s.png" % files[i][:-4])
     else:
         print("UNKNOWN FORMAT")
