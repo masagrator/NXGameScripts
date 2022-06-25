@@ -7,7 +7,7 @@ def readString(myfile):
 	while True:
 		c = myfile.read(1)
 		if c == b'\x00':
-			return str(b"".join(chars).decode("UTF-8"))
+			return str(b"".join(chars).decode("shift_jis_2004"))
 		chars.append(c)
 
 file = open(sys.argv[1], "rb")
@@ -22,6 +22,14 @@ flag2 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag3 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 offset_start_file_names = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 
+if (flag0 != 0):
+    print("UNSUPPORTED PAK TYPE")
+    sys.exit()
+
+if (flag1 not in [2, 3]):
+    print("UNSUPPORTED PAK TYPE")
+    sys.exit()
+
 file_table = {}
 file_table['offset'] = []
 file_table['size'] = []
@@ -30,7 +38,10 @@ for i in range(0, file_count):
 	file_table['offset'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]*round_to)
 	file_table['size'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
 
-assert(file.tell() == offset_start_file_names)
+if (flag1 == 2):
+	assert(file.tell() == offset_start_file_names)
+else:
+	file.seek(offset_start_file_names)
 
 filename_table = []
 
@@ -42,7 +53,9 @@ if (len(sys.argv) == 3):
 else:
 	new_file = open("%s_NEW.PAK" % (sys.argv[1][:-4]), "wb")
 file.seek(0)
-new_file.write(file.read(0x28))
+new_file.write(file.read(header_size))
+file.seek(0)
+new_file.seek(0x28)
 
 scripts_size = []
 
@@ -69,8 +82,10 @@ for i in range(0, file_count):
 	new_file.write(numpy.uint32(scripts_size[i]))
 	offset += int(round((scripts_size[i]+(round_to/2-1)) / round_to))
 
+new_file.seek(offset_start_file_names)
+
 for i in range(0, file_count):
-	new_file.write(filename_table[i].encode("UTF-8"))
+	new_file.write(filename_table[i].encode("shift_jis_2004"))
 	new_file.write(b"\x00")
 
 file.seek(new_file.tell(), 0)
