@@ -48,9 +48,13 @@ scripts_size = []
 
 for i in range(0, file_count):
 	if (file_table["offset"][i] == 0):
-		scripts_size.append(0)
-		continue
-	script = open("%s\%s.dat" % (sys.argv[1][:-4], filename_table[i]), "rb")
+		try:
+			script = open("%s\%s.dat" % (sys.argv[1][:-4], filename_table[i]), "rb")
+		except:
+			scripts_size.append(0)
+			continue
+	else:
+		script = open("%s\%s.dat" % (sys.argv[1][:-4], filename_table[i]), "rb")
 	script.seek(0, 2)
 	scripts_size.append(script.tell())
 	script.close()
@@ -58,7 +62,7 @@ for i in range(0, file_count):
 offset = header_size / round_to
 
 for i in range(0, file_count):
-	if (file_table["offset"][i] == 0):
+	if (scripts_size[i] == 0):
 		new_file.write(numpy.uint64(0))
 		continue
 	new_file.write(numpy.uint32(offset))
@@ -75,7 +79,7 @@ while(True):
 	new_file.write(file.read(0x1))
 
 for i in range(0, file_count):
-	if (file_table["offset"][i] == 0):
+	if (scripts_size[i] == 0):
 		continue
 	script = open("%s\%s.dat" % (sys.argv[1][:-4], filename_table[i]), "rb")
 	temp = script.read()
