@@ -5,6 +5,7 @@ import numpy
 from enum import Enum
 import shutil
 
+IgnoreMessage = False
 ENG = False
 LABELS = {}
 
@@ -186,7 +187,7 @@ def ROT(entry):
 	array.append(bytes.fromhex(entry['Args']))
 	return b''.join(array)
 
-def IFY(entry, string):
+def IFY(entry, string, filename):
 	array = []
 	array.append(Commands.IFY.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
@@ -194,7 +195,7 @@ def IFY(entry, string):
 		array.append(bytes.fromhex(entry['Args']))
 	array.append(entry['Equation'].encode("shift_jis_2004") + b"\x00")
 	if (string == "COMMAND"):
-		array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+		array.append(LABELS[filename][entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
 	else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
@@ -352,13 +353,13 @@ def RETURN(entry):
 	array.append(bytes.fromhex(entry['Args']))
 	return b''.join(array)
 
-def GOSUB(entry, string):
+def GOSUB(entry, string, filename):
 	array = []
 	array.append(Commands.GOSUB.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
 	array.append(bytes.fromhex(entry['Args']))
 	if (string == "COMMAND"):
-		array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+		array.append(LABELS[filename][entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
 	else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
@@ -399,13 +400,15 @@ def COLORBG_SET(entry):
 	array.append(bytes.fromhex(entry['Args']))
 	return b''.join(array)
 
-def FARCALL(entry):
+def FARCALL(entry, string):
 	array = []
 	array.append(Commands.FARCALL.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
 	array.append(bytes.fromhex(entry['Args']))
 	array.append(entry["String"].encode("shift_jis_2004") + b"\x00")
-	array.append(bytes.fromhex(entry['Args2']))
+	if (string == "COMMAND"):
+		array.append(LABELS[entry["String"].lower()][entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+	else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
 def FLAGCLR(entry):
@@ -435,28 +438,32 @@ def VARSTR(entry):
 	array.append(Commands.VARSTR.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
 	array.append(bytes.fromhex(entry['Args']))
-	if ((ENG == False) or (len(entry['ENG'][i]) == 0)):
+	if (ENG == False):
 		array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
+	elif (len(entry['ENG']) == 0):
+		print("DETECTED UNTRANSLATED VARSTR!")
+		print(entry)
+		sys.exit()
 	else:
 		array.append(entry["ENG"].encode("UTF-16-LE") + b"\x00\x00")
 	return b''.join(array)
 
-def GOTO(entry, string):
+def GOTO(entry, string, filename):
 	array = []
 	array.append(Commands.GOTO.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
 	if (entry['SUBCMD'] == 1):
 		array.append(bytes.fromhex(entry['Args']))
 		if (string == "COMMAND"):
-			array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+			array.append(LABELS[filename][entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
 		else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	else: 
 		if (string == "COMMAND"):
-			array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+			array.append(LABELS[filename][entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
 		else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
-def IFN(entry, string):
+def IFN(entry, string, filename):
 	array = []
 	array.append(Commands.IFN.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
@@ -464,7 +471,7 @@ def IFN(entry, string):
 		array.append(bytes.fromhex(entry['Args']))
 	array.append(entry["Equation"].encode("shift_jis_2004") + b"\x00")
 	if (string == "COMMAND"):
-		array.append(LABELS[entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+		array.append(LABELS[filename][entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
 	else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
@@ -548,16 +555,28 @@ def MESSAGE(entry):
 		array.append(b"\x00\x00")
 	Name = b''
 	try:
-		if ((ENG == False) or (len(entry['NameENG']) == 0)): Name = ("`%s@" % (entry['NameJPN'])).encode("UTF-16-LE")
-		else: Name = ("`%s@" % (entry['NameENG'])).encode("UTF-16-LE")
+		entry['NameJPN']
 	except:
 		pass
+	else:
+		if (ENG == False or IgnoreMessage == True): Name = ("`%s@" % (entry['NameJPN'])).encode("UTF-16-LE")
+		elif (len(entry['NameENG']) == 0):
+			print("DETECTED UNTRANSLATED MESSAGE NAME")
+			print(entry)
+			sys.exit()
+		else: Name = ("`%s@" % (entry['NameENG'])).encode("UTF-16-LE")
 	try:
-		if ((ENG == False) or (len(entry["ENG"]) == 0)): Text = entry["JPN"].encode("UTF-16-LE")
-		else: Text = entry["ENG"].encode("UTF-16-LE")
+		entry["JPN"]
 	except:
 		array.append(bytes.fromhex(entry['Args']))
 		return b''.join(array)
+	else:
+		if (ENG == False or IgnoreMessage == True): Text = entry["JPN"].encode("UTF-16-LE")
+		elif (len(entry['ENG']) == 0):
+			print("DETECTED UNTRANSLATED MESSAGE TEXT")
+			print(entry)
+			sys.exit()
+		else: Text = entry["ENG"].encode("UTF-16-LE")
 	size = (len(Name) + len(Text))
 	array.append(int(size / 2).to_bytes(2, byteorder='little'))
 	array.append(Name)
@@ -575,9 +594,13 @@ def SELECT(entry):
 	temp = 0
 	string = bytearray('', 'ascii')
 	for i in range(0, len(entry['JPN'])):
-		if ((ENG == False) or (len(entry['ENG'][i]) == 0)):
+		if (ENG == False):
 			temp += len(entry['JPN'][i].encode("UTF-16-LE"))
 			string.extend(entry['JPN'][i].encode("UTF-16-LE"))
+		elif (len(entry['ENG'][i]) == 0):
+			print("DETECTED UNSTRANSLATED SELECT!")
+			print(entry)
+			sys.exit()
 		else:
 			temp += len(entry['ENG'][i].encode("UTF-16-LE"))
 			string.extend(entry['ENG'][i].encode("UTF-16-LE"))
@@ -755,10 +778,10 @@ def PRINTF(entry):
 	array.append(bytes.fromhex(entry['Args']))
 	return b''.join(array)
 
-def Make_command(entry, string):
+def Make_command(entry, string, filename = None):
 	match (entry['Type']):
 		case "IMAGEUPDATE": return IMAGEUPDATE(entry)
-		case "FARCALL": return FARCALL(entry)
+		case "FARCALL": return FARCALL(entry, string)
 		case "COLORLEVEL": return COLORLEVEL(entry)
 		case "MCSHAKE": return MCSHAKE(entry)
 		case "SCISSOR_TRIANGLELIST_SET": return SCISSOR_TRIANGLELIST_SET(entry)
@@ -767,7 +790,7 @@ def Make_command(entry, string):
 		case "RANDOM": return RANDOM(entry)
 		case "SWAP": return SWAP(entry)
 		case "ROT": return ROT(entry)
-		case "IFY": return IFY(entry, string)
+		case "IFY": return IFY(entry, string, filename)
 		case "MESSAGE_CLEAR": return MESSAGE_CLEAR(entry)
 		case "WAIT_TEXTFEED": return WAIT_TEXTFEED(entry)
 		case "ADDCOLOR": return ADDCOLOR(entry)
@@ -790,7 +813,7 @@ def Make_command(entry, string):
 		case "BMODE": return BMODE(entry)
 		case "ADD": return ADD(entry)
 		case "RETURN": return RETURN(entry)
-		case "GOSUB": return GOSUB(entry, string)
+		case "GOSUB": return GOSUB(entry, string, filename)
 		case "BGM": return BGM(entry)
 		case "SE": return SE(entry)
 		case "MOVIE": return MOVIE(entry)
@@ -799,8 +822,8 @@ def Make_command(entry, string):
 		case "EQU": return EQU(entry)
 		case "EQUN": return EQUN(entry)
 		case "VARSTR": return VARSTR(entry)
-		case "GOTO": return GOTO(entry, string)
-		case "IFN": return IFN(entry, string)
+		case "GOTO": return GOTO(entry, string, filename)
+		case "IFN": return IFN(entry, string, filename)
 		case "JUMP": return JUMP(entry)
 		case "JUMPPOINT": return JUMPPOINT(entry)
 		case "END": return END(entry)
@@ -833,14 +856,17 @@ def Make_command(entry, string):
 			print("Type not supported: %s" % (entry['Type']))
 			sys.exit()
 
-def Process(string, entry, offset_new):
+def Process(string, entry, offset_new, filename):
 	match (string):
 		case "SIZE":
 			_COM = Make_command(entry, string)
-			LABELS[entry['LABEL']] = offset_new
+			LABELS[filename][entry['LABEL']] = offset_new
+			return len(_COM)
+		case "DUMMYSIZE":
+			_COM = Make_command(entry, string)
 			return len(_COM)
 		case "COMMAND":
-			return Make_command(entry, string)
+			return Make_command(entry, string, filename)
 		case _:
 			print("Unsupported Process command: %s" % (string))
 			sys.exit()
@@ -862,14 +888,38 @@ except:
 with open("%s/chapternames.json" % sys.argv[2], 'r', encoding="UTF-8") as f:
 	Filenames = json.load(f)
 
+print("BUILDING OFFSET JUMP DATABASE...")
 for i in range(0, len(Filenames)):
+	print("%s" % Filenames[i], end='\r')
+	IgnoreMessage = False
+	offset_new = 0
+	EXCEPTIONS = ["_VOICE_PARAM", "_VARNUM", "_SCR_LABEL", "_CGMODE", "_BUILD_COUNT", "_TASK"]
+	if (Filenames[i] in EXCEPTIONS):
+		continue
+	if (Filenames[i] in ["_島モン_CS用処理", "0_デバッグジャンプ", "RB99_ボイスチェックCS用"]):
+		IgnoreMessage = True
+	LABELS[Filenames[i].lower()] = {}
+	file = open("%s/json/%s.json" % (sys.argv[2], Filenames[i]), "r", encoding="UTF-8")
+	DUMP = json.load(file)
+	file.close()
+	for x in range(0, len(DUMP)):
+		Size = Process("SIZE", DUMP[x], offset_new, Filenames[i].lower())
+		if (Size % 2 != 0): Size += 1
+		offset_new += Size + 2
+	print(" " * 64, end='\r')
+
+print("BUILDING SCRIPT")
+for i in range(0, len(Filenames)):
+	IgnoreMessage = False
 	offset_new = 0
 	EXCEPTIONS = ["_VOICE_PARAM", "_VARNUM", "_SCR_LABEL", "_CGMODE", "_BUILD_COUNT"]
 	if (Filenames[i] in EXCEPTIONS):
 		print("%s in EXCEPTIONS. Ignoring..." % (Filenames[i]))
 		shutil.copy("%s/new/%s.dat" % (sys.argv[2], Filenames[i]), "%s/Compiled/%s.dat" % (sys.argv[2], Filenames[i]))
 		continue
-	print(Filenames[i])
+	print("%s" % Filenames[i])
+	if (Filenames[i] in ["_島モン_CS用処理", "0_デバッグジャンプ", "RB99_ボイスチェックCS用"]):
+		IgnoreMessage = True
 	file = open("%s/json/%s.json" % (sys.argv[2], Filenames[i]), "r", encoding="UTF-8")
 	DUMP = json.load(file)
 	file.close()
@@ -881,18 +931,20 @@ for i in range(0, len(Filenames)):
 	else:
 		COMMAND_OUTPUT_SIZE = []
 		for x in range(0, len(DUMP)):
-			Size = Process("SIZE", DUMP[x], offset_new)
+			Size = Process("DUMMYSIZE", DUMP[x], offset_new, Filenames[i].lower())
 			if (Size % 2 != 0): Size += 1
 			COMMAND_OUTPUT_SIZE.append(Size)
 			offset_new += Size + 2
 		file = open("%s/Compiled/%s.dat" % (sys.argv[2], Filenames[i]), "wb")
 		for x in range(0, len(DUMP)):
-			COM = Process("COMMAND", DUMP[x], offset_new)
+			COM = Process("COMMAND", DUMP[x], offset_new, Filenames[i].lower())
 			file.write((len(COM)+2).to_bytes(2, byteorder='little'))
 			file.write(COM)
 			if (len(COM) % 2 != 0): file.write(b"\x00")
 		file.close()
 
+print(" " * 64, end='\r')
+print("WRITING SCRIPT")
 unk0 = []
 
 unk2_int32 = 1
