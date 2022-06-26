@@ -446,7 +446,7 @@ def FARCALL(SUBCMD, MAIN_ENTRY, file, argsize):
 	else:
 		entry['Args'] = file.read(4).hex()
 	entry["String"] = readString(file)
-	entry["Args2"] = file.read(4).hex()
+	entry['GOTO_LABEL'] = "%s" % hex(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
 	MAIN_ENTRY.append(entry)
 
 def FLAGCLR(SUBCMD, MAIN_ENTRY, file, argsize):
