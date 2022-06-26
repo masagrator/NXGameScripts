@@ -441,7 +441,10 @@ def FARCALL(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['LABEL'] = "%s" % (hex(file.tell()-4))
 	entry['Type'] = "FARCALL"
 	entry['SUBCMD'] = SUBCMD
-	entry['Args'] = file.read(4).hex()
+	if (SUBCMD == 0):
+		entry['Args'] = file.read(2).hex()
+	else:
+		entry['Args'] = file.read(4).hex()
 	entry["String"] = readString(file)
 	entry["Args2"] = file.read(4).hex()
 	MAIN_ENTRY.append(entry)
@@ -972,6 +975,7 @@ def taskDecompile(file, filesize):
 	while (file.tell() < filesize):
 		Dump["Main"].append(readString(file))
 
+
 os.makedirs("%s/json" % os.path.basename(sys.argv[1])[:-4], exist_ok=True)
 os.makedirs("%s/new" % os.path.basename(sys.argv[1])[:-4], exist_ok=True)
 
@@ -1015,11 +1019,15 @@ for i in range(0, file_count):
 	file_new.close()
 
 for i in range(0, len(Filenames)):
-	EXCEPTIONS = ["_VOICE_PARAM", "_VARNUM", "_TASK", "_SCR_LABEL", "_CGMODE", "_BUILD_COUNT"]
+	EXCEPTIONS = ["_VOICE_PARAM", "_VARNUM", "_SCR_LABEL", "_CGMODE", "_BUILD_COUNT"]
 	if (Filenames[i] in EXCEPTIONS): 
 		print("%s in EXCEPTIONS. Ignoring..." % (Filenames[i]))
 		continue
 	print(Filenames[i])
+	file = open("%s/new/%s.dat" % (os.path.basename(sys.argv[1])[:-4], Filenames[i]), "rb")
+	file.seek(0, 2)
+	file_size = file.tell()
+	file.seek(0, 0)
 	if (Filenames[i] == "_TASK"):
 		taskDecompile(file, file_size)
 	else:
@@ -1029,16 +1037,6 @@ for i in range(0, len(Filenames)):
 			end = file.tell()
 			if (end % 2 != 0):
 				file.seek(2 - (end % 2), 1)
-	file = open("%s/new/%s.dat" % (os.path.basename(sys.argv[1])[:-4], Filenames[i]), "rb")
-	file.seek(0, 2)
-	file_size = file.tell()
-	file.seek(0, 0)
-	while (file.tell() < file_size):
-		command_size = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
-		GOTO_COMMANDS(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0], int(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0]), file, command_size)
-		end = file.tell()
-		if (end % 2 != 0):
-			file.seek(2 - (end % 2), 1)
 	file.close()
 	new_file = open("%s/json/%s.json" % (os.path.basename(sys.argv[1])[:-4], Filenames[i]), "w", encoding="UTF-8")
 	json.dump(Dump['Main'], new_file, indent="\t", ensure_ascii=False)
