@@ -1036,7 +1036,7 @@ for i in range(0, len(Filenames)):
 			GOTO_COMMANDS(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0], int(numpy.fromfile(file, dtype=numpy.uint8, count=1)[0]), file, command_size)
 			end = file.tell()
 			if (end % 2 != 0):
-				file.seek(2 - (end % 2), 1)
+				file.seek(1, 1)
 	file.close()
 	new_file = open("%s/json/%s.json" % (os.path.basename(sys.argv[1])[:-4], Filenames[i]), "w", encoding="UTF-8")
 	json.dump(Dump['Main'], new_file, indent="\t", ensure_ascii=False)
