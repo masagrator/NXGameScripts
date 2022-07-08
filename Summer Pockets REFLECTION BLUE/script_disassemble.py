@@ -854,14 +854,27 @@ def TASK(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['SUBCMD'] = SUBCMD
 	match(SUBCMD):
 		case 0:
-			entry['Args'] = file.read(4).hex()
+			entry['Args'] = file.read(2).hex()
 			if (entry['Args'] != "0800"):
-				file.seek(-4, 1)
+				file.seek(-2, 1)
 				entry['Args'] = file.read(argsize).hex()
 			else:
 				string = readString16(file)
 				entry["Category"] = int.from_bytes(file.read(2), byteorder="little")
 				entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
+				entry["JPN"] = string
+				entry["ENG"] = ""
+		case 1:
+			entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
+			entry['Args'] = file.read(2).hex()
+			if (entry['Args'] != "0800"):
+				file.seek(-4, 1)
+				entry.pop("ID")
+				entry['Args'] = file.read(argsize).hex()
+			else:
+				string = readString16(file)
+				entry["Category"] = int.from_bytes(file.read(2), byteorder="little")
+				entry["Index"] = int.from_bytes(file.read(2), byteorder="little")
 				entry["JPN"] = string
 				entry["ENG"] = ""
 		case 3:

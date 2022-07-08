@@ -764,6 +764,18 @@ def TASK(entry):
 					array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
 				array.append(entry["Category"].to_bytes(2, byteorder="little", signed=True))
 				array.append(entry["ID"].to_bytes(2, byteorder="little", signed=True))
+		case 1:
+			if (entry['Args'] == "0800"):
+				array.append(entry["ID"].to_bytes(2, byteorder="little"))
+				array.append(bytes.fromhex(entry['Args']))
+				if ((ENG == True) and (len(entry["ENG"]) > 0)):
+					array.append(entry["ENG"].encode("UTF-16-LE") + b"\x00\x00")
+				else:
+					array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
+				array.append(entry["Category"].to_bytes(2, byteorder="little", signed=True))
+				array.append(entry["Index"].to_bytes(2, byteorder="little", signed=True))
+			else:
+				array.append(bytes.fromhex(entry['Args']))
 		case 3:
 			array.append(bytes.fromhex(entry['Args']))
 			try:
