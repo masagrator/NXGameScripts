@@ -852,19 +852,31 @@ def TASK(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['LABEL'] = "%s" % (hex(file.tell()-4))
 	entry['Type'] = "TASK"
 	entry['SUBCMD'] = SUBCMD
-	if (SUBCMD == 3):
-		entry['Args'] = file.read(4).hex()
-		entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
-		if (entry["ID"] == 1):
-			entry['Args2'] = file.read(10).hex()
-			character_count = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
-			entry["Strings"] = list(file.read(character_count * 2).decode("UTF-16-LE").split("$d"))
-			print(entry["Strings"])
-			file.seek(2, 1)
-		else:
-			entry['Args2'] = file.read(argsize-6).hex()
-	else:
-		entry['Args'] = file.read(argsize).hex()
+	match(SUBCMD):
+		case 0:
+			entry['Args'] = file.read(4).hex()
+			if (entry['Args'] != "0800"):
+				file.seek(-4, 1)
+				entry['Args'] = file.read(argsize).hex()
+			else:
+				string = readString16(file)
+				entry["Category"] = int.from_bytes(file.read(2), byteorder="little")
+				entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
+				entry["JPN"] = string
+				entry["ENG"] = ""
+		case 3:
+			entry['Args'] = file.read(4).hex()
+			entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
+			if (entry["ID"] == 1):
+				entry['Args2'] = file.read(10).hex()
+				character_count = numpy.fromfile(file, dtype=numpy.uint16, count=1)[0]
+				entry["Strings"] = list(file.read(character_count * 2).decode("UTF-16-LE").split("$d"))
+				print(entry["Strings"])
+				file.seek(2, 1)
+			else:
+				entry['Args2'] = file.read(argsize-6).hex()
+		case _:
+			entry['Args'] = file.read(argsize).hex()
 	MAIN_ENTRY.append(entry)
 
 def PRINTF(SUBCMD, MAIN_ENTRY, file, argsize):

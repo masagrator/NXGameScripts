@@ -754,21 +754,31 @@ def TASK(entry):
 	array = []
 	array.append(Commands.TASK.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
-	if (entry['SUBCMD'] == 3):
-		array.append(bytes.fromhex(entry['Args']))
-		try:
-			array.append(numpy.uint16(entry['ID']))
-		except: 
-			return b''.join(array)
-		else:
-			array.append(bytes.fromhex(entry['Args2']))
-			if (entry['ID'] == 1):
-				string = "$d".join(entry["Strings"])
-				stringbytes = string.encode("UTF-16-LE") + b"\x00\x00"
-				array.append(numpy.uint16(len(stringbytes)))
-				array.append(stringbytes)
-	else:
-		array.append(bytes.fromhex(entry['Args']))
+	match(entry['SUBCMD']):
+		case 0:
+			array.append(bytes.fromhex(entry['Args']))
+			if (entry['Args'] == "0800"):
+				if ((ENG == True) and (len(entry["ENG"]) > 0)):
+					array.append(entry["ENG"].encode("UTF-16-LE") + b"\x00\x00")
+				else:
+					array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
+				array.append(entry["Category"].to_bytes(2, byteorder="little", signed=True))
+				array.append(entry["ID"].to_bytes(2, byteorder="little", signed=True))
+		case 3:
+			array.append(bytes.fromhex(entry['Args']))
+			try:
+				array.append(numpy.uint16(entry['ID']))
+			except: 
+				return b''.join(array)
+			else:
+				array.append(bytes.fromhex(entry['Args2']))
+				if (entry['ID'] == 1):
+					string = "$d".join(entry["Strings"])
+					stringbytes = string.encode("UTF-16-LE") + b"\x00\x00"
+					array.append(numpy.uint16(len(stringbytes)))
+					array.append(stringbytes)
+		case _:
+			array.append(bytes.fromhex(entry['Args']))
 	return b''.join(array)
 
 def PRINTF(entry):
@@ -890,7 +900,7 @@ with open("%s/chapternames.json" % sys.argv[2], 'r', encoding="UTF-8") as f:
 
 print("BUILDING OFFSET JUMP DATABASE...")
 for i in range(0, len(Filenames)):
-	print("%s" % Filenames[i], end='\r')
+	print("%s" % Filenames[i], end="\r")
 	IgnoreMessage = False
 	offset_new = 0
 	EXCEPTIONS = ["_VOICE_PARAM", "_VARNUM", "_SCR_LABEL", "_CGMODE", "_BUILD_COUNT", "_TASK"]
@@ -903,7 +913,12 @@ for i in range(0, len(Filenames)):
 	DUMP = json.load(file)
 	file.close()
 	for x in range(0, len(DUMP)):
-		Size = Process("SIZE", DUMP[x], offset_new, Filenames[i].lower())
+		try:
+			Size = Process("SIZE", DUMP[x], offset_new, Filenames[i].lower())
+		except Exception as exc:
+			print("Catched exception in %s" % Filenames[i])
+			print(exc)
+			sys.exit()
 		if (Size % 2 != 0): Size += 1
 		offset_new += Size + 2
 	print(" " * 64, end='\r')
