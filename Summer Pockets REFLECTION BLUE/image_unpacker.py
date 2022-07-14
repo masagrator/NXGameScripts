@@ -16,7 +16,7 @@ def readString(myfile):
     while True:
         c = myfile.read(1)
         if c == b'\x00':
-            return str(b"".join(chars).decode("UTF-8"))
+            return str(b"".join(chars).decode("shift_jis_2004"))
         chars.append(c)
 
 try:
@@ -36,17 +36,20 @@ flag0 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag1 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag2 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag3 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
-offset_start_file_names = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
+offset_start_file_names = numpy.fromfile(file, dtype=numpy.uint32, count=2)[0]
 
-if (flag0 != 0 or flag2 != 0 or flag3 != 0):
+no_filenames = False
+
+if (flag1 not in [0, 2, 3]):
     print("UNSUPPORTED PAK TYPE")
     sys.exit()
 
-if (flag1 not in [2, 3]):
-    print("UNSUPPORTED PAK TYPE")
-    sys.exit()
-
-
+if (flag1 == 0):
+    if (flag0 not in [0, 1]):
+        print("UNSUPPORTED PAK TYPE")
+        sys.exit()
+    else:
+        no_filenames = True
 
 file_table = {}
 file_table['offset'] = []
@@ -56,24 +59,37 @@ for i in range(0, file_count):
     file_table['offset'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]*round_to)
     file_table['size'].append(numpy.fromfile(file, dtype=numpy.uint32, count=1)[0])
 
-file.seek(offset_start_file_names)
+if (no_filenames == False):
+    file.seek(offset_start_file_names)
 
-filename_table = []
+    filename_table = []
 
-for i in range(0, file_count):
-    filename_table.append(readString(file))
+    for i in range(0, file_count):
+        filename_table.append(readString(file))
 
-file_extracted = 0
-dummy_files = 0
-for i in range(0, file_count):
-    if (file_table['offset'][i] == 0):
-        dummy_files += 1
-        continue
-    file.seek(file_table['offset'][i], 0)
-    file_new = open("%s\%s.dat" % (sys.argv[1][:-4], filename_table[i]), "wb")
-    file_new.write(file.read(file_table['size'][i]))
-    file_new.close()
-    file_extracted += 1
+    file_extracted = 0
+    dummy_files = 0
+    for i in range(0, file_count):
+        if (file_table['offset'][i] == 0):
+            dummy_files += 1
+            continue
+        file.seek(file_table['offset'][i], 0)
+        file_new = open("%s\%s.dat" % (sys.argv[1][:-4], filename_table[i]), "wb")
+        file_new.write(file.read(file_table['size'][i]))
+        file_new.close()
+        file_extracted += 1
+else:
+    file_extracted = 0
+    dummy_files = 0
+    for i in range(0, file_count):
+        if (file_table['offset'][i] == 0):
+            dummy_files += 1
+            continue
+        file.seek(file_table['offset'][i], 0)
+        file_new = open("%s\%04d.dat" % (sys.argv[1][:-4], i), "wb")
+        file_new.write(file.read(file_table['size'][i]))
+        file_new.close()
+        file_extracted += 1
 
 print("Extracted %d/%d files." % (file_extracted, file_count))
 print("Counted %d dummies" % dummy_files)
