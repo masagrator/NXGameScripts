@@ -475,14 +475,16 @@ def IFN(entry, string, filename):
 	else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
-def JUMP(entry):
+def JUMP(entry, string):
 	array = []
 	array.append(Commands.JUMP.value.to_bytes(1, byteorder='little'))
 	array.append(entry['SUBCMD'].to_bytes(1, byteorder='little'))
 	if (entry['SUBCMD'] == 1):
 		array.append(bytes.fromhex(entry['Args']))
 	array.append(entry['Name'].encode('shift_jis_2004') + b"\x00")
-	array.append(bytes.fromhex(entry['Args2']))
+	if (string == "COMMAND"):
+		array.append(LABELS[entry["Name"].lower()][entry['GOTO_LABEL']].to_bytes(4, byteorder='little'))
+	else: array.append(int(entry['GOTO_LABEL'], 16).to_bytes(4, byteorder='little'))
 	return b''.join(array)
 
 def JUMPPOINT(entry):
@@ -846,7 +848,7 @@ def Make_command(entry, string, filename = None):
 		case "VARSTR": return VARSTR(entry)
 		case "GOTO": return GOTO(entry, string, filename)
 		case "IFN": return IFN(entry, string, filename)
-		case "JUMP": return JUMP(entry)
+		case "JUMP": return JUMP(entry, string)
 		case "JUMPPOINT": return JUMPPOINT(entry)
 		case "END": return END(entry)
 		case "TALKNAME_SET": return TALKNAME_SET(entry)
