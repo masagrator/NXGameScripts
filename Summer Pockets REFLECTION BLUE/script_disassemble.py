@@ -530,9 +530,8 @@ def JUMP(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry['SUBCMD'] = SUBCMD
 	if (SUBCMD == 1): 
 		entry['Args'] = file.read(2).hex()
-		argsize -= 2
 	entry['Name'] = readString(file)
-	entry["Args2"] = file.read(argsize - (len(entry['Name'].encode("shift_jis_2004")) + 1)).hex()
+	entry['GOTO_LABEL'] = "0x%x" % int.from_bytes(file.read(4), byteorder="little")
 	MAIN_ENTRY.append(entry)
 
 def JUMPPOINT(SUBCMD, MAIN_ENTRY, file, argsize):
