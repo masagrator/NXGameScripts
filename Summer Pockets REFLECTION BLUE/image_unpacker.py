@@ -36,7 +36,7 @@ flag0 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag1 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag2 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
 flag3 = numpy.fromfile(file, dtype=numpy.int8, count=1)[0]
-offset_start_file_names = numpy.fromfile(file, dtype=numpy.uint32, count=2)[0]
+offset_start_file_names = numpy.fromfile(file, dtype=numpy.uint32, count=1)[0]
 
 no_filenames = False
 
@@ -50,6 +50,7 @@ if (flag1 == 0):
         sys.exit()
     else:
         no_filenames = True
+        dummy = file.read(4)
 
 file_table = {}
 file_table['offset'] = []
