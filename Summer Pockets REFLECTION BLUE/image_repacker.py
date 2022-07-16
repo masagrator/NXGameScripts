@@ -30,6 +30,8 @@ if (flag1 == 0):
 	if (flag0 not in [0, 1]):
 		print("UNSUPPORTED PAK TYPE")
 		sys.exit()
+	else:
+		dummy = file.read(4)
 
 file_table = {}
 file_table['offset'] = []
