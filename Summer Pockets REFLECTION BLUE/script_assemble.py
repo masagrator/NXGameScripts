@@ -759,13 +759,22 @@ def TASK(entry):
 	match(entry['SUBCMD']):
 		case 0:
 			array.append(bytes.fromhex(entry['Args']))
-			if (entry['Args'] == "0800"):
-				if ((ENG == True) and (len(entry["ENG"]) > 0)):
-					array.append(entry["ENG"].encode("UTF-16-LE") + b"\x00\x00")
-				else:
-					array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
-				array.append(entry["Category"].to_bytes(2, byteorder="little", signed=True))
-				array.append(entry["ID"].to_bytes(2, byteorder="little", signed=True))
+			match(entry['Args']):
+				case "0800":
+					if ((ENG == True) and (len(entry["ENG"]) > 0)):
+						array.append(entry["ENG"].encode("UTF-16-LE") + b"\x00\x00")
+					else:
+						array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
+					array.append(entry["Category"].to_bytes(2, byteorder="little", signed=True))
+					array.append(entry["ID"].to_bytes(2, byteorder="little", signed=True))
+				case "2700":
+					array.append(entry["ID"].to_bytes(2, byteorder="little", signed=True))
+					array.append(bytes.fromhex(entry['Args2']))
+					if ((ENG == True) and (len(entry["ENG"]) > 0)):
+						array.append(entry["ENG"].encode("UTF-16-LE") + b"\x00\x00")
+					else:
+						array.append(entry["JPN"].encode("UTF-16-LE") + b"\x00\x00")
+					array.append(bytes.fromhex(entry['Args3']))
 		case 1:
 			if (entry['Args'] == "0800"):
 				array.append(entry["ID"].to_bytes(2, byteorder="little"))
