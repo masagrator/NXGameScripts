@@ -863,7 +863,7 @@ def TASK(SUBCMD, MAIN_ENTRY, file, argsize):
 					entry["ENG"] = ""
 				case "2700":
 					entry["ID"] = int.from_bytes(file.read(2), byteorder="little")
-					entry["Args2"] = file.read(6).hex()
+					entry["Args2"] = file.read(4).hex()
 					string = readString16(file)
 					entry["JPN"] = string
 					entry["ENG"] = ""
