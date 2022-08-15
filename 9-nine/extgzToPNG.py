@@ -18,7 +18,7 @@ texture_height = int.from_bytes(file.read(4), "little", signed=False)
 
 file.seek(8, 1)
 
-BPP = texture_width = int.from_bytes(file.read(4), "little", signed=False)
+BPP = int.from_bytes(file.read(4), "little", signed=False)
 if (BPP != 32):
     print("Unsupported BPP: %d" % BPP)
     sys.exit()
