@@ -1,4 +1,4 @@
-#It automatically patches "keywait" commands to get correct IDs and 00_info.bin to put correct jump offsets
+#It automatically patches "keywait" commands to get correct IDs and creates new 00_info.bin to put correct label jump offsets
 
 import sys
 import glob
@@ -14,10 +14,11 @@ new_file.write(header_size.to_bytes(4, "little"))
 new_file.write(len(files).to_bytes(4, "little"))
 itr = 0
 
+print("Phase 1: fixing keywaits")
 for i in range(0, len(files)):
-	print(files[i])
+	print("%s                " % files[i], end="\r")
 	if (files[i].find("00_info.bin") == -1):
-		file = open(files[i], "r", encoding="shift_jis_2004")
+		file = open(files[i], "r", encoding="shift_jis_2004", newline="\r\n")
 		lines = file.readlines()
 		file.close()
 		DUMP = []
@@ -28,7 +29,7 @@ for i in range(0, len(files)):
 				lines[x] = "<keywait %d>" % itr
 				itr += 1
 
-		new_txtfile = open(files[i], "w", encoding="shift_jis_2004")
+		new_txtfile = open(files[i], "w", encoding="shift_jis_2004", newline="\r\n")
 		for x in range(0, len(lines)):
 			try:
 				new_txtfile.write(lines[x])
@@ -38,6 +39,66 @@ for i in range(0, len(files)):
 				sys.exit()
 			new_txtfile.write("\n")
 		new_txtfile.close()
+
+info_dump = {}
+
+print("Phase 2: creating jump table")
+for i in range(0, len(files)):
+	file = open(files[i], "rb")
+	if (Path(files[i]).stem != "00_info"):
+		print("%s                " % files[i], end="\r")
+		data = file.read()
+		info_dump["%s.txt" % Path(files[i]).stem] = {}
+		index = 0
+		while(True):
+			index = data.find(b"<label ", index)
+			if (index == -1):
+				break
+			else:
+				chars = []
+				orig_index = index
+				index += 7
+				while(True):
+					c = data[index:index+1]
+					if (c == b"\r"):
+						c = data[index+1:index+2]
+						if (c != b"\n"):
+							print("Expected \"\\n\" after \"\\r\" at offset: 0x%X!" % index+1)
+							sys.exit()
+						else:
+							info_dump["%s.txt" % Path(files[i]).stem][b"".join(chars[:-1]).decode("ascii")] = orig_index
+							break
+					elif (c == b","):
+							info_dump["%s.txt" % Path(files[i]).stem][b"".join(chars).decode("ascii")] = orig_index
+							break
+					else:
+						chars.append(c)
+						index += 1
+
+infobin_data = []
+filename_list = list(info_dump.keys())
+entry_count = 0
+
+for x in range(0, len(filename_list)):
+	labels_list = list(info_dump[filename_list[x]].keys())
+	for y in range(0, len(labels_list)):
+		entry = []
+		entry.append(labels_list[y].encode("ascii"))
+		entry.append(b"\x00")
+		entry.append(b"\xFE" * (0x40 - (len(b"".join(entry)) % 0x40)))
+		entry.append(filename_list[x].encode("ascii"))
+		entry.append(b"\x00")
+		entry.append(b"\xFE" * (0x40 - (len(b"".join(entry)) % 0x40)))
+		entry.append(info_dump[filename_list[x]][labels_list[y]].to_bytes(8, "little"))
+		infobin_data.append(b"".join(entry))
+		entry_count += 1
+
+info_bin = open("%s/00_info.bin" % sys.argv[1], "wb")
+info_bin.write(entry_count.to_bytes(8, "little"))
+info_bin.write(b"".join(infobin_data))
+info_bin.close()
+
+for i in range(0, len(files)):
 
 	file = open(files[i], "rb")
 	file.seek(0, 2)
@@ -59,7 +120,10 @@ for i in range(0, len(files)):
 	if (header_size % 16 == 0):
 		header_size += 8
 
+print("Writing script_new.arc...")
+
 for i in range(0, len(files)):
+
 	file = open(files[i], "rb")
 
 	new_file.write(file.read())
@@ -67,70 +131,9 @@ for i in range(0, len(files)):
 		new_file.write(b"\x00" * (8 - (new_file.tell() % 8)))
 	if (new_file.tell() % 16 == 0):
 		new_file.write(b"\x00" * 8)
+	
+	file.close()
 
 new_file.close()
 
-info_bin = open("%s/00_info.bin" % sys.argv[1], "rb")
-entry_count = int.from_bytes(info_bin.read(8), "little")
-info_dump = {}
-for i in range(entry_count):
-	pos = info_bin.tell()
-	temp = []
-	while(True):
-		c = info_bin.read(1)
-		if (c != b"\x00"):
-			temp.append(c)
-			continue
-		Label = b"".join(temp).decode("ascii")
-		temp = []
-		break
-	info_bin.seek(pos+0x40)
-	while(True):
-		c = info_bin.read(1)
-		if (c != b"\x00"):
-			temp.append(c)
-			continue
-		Filename = b"".join(temp).decode("ascii")
-		break
-	info_bin.seek(pos+0x80)
-	Offset = int.from_bytes(info_bin.read(8), "little")
-	try:
-		info_dump[Filename]
-	except:
-		info_dump[Filename] = {}
-	info_dump[Filename][Label] = Offset
-
-for i in range(0, len(files)):
-	file = open(files[i], "rb")
-	if (Path(files[i]).stem not in ["00_info", "99_all_clear", "99_special", "99_special2"]):
-		file.seek(0)
-		data = file.read()
-		label_list = list(info_dump["%s.txt" % Path(files[i]).stem].keys())
-		for x in range(0, len(label_list)):
-			index = data.find(b"<label %s" % label_list[x].encode("ascii"))
-			if (index == -1):
-				print("Index have not been found!")
-				sys.exit()
-			info_dump["%s.txt" % Path(files[i]).stem][label_list[x]] = index
-	file.close()
-
-infobin_data = []
-infobin_data.append(entry_count.to_bytes(8, "little"))
-filename_list = list(info_dump.keys())
-
-for x in range(0, len(filename_list)):
-	labels_list = list(info_dump[filename_list[x]].keys())
-	for y in range(0, len(labels_list)):
-		entry = []
-		entry.append(labels_list[y].encode("ascii"))
-		entry.append(b"\x00")
-		entry.append(b"\xFE" * (0x40 - (len(b"".join(entry)) % 0x40)))
-		entry.append(filename_list[x].encode("ascii"))
-		entry.append(b"\x00")
-		entry.append(b"\xFE" * (0x40 - (len(b"".join(entry)) % 0x40)))
-		entry.append(info_dump[filename_list[x]][labels_list[y]].to_bytes(8, "little"))
-		infobin_data.append(b"".join(entry))
-
-info_bin = open("%s/00_info.bin" % sys.argv[1], "wb")
-info_bin.write(b"".join(infobin_data))
-info_bin.close()
+print("Finished executing script.")
