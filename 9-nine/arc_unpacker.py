@@ -1,4 +1,6 @@
 import os 
+import sys
+from pathlib import Path
 
 def readString(myfile):
 	chars = []
@@ -8,9 +10,10 @@ def readString(myfile):
 			return str(b"".join(chars).decode("shift_jis_2004"))
 		chars.append(c)
 
-os.makedirs("script", exist_ok=True)
+path = Path(sys.argv[1]).stem
+os.makedirs(path, exist_ok=True)
 
-file = open('script.arc', "rb")
+file = open(sys.argv[1], "rb")
 
 header_size = int.from_bytes(file.read(4), "little", signed=False)
 file_count = int.from_bytes(file.read(4), "little", signed=False)
@@ -29,7 +32,8 @@ for i in range(0, file_count):
 
 for i in range(0, file_count):
     file.seek(table[i]["offset"])
-    new_file = open("script/%s" % table[i]["filename"], "wb")
+    print("%s/%s" % (path, table[i]["filename"]))
+    new_file = open("%s/%s" % (path, table[i]["filename"]), "wb")
     new_file.write(file.read(table[i]["file_size"]))
     new_file.close()
 
