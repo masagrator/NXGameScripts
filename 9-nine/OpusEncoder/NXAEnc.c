@@ -16,6 +16,7 @@ WAV File was converted correctly only if file was:
 #include <string.h>
 #include <getopt.h>
 #include <opus.h>
+#include <stdbool.h>
 
 struct NXAHeader {
 	uint32_t MAGIC;
@@ -136,6 +137,7 @@ int main(int argc, char *argv[]) {
 	struct OutputBuffer *head = NULL, *tail = NULL;
 	int frames = 0;
 	int numSamples = 0;
+	bool first = false;
 
 	while (1) {
 		memset(inputBuffer, 0, frameSize * sampleSize);
@@ -154,6 +156,11 @@ int main(int argc, char *argv[]) {
 		if (err != frameBytes) {
 			fprintf(stderr, "Encoder failed: %d\n", err);
 			return EXIT_FAILURE;
+		}
+		if (!first) {
+			//If first frame doesn't start with 0xF8, game cracks audio at first frame
+			memset(tmp->data, 0xF8, 1);
+			first = true;
 		}
 	}
 
