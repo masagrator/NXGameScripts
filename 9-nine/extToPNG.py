@@ -34,7 +34,8 @@ if (BPP == 32):
 else:
     pallette = numpy.fromfile(file, dtype=numpy.uint32, count=256)
     buffer = []
+    temp = numpy.fromfile(file, dtype=numpy.uint8, count=(real_texture_width * real_texture_height))
     for i in range(real_texture_width * real_texture_height):
-        buffer.append(pallette[file.read(1)[0]])
+        buffer.append(pallette[temp[i]])
     img = Image.frombuffer("RGBA", (real_texture_width, real_texture_height), b"".join(buffer), "raw", "BGRA", 0, 1)
 img.save("%s.png" % Path(sys.argv[1]).stem)
