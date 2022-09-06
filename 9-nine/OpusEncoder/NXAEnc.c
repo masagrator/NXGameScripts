@@ -3,7 +3,6 @@ https://gist.github.com/tellowkrinkle/91423d561d8976be418ba770b9499bb3
 
 Don't touch CLI settings, just put pcm file as input and define output.
 PCM (it must be a raw headerless audio data) File was converted correctly only if file was:
-- 16-bit
 - Mono
 - 48000 Hz
 - S16LE
@@ -16,7 +15,6 @@ PCM (it must be a raw headerless audio data) File was converted correctly only i
 #include <string.h>
 #include <getopt.h>
 #include <opus.h>
-#include <stdbool.h>
 
 struct NXAHeader {
 	uint32_t MAGIC;
@@ -137,7 +135,6 @@ int main(int argc, char *argv[]) {
 	struct OutputBuffer *head = NULL, *tail = NULL;
 	int frames = 0;
 	int numSamples = 0;
-	bool first = false;
 
 	while (1) {
 		memset(inputBuffer, 0, frameSize * sampleSize);
@@ -156,11 +153,6 @@ int main(int argc, char *argv[]) {
 		if (err != frameBytes) {
 			fprintf(stderr, "Encoder failed: %d\n", err);
 			return EXIT_FAILURE;
-		}
-		if (!first) {
-			//If first frame doesn't start with 0xF8, game cracks audio at first frame
-			memset(tmp->data, 0xF8, 1);
-			first = true;
 		}
 	}
 
