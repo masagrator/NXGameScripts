@@ -2,11 +2,9 @@
 https://gist.github.com/tellowkrinkle/91423d561d8976be418ba770b9499bb3
 
 Don't touch CLI settings, just put wav file as input and define output.
-WAV File was converted correctly only if file was:
-- 16-bit
-- Mono
+Input file must be raw PCM audio:
 - 48000 Hz
-- PCM S16LE
+- S16LE
 */
 
 #include <stdint.h>
