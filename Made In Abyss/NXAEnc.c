@@ -174,5 +174,7 @@ int main(int argc, char *argv[]) {
 	fwrite(&stream_size, sizeof(uint32_t), 1, output);
 	fclose(output);
 
+	printf("Finished. Bitrate: %0.f kbps", bitsPerSecond/1000);
+
 	return 0;
 }
