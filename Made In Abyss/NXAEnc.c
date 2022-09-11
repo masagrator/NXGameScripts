@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 		.sampleRate = sampleRate,
 		.channelCount = channels,
 		.frameSize = 0,
-		.eachChunkDataSize = frameBytes,
+		.eachChunkDataSize = 0x78,
 		.unknown = {0}
 	};
 
