@@ -1,10 +1,7 @@
 /*Work based on code from here:
 https://gist.github.com/tellowkrinkle/91423d561d8976be418ba770b9499bb3
 
-Don't touch CLI settings, just put wav file as input and define output.
-WAV File was converted correctly only if file was:
-- 16-bit
-- Mono
+PCM File was converted correctly only if file was:
 - 48000 Hz
 - PCM S16LE
 */
