@@ -1,7 +1,10 @@
 /*Work based on code from here:
 https://gist.github.com/tellowkrinkle/91423d561d8976be418ba770b9499bb3
 
-PCM raw audio file must be
+Don't touch CLI settings, just put wav file as input and define output.
+WAV File was converted correctly only if file was:
+- 16-bit
+- Mono
 - 48000 Hz
 - PCM S16LE
 */
@@ -58,9 +61,10 @@ void printUsage(const char *progName) {
 	const char *str =
 	"Options:\n"
 	"\t-r sampleRate:  Sample rate (default: 48000)\n"
-	"\t-c channels:    Number of channels (default: 2)\n"
+	"\t-c channels:    Number of channels (default: 1)\n"
 	"\t-s frameSize:   Size of a frame in samples (default: 960)\n"
-	"\t-f frameBytes:  Size of an encoded frame in bytes (default: 240)\n"
+	"\t-f frameBytes:  Size of an encoded frame in bytes (default: 120)\n"
+	"\t-v voiceMode:   Set encoder into speech-optimized mode (default: 1)\n"
 	"\t-i inputFile:   Path to input file of raw s16le audio (default: stdin)\n"
 	"\t-o outputFile:  Path to output opus file (default: stdout)\n";
 	fputs(str, stderr);
@@ -69,20 +73,36 @@ void printUsage(const char *progName) {
 
 int main(int argc, char *argv[]) {
 	int sampleRate = 48000;
-	int channels = 2;
+	int channels = 1;
 	int frameSize = 960;
-	int frameBytes = 240;
+	int frameBytes = 120;
 	int version = 0;
 	int repeatStartSamples = 0;
 	int repeatEndSamples = 0;
+	int voiceMode = 1;
 	FILE *input = stdin;
 	FILE *output = stdout;
 
 	int option;
-	while ((option = getopt(argc, argv, "r:c:s:f:v:b:e:i:o:")) != -1) {
+	while ((option = getopt(argc, argv, "r:c:s:f:i:o:v:")) != -1) {
 		switch (option) {
 			case 'r': sampleRate = atoi(optarg); break;
-			case 'c': channels   = atoi(optarg); break;
+			case 'c': {
+				channels   = atoi(optarg);
+				if ((channels < 1) || (channels > 2)) {
+					fprintf(stderr, "Option -c requires an argument 1 or 2!\n");
+					printUsage(argv[0]);
+				}
+				 break;
+			}
+			case 'v': {
+				voiceMode = atoi(optarg); 
+				if ((channels < 0) || (channels > 1)) {
+					fprintf(stderr, "Option -v requires an argument 0 or 1!\n");
+					printUsage(argv[0]);
+				}
+				break;
+			}
 			case 's': frameSize  = atoi(optarg); break;
 			case 'f': frameBytes = atoi(optarg); break;
 			case 'i':
@@ -92,7 +112,7 @@ int main(int argc, char *argv[]) {
 				output = fopen(optarg, "wb");
 				break;
 			case '?':
-				if (strchr("rcsfvbeio", optopt)) {
+				if (strchr("rcsfiov", optopt)) {
 					fprintf(stderr, "Option %c requires an argument\n", optopt);
 					printUsage(argv[0]);
 				}
@@ -116,7 +136,9 @@ int main(int argc, char *argv[]) {
 	int frameHeaderBytes = version == 0 ? 8 : 0;
 
 	int err;
-	OpusEncoder *enc = opus_encoder_create(sampleRate, channels, OPUS_APPLICATION_AUDIO, &err);
+	OpusEncoder *enc;
+	if (voiceMode) enc = opus_encoder_create(sampleRate, channels, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &err);
+	else enc = opus_encoder_create(sampleRate, channels, OPUS_APPLICATION_AUDIO, &err);
 	opus_encoder_ctl(enc, OPUS_SET_VBR(0));
 	opus_encoder_ctl(enc, OPUS_SET_BITRATE((int)bitsPerSecond));
 
