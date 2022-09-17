@@ -1,9 +1,9 @@
 /*Work based on code from here:
 https://gist.github.com/tellowkrinkle/91423d561d8976be418ba770b9499bb3
 
-PCM File was converted correctly only if file was:
+PCM raw audio file was converted correctly only if file was:
 - 48000 Hz
-- PCM S16LE
+- S16LE
 */
 
 #include <stdint.h>
@@ -52,6 +52,19 @@ struct OutputBuffer {
 	struct OutputBuffer *next;
 	uint8_t data[];
 };
+
+uint32_t fakeCRC(uint8_t* buffer, size_t size) {
+	uint32_t crc = 0;
+	for (size_t i = 0; i < size; i++) {
+		crc ^= buffer[i] << 24;
+		for (size_t x = 0; x < 8; x++) {
+			if (crc & 0x80000000)
+				crc = (crc << 1) ^ 0x104c11db7;
+			else crc = crc << 1;
+		}
+	}
+	return crc;
+}
 
 void printUsage(const char *progName) {
 	fprintf(stderr, "Usage: %s OPTIONS\n", progName);
@@ -106,7 +119,7 @@ int main(int argc, char *argv[]) {
 				input = fopen(optarg, "rb");
 				break;
 			case 'o':
-				output = fopen(optarg, "wb");
+				output = fopen(optarg, "wb+");
 				break;
 			case '?':
 				if (strchr("rcsfiov", optopt)) {
@@ -183,14 +196,22 @@ int main(int argc, char *argv[]) {
 	size_t offset = ftell(output);
 	for (struct OutputBuffer *frame = head; frame; frame = frame->next) {
 		struct NXAv1FrameHeader frameHeader = {
+			.hash = fakeCRC(frame->data, frameBytes),
 			.dataSize = make_32_be(frameBytes)
 		};
 		fwrite(&frameHeader, sizeof(frameHeader), 1, output);
 		fwrite(frame->data, frameBytes, 1, output);
 	}
-	size_t stream_size = ftell(output) - offset;
+	size_t final_size = ftell(output);
+	size_t stream_size = final_size - offset;
 	fseek(output, 0x2C, 0);
 	fwrite(&stream_size, sizeof(uint32_t), 1, output);
+	fseek(output, 0, 0);
+	void* temp_whole_buffer = malloc(final_size);
+	fread(temp_whole_buffer, final_size, 1, output);
+	uint32_t finalCRC = fakeCRC(temp_whole_buffer, final_size);
+	fseek(output, 0x4, 0);
+	fwrite(&finalCRC, 4, 1, output);
 	fclose(output);
 
 	printf("Finished. Bitrate: %0.f kbps", bitsPerSecond/1000);
