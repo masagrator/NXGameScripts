@@ -1,3 +1,5 @@
+# Charset file source: https://github.com/CommitteeOfZero/sc3tools/blob/main/resources/sg0/charset.utf8
+
 import sys
 import glob
 import os
