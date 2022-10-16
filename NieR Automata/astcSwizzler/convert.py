@@ -1,3 +1,5 @@
+# Based on work of Cabalex and Woewulf from Nier:Modding discord
+
 from tegrax1swizzle import *
 import sys
 
