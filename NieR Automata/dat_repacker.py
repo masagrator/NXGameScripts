@@ -27,9 +27,14 @@ pointers = []
 sizes = []
 names = []
 
+align = 256
+
 file.seek(pointer_table)
 for i in range(file_count):
     pointers.append(int.from_bytes(file.read(4), "little"))
+    if align == 256:
+        if pointers[i] % 256 != 0:
+            align = 16
 
 file.seek(sizes_table)
 for i in range(file_count):
@@ -38,13 +43,10 @@ for i in range(file_count):
 file.seek(names_table)
 string_size_check = int.from_bytes(file.read(4), "little")
 print("0x%x" % file.tell())
+pos = file.tell()
 for i in range(file_count):
-    string = readString(file)
-    if (len(string) + 1 == string_size_check):
-        names.append(string)
-    else:
-        print("String size check failed!")
-        sys.exit()
+    file.seek(pos + (string_size_check * i))
+    names.append(readString(file))
 
 new_file = open("%s/%s" % (Path(sys.argv[1]).stem, sys.argv[1]), "wb")
 file.seek(0)
@@ -62,16 +64,16 @@ for i in range(file_count):
         pos = new_file.tell()
         file.seek(pointers[i])
         new_file.write(file.read(sizes[i]))
-        if (new_file.tell() % 16 != 0):
-            new_file.write(b"\x00" * (16 - (new_file.tell() % 16)))
+        if (new_file.tell() % align != 0):
+            new_file.write(b"\x00" * (align - (new_file.tell() % align)))
         new_file.seek(pointer_table + (4 * i))
         new_file.write(pos.to_bytes(4, "little"))
         new_file.seek(0, 2)
         continue
     pos = new_file.tell()
     new_file.write(temp.read())
-    if (new_file.tell() % 16 != 0):
-        new_file.write(b"\x00" * (16 - (new_file.tell() % 16)))
+    if (new_file.tell() % align != 0):
+        new_file.write(b"\x00" * (align - (new_file.tell() % align)))
     new_file.seek(pointer_table + (4 * i))
     new_file.write(pos.to_bytes(4, "little"))
     new_file.seek(sizes_table + (4 * i))
