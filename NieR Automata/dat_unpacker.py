@@ -38,13 +38,10 @@ for i in range(file_count):
 file.seek(names_table)
 string_size_check = int.from_bytes(file.read(4), "little")
 print("0x%x" % file.tell())
+pos = file.tell()
 for i in range(file_count):
-    string = readString(file)
-    if (len(string) + 1 == string_size_check):
-        names.append(string)
-    else:
-        print("String size check failed!")
-        sys.exit()
+    file.seek(pos + (string_size_check * i))
+    names.append(readString(file))
 
 os.makedirs(Path(sys.argv[1]).stem, exist_ok=True)
 for i in range(file_count):
