@@ -51,7 +51,11 @@ class NieRSwitchTexture:
 		self.unknown2 = 0
 		self.unknown3 = 0
 
-		self.textureLayout = 4  # A COMPLETE GUESS
+		self.textureLayout = 4
+		if (height <= 256):
+			self.textureLayout = 8
+		if (height <= 128):
+			self.textureLayout = 16
 		self.arrayCount = 1
 	
 	def convert(self):
