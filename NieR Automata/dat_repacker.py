@@ -46,9 +46,12 @@ for i in range(file_count):
         print("String size check failed!")
         sys.exit()
 
-new_file = open("%s_new.dat" % Path(sys.argv[1]).stem, "wb")
+new_file = open("%s/%s" % (Path(sys.argv[1]).stem, sys.argv[1]), "wb")
 file.seek(0)
-new_file.write(file.read(0x200))
+new_file.write(file.read(pointers[0]))
+pos = new_file.tell()
+if (pos < 0x200):
+    new_file.write(b"\x00" * (0x200 - pos))
 
 for i in range(file_count):
     print(names[i])
