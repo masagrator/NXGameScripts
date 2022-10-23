@@ -42,9 +42,12 @@ def lib(path):
 			wta_new.write(0x800.to_bytes(4, "little")) 
 		elif (sizes[i] == 0x200000):
 			wta_new.write(0x800.to_bytes(4, "little"))
-			wta_new.write(0x400.to_bytes(4, "little")) 
+			wta_new.write(0x400.to_bytes(4, "little"))
+		elif (sizes[i] == 0x100000):
+			wta_new.write(0x400.to_bytes(4, "little"))
+			wta_new.write(0x400.to_bytes(4, "little"))
 		else:
-			print("Unknown size")
+			print(f"Unknown size: {sizes[i]}")
 			sys.exit()
 		wta_new.write(0x1.to_bytes(4, "little"))
 		wta_new.write(0x1.to_bytes(4, "little"))
