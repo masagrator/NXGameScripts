@@ -13,6 +13,7 @@ header_size = (len(files) * 0x48) + 8
 new_file.write(header_size.to_bytes(4, "little"))
 new_file.write(len(files).to_bytes(4, "little"))
 itr = 0
+sel_itr = 0
 
 print("Phase 1: fixing keywaits")
 for i in range(0, len(files)):
@@ -28,6 +29,10 @@ for i in range(0, len(files)):
 			if (lines[x][0:9] == "<keywait "):
 				lines[x] = "<keywait %d>" % itr
 				itr += 1
+			elif (lines[x][0:8] == "<select "):
+				offset = lines[x].index(",")
+				lines[x] = f"<select {sel_itr}{lines[x][offset:]}"
+				sel_itr += 1
 
 		new_txtfile = open(files[i], "w", encoding="shift_jis_2004", newline="\r\n")
 		for x in range(0, len(lines)):
