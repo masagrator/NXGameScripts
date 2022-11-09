@@ -21,7 +21,7 @@ pointer_table = int.from_bytes(file.read(4), "little")
 formats_table = int.from_bytes(file.read(4), "little")
 names_table = int.from_bytes(file.read(4), "little")
 sizes_table = int.from_bytes(file.read(4), "little")
-unk_table = int.from_bytes(file.read(4), "little")
+name_hashes_table = int.from_bytes(file.read(4), "little")
 
 pointers = []
 sizes = []
