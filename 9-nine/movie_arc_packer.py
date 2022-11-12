@@ -1,5 +1,3 @@
-#It automatically patches "keywait" commands to get correct IDs and creates new 00_info.bin to put correct label jump offsets
-
 import sys
 import glob
 from pathlib import Path
