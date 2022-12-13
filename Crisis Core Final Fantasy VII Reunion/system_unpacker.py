@@ -1,4 +1,3 @@
-import sys
 import os
 
 file = open("system_jefigs.bin", "rb")
