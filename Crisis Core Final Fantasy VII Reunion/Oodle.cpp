@@ -1,7 +1,7 @@
-﻿/* Program was made for FF7 Crisis Core Reunion usage. 
+﻿/*
 Add this code to Visual Studio project, download Unreal Engine 4.27+ (not tested with 5),
 link project with UnrealPak OodleData plugin sdk header folder and lib file (tested sdk version: 2.9.0),
-and compile. It's forcing Mermaid compression method because it's used by Crisis Core ucas files*/
+and compile. It's forcing Mermaid compression method because it's used by Final Fantasy Crisis Core Reunion ucas files, but you can edit it to use for other cases*/
 
 #define OODLE_ALLOW_DEPRECATED_COMPRESSORS
 
