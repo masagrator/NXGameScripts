@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
         void* new_buffer = malloc(decompress_size);
         size_t dec_size = OodleLZ_Decompress(buffer, filesize, new_buffer, decompress_size, OodleLZ_FuzzSafe_Yes, OodleLZ_CheckCRC_No, OodleLZ_Verbosity_Lots);
         if (!dec_size) {
-            std::cerr << "Provided wrong decompression size!\n";
+            std::cerr << "Error while decompressing! Possible that provided decompression size is wrong.\n";
             return printUsage();
         }
         if (!strncmp(argv[4], "stdout", 6) && new_buffer) {
