@@ -12,7 +12,7 @@ int printUsage() {
     std::cerr << ".exe [option] file_path output_file_path\n";
     std::cerr << "Option:\n";
     std::cerr << "-c %d: compress file using Mermaid, %d compression level (from -4 to 9, recommended: 9)\n";
-    std::cerr << "-d %d: decompress file, %d exact decompressed file size (0 is not accepted, wrong value will return error)";
+    std::cerr << "-d %d: decompress file, %d exact decompressed file size (0 is not accepted, wrong value will return error)\n";
     return 1;
 }
 
