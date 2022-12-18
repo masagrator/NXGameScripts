@@ -58,8 +58,7 @@ for i in range(len(FilteredList)):
             temp_file.write(ucas_file.read(FilteredList[i]["dec_size"]))
             temp_file.close()
             continue
-        bytedata = ucas_file.read(FilteredList[i]["com_size"])
-        catch = subprocess.run(["Oodle.exe", "-d", "%d" % FilteredList[i]["dec_size"], "stdin=%d" % FilteredList[i]["com_size"], FilteredList[i]["filepath"]], input=bytedata, capture_output=True, text=False)
+        catch = subprocess.run(["Oodle.exe", "-d", "%d" % FilteredList[i]["dec_size"], "stdin=%d" % FilteredList[i]["com_size"], FilteredList[i]["filepath"]], input=ucas_file.read(FilteredList[i]["com_size"]), capture_output=True, text=False)
         if (catch.stderr != b""):
             print(catch.stderr.decode("ascii"))
             print("Error while decompressing file at offset: 0x%X!" % file_pos)
@@ -88,31 +87,25 @@ for i in range(len(FilteredList)):
             flag = int.from_bytes(ucas_file.read(1), "big")
             ucas_file.seek(-6, 1)
             chunk_pos = ucas_file.tell()
-            temp_file = open("temp.oodle", "wb")
             if (flag != 0):
-                temp_file.write(ucas_file.read(block_size))
+                bytedata = ucas_file.read(block_size)
             else:
-                temp_file.write(ucas_file.read(6))
-            temp_file.close()
+                bytedata = ucas_file.read(6)
             if (x+1 < FilteredList[i]["block_count"]):
-                catch = subprocess.run(["Oodle.exe", "-d", "262144", "temp.oodle", "stdout"], capture_output=True)
+                catch = subprocess.run(["Oodle.exe", "-d", "262144", "stdin=%d" % len(bytedata), "stdout"], input=bytedata, capture_output=True, text=False)
                 if (catch.stderr != b""):
                     print(catch.stderr.decode("ascii"))
                     print("Chunk: %d/%d" % (x+1, FilteredList[i]["block_count"]))
                     print("Error while decompressing chunk at offset: 0x%X!" % chunk_pos)
                     print("File offset: 0x%X" % file_pos)
-                    if (os.path.exists("temp.oodle") == True):
-                        os.remove("temp.oodle")
                     sys.exit(1)
             else:  
-                catch = subprocess.run(["Oodle.exe", "-d", "%d" % (FilteredList[i]["dec_size"] - (x * 262144)), "temp.oodle", "stdout"],  capture_output=True)
+                catch = subprocess.run(["Oodle.exe", "-d", "%d" % (FilteredList[i]["dec_size"] - (x * 262144)), "stdin=%d" % len(bytedata), "stdout"], input=bytedata, capture_output=True, text=False)
                 if (catch.stderr != b""):
                     print(catch.stderr.decode("ascii"))
                     print("Chunk: %d/%d" % (x+1, FilteredList[i]["block_count"]))
                     print("Error while decompressing chunk at offset: 0x%X!" % chunk_pos)
                     print("File offset: 0x%X" % file_pos)
-                    if (os.path.exists("temp.oodle") == True):
-                        os.remove("temp.oodle")
                     sys.exit(1)
             chunks.append(catch.stdout)
         conc_file = open(FilteredList[i]["filepath"], "wb")
@@ -124,10 +117,6 @@ for i in range(len(FilteredList)):
             print("Expected: %dB" % FilteredList[i]["dec_size"])
             print("Got: %dB" % end_size)
             os.remove(FilteredList[i]["filepath"])
-            if (os.path.exists("temp.oodle") == True):
-                os.remove("temp.oodle")
             sys.exit(1)
 
-if (os.path.exists("temp.oodle") == True):
-    os.remove("temp.oodle")
 ucas_file.close()
