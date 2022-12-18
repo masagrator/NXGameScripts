@@ -1,18 +1,23 @@
-﻿/*
+/* Program was made for FF7 Crisis Core Reunion usage. 
 Add this code to Visual Studio project, download Unreal Engine 4.27+ (not tested with 5),
 link project with UnrealPak OodleData plugin sdk header folder and lib file (tested sdk version: 2.9.0),
-and compile. It's forcing Mermaid compression method because it's used by Final Fantasy Crisis Core Reunion ucas files, but you can edit it to use for other cases*/
+and compile. It's forcing Mermaid compression method because it's used by Crisis Core ucas files*/
 
 #define OODLE_ALLOW_DEPRECATED_COMPRESSORS
 
 #include <iostream>
+#include <fcntl.h>
+#include <io.h>
 #include "oodle2.h"
 
 int printUsage() {
-    std::cerr << ".exe [option] file_path output_file_path\n";
+    std::cerr << ".exe [option] file_path/stdin=%d output_file_path/stdout\n";
     std::cerr << "Option:\n";
-    std::cerr << "-c %d: compress file using Mermaid, %d compression level (from -4 to 9, recommended: 9)\n";
+    std::cerr << "-c %d: compress file using Mermaid, %d compression level (from -4 to 9)\n";
     std::cerr << "-d %d: decompress file, %d exact decompressed file size (0 is not accepted, wrong value will return error)\n";
+    std::cerr << "Other:\n";
+    std::cerr << "file_path/stdin=%d: you can either provide input file path, or use stdin by writing \"stdin=%d\", where %d is size of stdin binary data\n";
+    std::cerr << "output_file_path/stdout: you can either provide input file path, or use stdout by writing \"stdout\"";
     return 1;
 }
 
@@ -22,7 +27,8 @@ int main(int argc, char* argv[])
     bool compress = false;
     char* p = 0;
     long decompress_size = 0;
-    if (argc <= 5 || argc > 6) {
+
+    if (argc != 5) {
         return printUsage();
     }
 
@@ -49,13 +55,24 @@ int main(int argc, char* argv[])
     }
 
     FILE* file = 0;
-    fopen_s(&file, argv[3], "rb");
-    fseek(file, 0, 2);
-    size_t filesize = ftell(file);
-    fseek(file, 0, 0);
-    void* buffer = malloc(filesize);
-    fread(buffer, filesize, 1, file);
-    fclose(file);
+    size_t filesize = 0;
+    void* buffer = 0;
+
+    if (!strncmp(argv[3], "stdin", 5)) {
+        filesize = strtol(argv[3] + 6, &p, 10);
+        buffer = malloc(filesize);
+        _setmode(_fileno(stdin), _O_BINARY);
+        fread(buffer, filesize, 1, stdin);
+    }
+    else {
+        fopen_s(&file, argv[3], "rb");
+        fseek(file, 0, 2);
+        filesize = ftell(file);
+        fseek(file, 0, 0);
+        buffer = malloc(filesize);
+        fread(buffer, filesize, 1, file);
+        fclose(file);
+    }
 
     if (!compress) {
         void* new_buffer = malloc(decompress_size);
@@ -64,12 +81,21 @@ int main(int argc, char* argv[])
             std::cerr << "Provided wrong decompression size!\n";
             return printUsage();
         }
-        FILE* newfile;
-        fopen_s(&newfile, argv[4], "wb");
-        fwrite(new_buffer, decompress_size, 1, newfile);
-        fclose(newfile);
-        free(new_buffer);
-        std::cout << dec_size;
+        if (!strncmp(argv[4], "stdout", 6) && new_buffer) {
+            fflush(stdout);
+            _setmode(_fileno(stdout), _O_BINARY);
+            fwrite(new_buffer, decompress_size, 1, stdout);
+        }
+        else {
+            FILE* newfile;
+            fopen_s(&newfile, argv[4], "wb");
+            if (newfile && new_buffer) {
+                fwrite(new_buffer, decompress_size, 1, newfile);
+                fclose(newfile);
+            }
+            free(new_buffer);
+            std::cout << dec_size << "\n";
+        }
         return 0;
     }
     else {
@@ -80,12 +106,19 @@ int main(int argc, char* argv[])
             std::cerr << "Error while compressing!\n";
             return 1;
         }
-        FILE* newfile;
-        fopen_s(&newfile, argv[4], "wb");
-        fwrite(comp_buffer, com_size, 1, newfile);
-        fclose(newfile);
-        free(comp_buffer);
-        std::cout << com_size;
+        if (!strncmp(argv[4], "stdout", 6)) {
+            fflush(stdout);
+            _setmode(_fileno(stdout), _O_BINARY);
+            fwrite(comp_buffer, com_size, 1, stdout);
+        }
+        else {
+            FILE* newfile;
+            fopen_s(&newfile, argv[4], "wb");
+            fwrite(comp_buffer, com_size, 1, newfile);
+            fclose(newfile);
+            free(comp_buffer);
+            std::cout << com_size << "\n";
+        }
         return 0;
     }
 }
