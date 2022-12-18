@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
         errno = 0;
         compress = true;
         compression_level = strtol(argv[2], &p, 10);
-        if (errno != 0 || *p != '\0' || compression_level > INT_MAX || compression_level < INT_MIN) {
+        if (errno != 0 || *p != '\0' || compression_level > 9 || compression_level < -4) {
             std::cerr << "Wrong compression level input!\n";
             return printUsage();
         }
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     else {
         errno = 0;
         decompress_size = strtol(argv[2], &p, 10);
-        if (errno != 0 || *p != '\0' || decompress_size > INT_MAX || decompress_size < INT_MIN) {
+        if (errno != 0 || *p != '\0' || decompress_size > INT_MAX || decompress_size < 1) {
             std::cerr << "Wrong decompress size input!\n";
             return printUsage();
         }
