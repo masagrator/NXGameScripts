@@ -2,7 +2,7 @@
 # It was made just to understand how archives are storing data. It's slower than UnrealPakViewer, but it unpacks whole files
 # My goal is to make it working without json file so I can start working on ucas/utoc repacker
 # It requires Oodle.exe in the same folder, you can compile it with Oodle.cpp in the same repo folder
-# Confirmed that it's unpacking fully without issues pakchunk0-Switch.ucas
+# Confirmed that it's unpacking fully without issues all pakchunks
 
 import subprocess
 import json
