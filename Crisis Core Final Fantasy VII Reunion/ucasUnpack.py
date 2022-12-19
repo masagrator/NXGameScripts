@@ -168,6 +168,7 @@ for i in range(len(FilteredList)):
 			if (os.path.exists("temp.oodle") == True):
 				os.remove("temp.oodle")
 			sys.exit(1)
+		block_number += 1
 		
 	else:
 		print("File: %6d/%d  %s, size: %.2f MB" % (i+1, FilteredListLen, FilteredList[i]["filepath"], FilteredList[i]["dec_size"]/1024/1024))
