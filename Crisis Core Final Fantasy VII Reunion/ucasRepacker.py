@@ -6,7 +6,7 @@
 # Edited uncompressed asset file cannot have different count of blocks (in case of CCFF7R one block is 256kB) than original (so for CCFF7R if your file has for example 384 kB, making it bigger than 512 kB or smaller than/equal to 256 kB will return error)
 # As Argument provide filename of ucas file without any type (so for example `python ucasRepacker.py pakchunk5-Switch`)
 # It will create new folder Paks with utoc and ucas files
-# File generated in Paks are not compatible with UnrealPakViewer (because of how it uses shortcuts for generating file tree), cannot say about umodel
+# File generated in Paks are not compatible with UnrealPakViewer and umodel (because of how they use shortcuts for generating file tree)
 # It was not tested with original game
 # If you have PC, you can provide encryption key in format 0x 64 byte long as next argument (so f.e. `python ucasRepacker.py pakchunk5-WindowsNoEditor 0x1234567890123456789012345678901234567890123456789012345678901234`)
 
