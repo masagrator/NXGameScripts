@@ -202,6 +202,7 @@ for i in range(len(_JSON.FILTEREDLIST)):
 		utoc_file.write(ucas_pos.to_bytes(5, "little"))
 		utoc_file.write(buffer_size.to_bytes(3, "little"))
 		utoc_file.write(len(temp_buffer).to_bytes(3, "little"))
+		utoc_file.write(0x1.to_bytes(1, "little"))
 	utoc_file.seek(TOC.TABLE2[i]["data_ptr"] + 5)
 	utoc_file.write(filesize.to_bytes(5, "big"))
 

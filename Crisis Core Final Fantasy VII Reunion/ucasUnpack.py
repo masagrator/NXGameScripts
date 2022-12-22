@@ -161,9 +161,13 @@ FilteredListLen = len(_JSON.FILTEREDLIST)
 for i in range(len(_JSON.FILTEREDLIST)):
 	os.makedirs(os.path.dirname(_JSON.FILTEREDLIST[i]["filepath"]), exist_ok=True)
 	file_pos = ucas_file.tell()
-	if (_JSON.FILTEREDLIST[i]["block_count"] == 1):
-		blockID = TOC.TABLE2[i]["block_start_id"]
+	print("File: %6d/%d  %s, size: %.2f MB" % (i+1, FilteredListLen, _JSON.FILTEREDLIST[i]["filepath"], _JSON.FILTEREDLIST[i]["dec_size"]/1024/1024))
+	chunks = []
+	for x in range(_JSON.FILTEREDLIST[i]["block_count"]):
+		print("Chunk: %d/%d" % (x+1, _JSON.FILTEREDLIST[i]["block_count"]), end="\r")
+		blockID = TOC.TABLE2[i]["block_start_id"] + x
 		ucas_file.seek(TOC.TABLE3[blockID]["offset"])
+		chunk_pos = ucas_file.tell()
 		if (_JSON.FILTEREDLIST[i]["Encrypted"] == True):
 			cipher = AES.new(_AES.Key, AES.MODE_ECB)
 			if (TOC.TABLE3[blockID]["com_size"] % 0x10 != 0):
@@ -173,71 +177,32 @@ for i in range(len(_JSON.FILTEREDLIST)):
 			buffer = cipher.decrypt(ucas_file.read(size))
 		else:
 			buffer = ucas_file.read(TOC.TABLE3[blockID]["com_size"])
-		print("File: %6d/%d  %s" % (i+1, FilteredListLen, _JSON.FILTEREDLIST[i]["filepath"]))
-		if (TOC.TABLE3[blockID]["com_method"] == 0):
-			temp_file = open(_JSON.FILTEREDLIST[i]["filepath"], "wb")
-			temp_file.write(buffer[0:_JSON.FILTEREDLIST[i]["dec_size"]])
-			temp_file.close()
-			continue
-		catch = subprocess.run(["Oodle.exe", "-d", "%d" % TOC.TABLE3[blockID]["unc_size"], "stdin=%d" % TOC.TABLE3[blockID]["com_size"], _JSON.FILTEREDLIST[i]["filepath"]], input=buffer, capture_output=True, text=False)
-		if (catch.stderr != b""):
-			print(buffer.hex())
-			print(catch.stderr.decode("ascii"))
-			print("Error while decompressing file at offset: 0x%X!" % file_pos)
-			os.remove(_JSON.FILTEREDLIST[i]["filepath"])
-			if (os.path.exists("temp.oodle") == True):
-				os.remove("temp.oodle")
-			sys.exit(1)
-		
-	else:
-		print("File: %6d/%d  %s, size: %.2f MB" % (i+1, FilteredListLen, _JSON.FILTEREDLIST[i]["filepath"], _JSON.FILTEREDLIST[i]["dec_size"]/1024/1024))
-		chunks = []
-		for x in range(_JSON.FILTEREDLIST[i]["block_count"]):
-			print("Chunk: %d/%d" % (x+1, _JSON.FILTEREDLIST[i]["block_count"]), end="\r")
-			blockID = TOC.TABLE2[i]["block_start_id"] + x
-			ucas_file.seek(TOC.TABLE3[blockID]["offset"])
-			chunk_pos = ucas_file.tell()
-			if (_JSON.FILTEREDLIST[i]["Encrypted"] == True):
-				cipher = AES.new(_AES.Key, AES.MODE_ECB)
-				if (TOC.TABLE3[blockID]["com_size"] % 0x10 != 0):
-					size = TOC.TABLE3[blockID]["com_size"] + (0x10 - (TOC.TABLE3[blockID]["com_size"] % 0x10))
-				else:
-					size = TOC.TABLE3[blockID]["com_size"]
-				buffer = cipher.decrypt(ucas_file.read(size))
-			else:
-				buffer = ucas_file.read(TOC.TABLE3[blockID]["com_size"])
-			if TOC.TABLE3[blockID]["com_method"] == 0:
-				if (x+1 < _JSON.FILTEREDLIST[i]["block_count"]):
-					chunks.append(ucas_file.read(TOC.blockSize))
-				else:
-					chunks.append(ucas_file.read(_JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize)))
-				continue
+		if TOC.TABLE3[blockID]["com_method"] == 0:
 			if (x+1 < _JSON.FILTEREDLIST[i]["block_count"]):
-				catch = subprocess.run(["Oodle.exe", "-d", "%d" % TOC.blockSize, "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
-				if (catch.stderr != b""):
-					print(catch.stderr.decode("ascii"))
-					print("Chunk: %d/%d" % (x+1, _JSON.FILTEREDLIST[i]["block_count"]))
-					print("Error while decompressing chunk at offset: 0x%X!" % chunk_pos)
-					print("File offset: 0x%X" % file_pos)
-					sys.exit(1)
-			else:  
-				catch = subprocess.run(["Oodle.exe", "-d", "%d" % (_JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize)), "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
-				if (catch.stderr != b""):
-					print(catch.stderr.decode("ascii"))
-					print("Chunk: %d/%d" % (x+1, _JSON.FILTEREDLIST[i]["block_count"]))
-					print("Error while decompressing chunk at offset: 0x%X!" % chunk_pos)
-					print("File offset: 0x%X" % file_pos)
-					sys.exit(1)
-			chunks.append(catch.stdout)
-		conc_file = open(_JSON.FILTEREDLIST[i]["filepath"], "wb")
-		conc_file.write(b"".join(chunks))
-		end_size = conc_file.tell()
-		conc_file.close()
-		if (end_size != _JSON.FILTEREDLIST[i]["dec_size"]):
-			print("Decompressed file has wrong size!")
-			print("Expected: %dB" % _JSON.FILTEREDLIST[i]["dec_size"])
-			print("Got: %dB" % end_size)
-			os.remove(_JSON.FILTEREDLIST[i]["filepath"])
+				chunks.append(ucas_file.read(TOC.blockSize))
+			else:
+				chunks.append(ucas_file.read(_JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize)))
+			continue
+		if (x+1 < _JSON.FILTEREDLIST[i]["block_count"]):
+			catch = subprocess.run(["Oodle.exe", "-d", "%d" % TOC.blockSize, "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
+		else:  
+			catch = subprocess.run(["Oodle.exe", "-d", "%d" % (_JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize)), "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
+		if (catch.stderr != b""):
+			print(catch.stderr.decode("ascii"))
+			print("Chunk: %d/%d" % (x+1, _JSON.FILTEREDLIST[i]["block_count"]))
+			print("Error while decompressing chunk at offset: 0x%X!" % chunk_pos)
+			print("File offset: 0x%X" % file_pos)
 			sys.exit(1)
+		chunks.append(catch.stdout)
+	conc_file = open(_JSON.FILTEREDLIST[i]["filepath"], "wb")
+	conc_file.write(b"".join(chunks))
+	end_size = conc_file.tell()
+	conc_file.close()
+	if (end_size != _JSON.FILTEREDLIST[i]["dec_size"]):
+		print("Decompressed file has wrong size!")
+		print("Expected: %dB" % _JSON.FILTEREDLIST[i]["dec_size"])
+		print("Got: %dB" % end_size)
+		os.remove(_JSON.FILTEREDLIST[i]["filepath"])
+		sys.exit(1)
 
 ucas_file.close()
