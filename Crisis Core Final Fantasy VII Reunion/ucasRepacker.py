@@ -1,12 +1,14 @@
 # Script for repacking ucas/utoc files, WIP
 # It is required to use ucasUnpack.py first since umodel doesn't support unpacking all files, and UnrealPakViewer is unpacking them without class imports
-# It is required to have Oodle.exe that can be compiled with Oodle.cpp from repo
+# It is required to have Oodle.exe that can be compiled with project linked below:
+# https://github.com/masagrator/UnrealOodleWrapper
 # Script must be in the same folder as utoc and ucas files, generate json file with UnrealPakViewer and put it to the same folder with the same name as ucas/utoc file
-# Edited uncompressed asset file cannot have different count of 256kB blocks than original (so if you file has for example 384 kB, making it bigger than 512 kB or smaller than/equal to 256 kB will return error)
-# As Argument provide filename of ucas file without any type (so for example `python ucasRepacker.py pakchunk5-Switch``)
+# Edited uncompressed asset file cannot have different count of blocks (in case of CCFF7R one block is 256kB) than original (so for CCFF7R if your file has for example 384 kB, making it bigger than 512 kB or smaller than/equal to 256 kB will return error)
+# As Argument provide filename of ucas file without any type (so for example `python ucasRepacker.py pakchunk5-Switch`)
 # It will create new folder Paks with utoc and ucas files
-# File generated in Paks are not compatible with any unpacking tool because they are going on shortcuts instead of using proper chunk table
+# File generated in Paks are not compatible with UnrealPakViewer (because of how it uses shortcuts for generating file tree), cannot say about umodel
 # It was not tested with original game
+# If you have PC, you can provide encryption key in format 0x 64 byte long as next argument (so f.e. `python ucasRepacker.py pakchunk5-WindowsNoEditor 0x1234567890123456789012345678901234567890123456789012345678901234`)
 
 import sys
 import json
@@ -14,6 +16,37 @@ import shutil
 import os
 import math
 import subprocess
+from Crypto.Cipher import AES # pip install pycryptodome
+
+class _AES:
+	Key = b""
+
+class TOC:
+	MAGIC = b"-==--==--==--==-"
+	version = 3
+	headerSize = 0x90
+	fileCount = 1
+	allBlockCount = 1
+	blockEntrySize = 12
+	compressionMethod = ""
+	compressionMethodStringId = 1
+	compressionMethodStringLen = 32
+	blockSize = 0x40000
+	directoryIndexSize = 0
+	validContainer = 0
+	containerID = 0
+	encryptionKeyGUID = 0
+	compressed = False
+	encrypted = False
+	signed = False
+	indexed = False
+	TABLE1 = []
+	TABLE2 = []
+	TABLE3 = []
+
+class _JSON:
+	DUMP = []
+	FILTEREDLIST = []
 
 def Sort(key):
 	return key["Offset"]
@@ -30,141 +63,147 @@ os.makedirs("Paks", exist_ok=True)
 shutil.copy(f"{sys.argv[1]}.utoc", f"Paks/{sys.argv[1]}.utoc")
 utoc_file = open(f"Paks/{sys.argv[1]}.utoc", "rb+")
 
-if (utoc_file.read(16) != b"-==--==--==--==-"):
+if (utoc_file.read(16) != TOC.MAGIC):
 	print("Wrong MAGIC!")
 	sys.exit(1)
 
 version = int.from_bytes(utoc_file.read(4), "little")
-if (version != 3):
+if (version != TOC.version):
 	print("Unsupported version: %d" % version)
 
-header_size = int.from_bytes(utoc_file.read(4), "little")
-file_count = int.from_bytes(utoc_file.read(4), "little")
-all_block_count = int.from_bytes(utoc_file.read(4), "little")
-block_entry_size = int.from_bytes(utoc_file.read(4), "little")
-compression_method_string_id = int.from_bytes(utoc_file.read(4), "little")
-compression_method_string_len = int.from_bytes(utoc_file.read(4), "little")
-block_size = int.from_bytes(utoc_file.read(4), "little")
-DirectoryIndexSize = int.from_bytes(utoc_file.read(4), "little")
-valid_container = int.from_bytes(utoc_file.read(4), "little")
-containerID = int.from_bytes(utoc_file.read(8), "little")
-encryptionkeyGUID = int.from_bytes(utoc_file.read(16), "little")
+TOC.headerSize = int.from_bytes(utoc_file.read(4), "little")
+TOC.fileCount = int.from_bytes(utoc_file.read(4), "little")
+TOC.allBlockCount = int.from_bytes(utoc_file.read(4), "little")
+TOC.blockEntrySize = int.from_bytes(utoc_file.read(4), "little")
+TOC.compressionMethodStringId = int.from_bytes(utoc_file.read(4), "little")
+TOC.compressionMethodStringLen = int.from_bytes(utoc_file.read(4), "little")
+TOC.blockSize = int.from_bytes(utoc_file.read(4), "little")
+TOC.directoryIndexSize = int.from_bytes(utoc_file.read(4), "little")
+TOC.validContainer = int.from_bytes(utoc_file.read(4), "little")
+TOC.containerID = int.from_bytes(utoc_file.read(8), "little")
+TOC.encryptionKeyGUID = int.from_bytes(utoc_file.read(16), "little")
 flags = int.from_bytes(utoc_file.read(4), "little")
-Compressed = bool(flags & (1 << 0))
-Encrypted = bool(flags & (1 << 1))
-Signed = bool(flags & (1 << 2))
-Indexed = bool(flags & (1 << 3))
+TOC.compressed = bool(flags & (1 << 0))
+TOC.encrypted = bool(flags & (1 << 1))
+TOC.signed = bool(flags & (1 << 2))
+TOC.indexed = bool(flags & (1 << 3))
 
-if (Encrypted == True):
-	print("Tool doesn't support encrypted utoc!")
-	sys.exit(1)
+utoc_file.seek(TOC.headerSize)
 
-utoc_file.seek(header_size)
-
-DATA1 = []
-for i in range(file_count):
+for i in range(TOC.fileCount):
 	entry = {}
 	entry["file_hash"] = int.from_bytes(utoc_file.read(8), "big")
 	entry["flags"] = int.from_bytes(utoc_file.read(4), "big")
-	DATA1.append(entry)
+	TOC.TABLE1.append(entry)
 
-print("0x%X" % utoc_file.tell())
-#print(DATA1)
-
-DATA2 = []
-for i in range(file_count):
+for i in range(TOC.fileCount):
 	entry = {}
-	entry["ID"] = int(int.from_bytes(utoc_file.read(5), "big") / 0x40000)
-	entry["dec_size"] = int.from_bytes(utoc_file.read(5), "big")
-	DATA2.append(entry)
+	entry["data_ptr"] = utoc_file.tell()
+	entry["block_start_id"] = int(int.from_bytes(utoc_file.read(5), "big") / TOC.blockSize)
+	entry["full_dec_size"] = int.from_bytes(utoc_file.read(5), "big")
+	TOC.TABLE2.append(entry)
 
-print("0x%X" % utoc_file.tell())
-#print(DATA2)
-
-DATA3 = {}
-for i in range(all_block_count):
+for i in range(TOC.allBlockCount):
+	entry = {}
 	data_ptr = utoc_file.tell()
-	offset = int.from_bytes(utoc_file.read(5), "little") 
-	DATA3[offset] = {}
-	DATA3[offset]["data_ptr"] = data_ptr
-	DATA3[offset]["com_size"] = int.from_bytes(utoc_file.read(3), "little")
-	DATA3[offset]["unc_size"] = int.from_bytes(utoc_file.read(3), "little")
-	DATA3[offset]["com_method"] = int.from_bytes(utoc_file.read(1), "little")
-
-#print(DATA3)
+	offset = int.from_bytes(utoc_file.read(5), "little")
+	entry["data_ptr"] = data_ptr
+	entry["offset"] = offset 
+	entry["com_size"] = int.from_bytes(utoc_file.read(3), "little")
+	entry["unc_size"] = int.from_bytes(utoc_file.read(3), "little")
+	entry["com_method"] = int.from_bytes(utoc_file.read(1), "little")
+	TOC.TABLE3.append(entry)
 
 pos = utoc_file.tell()
 
-CompressionMethod = readString(utoc_file)
+TOC.compressionMethod = readString(utoc_file)
 
-utoc_file.seek(pos + compression_method_string_len)
-
-mount_point_string_size = int.from_bytes(utoc_file.read(4), "little")
-
-mount_point = readString(utoc_file)
+if (TOC.compressionMethod != "Oodle"):
+	print("This tool doesn't support other compression methods than Oodle!")
+	sys.exit()
 
 json_file = open(f"{sys.argv[1]}.json", "r", encoding="UTF-8")
-DUMP = json.load(json_file)["Files"]
+_JSON.DUMP = json.load(json_file)["Files"]
 json_file.close()
 
-DUMP.sort(key=Sort)
+_JSON.DUMP.sort(key=Sort)
 
-FilteredList = []
-
-all_dec_size = 0
-
-offset = 0
-for i in range(len(DUMP)):
+for i in range(len(_JSON.DUMP)):
 	entry = {}
-	entry["filepath"] = DUMP[i]["Path"]
-	entry["offset"] = offset
-	entry["com_size"] = DUMP[i]["Compressed Size"]
-	offset += DUMP[i]["Compressed Size"]
-	entry["dec_size"] = DUMP[i]["Size"]
-	all_dec_size += DUMP[i]["Size"]
-	entry["block_count"] = DUMP[i]["Compressed Block Count"]
-	FilteredList.append(entry)
+	entry["filepath"] = _JSON.DUMP[i]["Path"]
+	entry["com_size"] = _JSON.DUMP[i]["Compressed Size"]
+	entry["dec_size"] = _JSON.DUMP[i]["Size"]
+	entry["block_count"] = _JSON.DUMP[i]["Compressed Block Count"]
+	_JSON.FILTEREDLIST.append(entry)
 
 DUMP = []
+
+if (TOC.encrypted == True):
+	if (len(sys.argv) > 2):
+		_AES.Key = sys.argv[2]
+	else:
+		print("ucas is encrypted.")
+		print("Provide AES key in 0x form to unpack encrypted files:")
+		_AES.Key = input()
+	if (_AES.Key[:2] != "0x"):
+		print("Provided key in wrong format!")
+		sys.exit(1)
+	if len(_AES.Key) != 66:
+		print("Key has wrong length!")
+		sys.exit(1)
+	try:
+		_AES.Key = bytes.fromhex(_AES.Key[2:])
+	except:
+		print("Provided key in wrong format!")
+		sys.exit(1)
 shutil.copy(f"{sys.argv[1]}.ucas", f"Paks/{sys.argv[1]}.ucas")
 
-ucas_file = open(f"Paks/{sys.argv[1]}.ucas", "ab")
+ucas_file = open(f"Paks/{sys.argv[1]}.ucas", "rb+")
 
-for i in range(len(FilteredList)):
-	if (os.path.isfile(FilteredList[i]["filepath"]) == False):
+for i in range(len(_JSON.FILTEREDLIST)):
+	if (os.path.isfile(_JSON.FILTEREDLIST[i]["filepath"]) == False):
 		continue
-	print("Detected file:\n%s" % FilteredList[i]["filepath"])
-	filesize = os.stat(FilteredList[i]["filepath"]).st_size
-	temp_file = open(FilteredList[i]["filepath"], "rb")
-	block_count = math.ceil(os.stat(FilteredList[i]["filepath"]).st_size / 0x40000)
-	if (block_count != FilteredList[i]["block_count"]):
-		print("Exptected that file will have %d block(s)" % FilteredList[i]["block_count"])
-		print("It had %d block(s)." % block_count)
+	print("Detected file:\n%s" % _JSON.FILTEREDLIST[i]["filepath"])
+	filesize = os.stat(_JSON.FILTEREDLIST[i]["filepath"]).st_size
+	block_count = math.ceil(os.stat(_JSON.FILTEREDLIST[i]["filepath"]).st_size / TOC.blockSize)
+	if (block_count != _JSON.FILTEREDLIST[i]["block_count"]):
+		print("Exptected that file will have %d block(s)" % _JSON.FILTEREDLIST[i]["block_count"])
+		print("It had %d %dkB block(s)." % (block_count, int(TOC.blockSize/1024)))
 		sys.exit(1)
-	utoc_file.seek(DATA3[FilteredList[i]["offset"]]["data_ptr"])
-	for i in range(block_count):
-		buffer = temp_file.read(0x40000)
-		if (len(buffer) == 0):
-			print("Buffer is empty!")
-			sys.exit(1)
-		catch = subprocess.run(["Oodle.exe", "-c", "9", "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
-		if (catch.stderr != b""):
-			print("Compressing files failed!")
-			print("stderr:")
-			print(catch.stderr.decode("ascii"))
-			sys.exit(1)
-		utoc_file.write(ucas_file.tell().to_bytes(5, "little"))
-		utoc_file.write((len(catch.stdout)).to_bytes(3, "little"))
-		if (i+1 < block_count):
-			utoc_file.write(0x40000.to_bytes(3, "little"))
+
+	temp_file = open(_JSON.FILTEREDLIST[i]["filepath"], "rb")
+	blockID = TOC.TABLE2[i]["block_start_id"]
+	for x in range(_JSON.FILTEREDLIST[i]["block_count"]):
+		if (x+1 < _JSON.FILTEREDLIST[i]["block_count"]):
+			temp_buffer = temp_file.read(TOC.blockSize)
 		else:
-			utoc_file.write((filesize - (0x40000*i)).to_bytes(3, "little"))
-		utoc_file.write(0x1.to_bytes(1, "little"))
-		ucas_file.write(catch.stdout)
-		if (ucas_file.tell() % 0x10 != 0):
-			ucas_file.write(catch.stdout[:(0x10 - (ucas_file.tell() % 0x10))])
+			temp_buffer = temp_file.read()
+		catch = subprocess.run(["Oodle.exe", "-c", "9", "3", "stdin=%d" % len(temp_buffer), "stdout"], input=temp_buffer, capture_output=True, text=False)
+		if (catch.stderr != b""):
+			print("Error while compressing file!")
+			sys.exit(1)
+		buffer = catch.stdout
+		buffer_size = len(buffer)
+		if (len(buffer) % 0x10 != 0):
+			buffer += buffer[:0x10 - (len(buffer) % 0x10)]
+		if (TOC.encrypted == True):
+			cipher = AES.new(_AES.Key, AES.MODE_ECB)
+			buffer = cipher.encrypt(buffer)
+		size_check = TOC.TABLE3[blockID + x]["com_size"]
+		if (size_check % 0x10 != 0):
+			size_check += 0x10 - (size_check % 0x10)
+		if (len(buffer) <= size_check):
+			ucas_file.seek(TOC.TABLE3[blockID + x]["offset"])
+		else:
+			ucas_file.seek(0, 2)
+		ucas_pos = ucas_file.tell()
+		ucas_file.write(buffer)
+		utoc_file.seek(TOC.TABLE3[blockID + x]["data_ptr"])
+		utoc_file.write(ucas_pos.to_bytes(5, "little"))
+		utoc_file.write(buffer_size.to_bytes(3, "little"))
+		utoc_file.write(len(temp_buffer).to_bytes(3, "little"))
+	utoc_file.seek(TOC.TABLE2[i]["data_ptr"] + 5)
+	utoc_file.write(filesize.to_bytes(5, "big"))
 
 ucas_file.close()
 utoc_file.close()
-
-	
