@@ -117,5 +117,5 @@ if repack == False:
 	new_file.close()
 	print("Finished executing script!")
 else:
-	print("Not implemented")
+	print("Repack not implemented")
 	sys.exit()
