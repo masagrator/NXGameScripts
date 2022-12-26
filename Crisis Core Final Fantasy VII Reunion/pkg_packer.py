@@ -29,6 +29,8 @@ repack = False
 output = "Discimg/discimg_jefigs.pkg"
 entry_count = 0x7118
 chunk_size = 0x8000
+entry_size = 0x10
+header_size = 0x10
 compression_level = 2
 
 if (len(sys.argv) < 2):
@@ -65,12 +67,12 @@ assert(sanitizeFilenames.IDCheck <= entry_count)
 
 header = []
 header.append(b"FGKP")
-header.append(0x10.to_bytes(4, "little"))
+header.append(entry_size.to_bytes(4, "little"))
 header.append(entry_count.to_bytes(8, "little"))
 
 table = []
 
-data_blob_offset = (1 + entry_count) * 0x10
+data_blob_offset = (1 + entry_count) * entry_size
 
 os.makedirs(os.path.dirname(output), exist_ok=True)
 
@@ -85,7 +87,7 @@ if repack == False:
 			x += 1
 			table.append(b"\x00" * 8)
 		else:
-			table.append(b"\x00" * 16)
+			table.append(b"\x00" * entry_size)
 	print("Finished calculating %d files" % file_count)
 
 	size_now = len(b"".join(header) + b"".join(table))
@@ -113,7 +115,7 @@ if repack == False:
 			new_file.write(len(compressed_data[x]).to_bytes(4, "little"))
 		for x in range(len(compressed_data)):
 			new_file.write(compressed_data[x])
-		new_file.seek(0x10 + (int(Path(files[i]).stem, base=10) * 0x10) + 0x8)
+		new_file.seek(header_size + (int(Path(files[i]).stem, base=10) * entry_size) + 0x8)
 		new_file.write(offset.to_bytes(8, "little"))
 		new_file.seek(0, 2)
 		offset = new_file.tell()
