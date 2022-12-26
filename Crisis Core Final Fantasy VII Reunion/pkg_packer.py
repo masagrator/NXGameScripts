@@ -10,6 +10,9 @@ def sanitizeFilenames(fileList):
 			print("Files must use numerical names!")
 			print("File %s has wrong name!" % Path(fileList[i]).stem)
 			sys.exit()
+		number = int(Path(fileList[i]).stem, 10)
+		if (sanitizeFilenames.IDCheck < number): sanitizeFilenames.IDCheck = number
+sanitizeFilenames.IDCheck = 0
 
 def printUsage():
 	print(sys.argv)
@@ -58,6 +61,7 @@ input_folder = sys.argv[len(sys.argv) - 1]
 files = glob.glob(f"{input_folder}/*.*")
 sanitizeFilenames(files)
 
+assert(sanitizeFilenames.IDCheck <= entry_count)
 
 header = []
 header.append(b"FGKP")
