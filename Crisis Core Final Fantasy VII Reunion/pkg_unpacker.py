@@ -43,8 +43,7 @@ for i in range(filtered_entry_count):
     chunks_count = len(chunks)
     datatype = "dat"
     for x in range(chunks_count):
-        buffer = file.read(chunks[x])
-        unc_buffer = zlib.decompress(buffer, bufsize=DATA[i]["unc_buffer_size"])
+        unc_buffer = zlib.decompress(file.read(chunks[x]), bufsize=DATA[i]["unc_buffer_size"])
         if (x == 0):
             MAGIC = unc_buffer[0:4]
             if MAGIC == b"Atel":
