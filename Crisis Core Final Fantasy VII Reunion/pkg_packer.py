@@ -1,3 +1,5 @@
+# For fastest packing use options `-h -l 0`
+
 import zlib
 import sys
 import os
