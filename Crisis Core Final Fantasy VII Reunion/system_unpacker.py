@@ -1,3 +1,5 @@
+# For PC change "system_jefigs.bin" to "system.bin"
+
 import os
 
 file = open("system_jefigs.bin", "rb")
