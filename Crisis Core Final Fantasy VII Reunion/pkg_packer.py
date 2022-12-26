@@ -72,7 +72,7 @@ header.append(entry_count.to_bytes(8, "little"))
 
 table = []
 
-data_blob_offset = (1 + entry_count) * entry_size
+data_blob_offset = header_size + (entry_count * entry_size)
 
 os.makedirs(os.path.dirname(output), exist_ok=True)
 
