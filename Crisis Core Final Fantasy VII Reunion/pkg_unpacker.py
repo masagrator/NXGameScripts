@@ -41,9 +41,27 @@ for i in range(filtered_entry_count):
     for x in range(math.ceil(DATA[i]["unc_size"] / DATA[i]["unc_buffer_size"])):
         chunks.append(int.from_bytes(file.read(4), "little"))
     chunks_count = len(chunks)
-    new_file = open("unpacked/%05d.dat" % DATA[i]["ID"], "wb")
+    datatype = "dat"
     for x in range(chunks_count):
         buffer = file.read(chunks[x])
         unc_buffer = zlib.decompress(buffer, bufsize=DATA[i]["unc_buffer_size"])
+        if (x == 0):
+            MAGIC = unc_buffer[0:4]
+            if MAGIC == b"Atel":
+                datatype = "atel"
+            elif MAGIC[0:2] == b"GT":
+                datatype = "gt"
+            elif MAGIC[0:3] == b"MBD":
+                datatype = "mbd"
+            elif MAGIC[0:3] == b"FRR":
+                datatype = "frr"
+            elif MAGIC[0:3] == b"FEP":
+                datatype = "fep"
+            elif MAGIC[0:3] == b"FBT":
+                datatype = "fbt"
+            elif MAGIC[0:3] == b"EPF":
+                datatype = "epf"
+            new_file = open("unpacked/%05d.%s" % (DATA[i]["ID"], datatype), "wb")
         new_file.write(unc_buffer)
     new_file.close()
+print(f"Unpacked successfully {filtered_entry_count} files.")

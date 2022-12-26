@@ -55,7 +55,7 @@ if (len(sys.argv) > 2):
 
 input_folder = sys.argv[len(sys.argv) - 1]
 
-files = glob.glob(f"{input_folder}/*.dat")
+files = glob.glob(f"{input_folder}/*.*")
 sanitizeFilenames(files)
 
 
