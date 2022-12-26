@@ -40,9 +40,8 @@ for i in range(filtered_entry_count):
     chunks = []
     for x in range(math.ceil(DATA[i]["unc_size"] / DATA[i]["unc_buffer_size"])):
         chunks.append(int.from_bytes(file.read(4), "little"))
-    chunks_count = len(chunks)
     datatype = "dat"
-    for x in range(chunks_count):
+    for x in range(len(chunks)):
         unc_buffer = zlib.decompress(file.read(chunks[x]), bufsize=DATA[i]["unc_buffer_size"])
         if (x == 0):
             MAGIC = unc_buffer[0:4]
