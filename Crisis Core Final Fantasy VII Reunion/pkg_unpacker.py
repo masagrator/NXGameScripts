@@ -1,4 +1,4 @@
-# On PC file name is "discimg.pkg"
+# For PC change "discimg_jefigs.pkg" to "discimg.pkg"
 
 import zlib
 import sys
