@@ -1,3 +1,5 @@
+# On PC file name is "discimg.pkg"
+
 import zlib
 import sys
 import os
