@@ -81,7 +81,9 @@ table = []
 
 data_blob_offset = header_size + (entry_count * entry_size)
 
-os.makedirs(os.path.dirname(output), exist_ok=True)
+dirname = os.path.dirname(output)
+if (dirname != ""):
+	os.makedirs(dirname, exist_ok=True)
 
 if repack == False:
 	x = 0
