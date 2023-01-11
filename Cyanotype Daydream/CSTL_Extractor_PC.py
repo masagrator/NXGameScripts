@@ -38,7 +38,7 @@ def readCSTL(file):
 			if (string_size > 0):
 				entry[languages[y]]["Name"] = file.read(string_size).decode("UTF-8")
 			string_size = GetSerializedInt(file)
-			entry[languages[y]]["String"] = file.read(string_size).decode("UTF-8").replace("\u001f", "\n")
+			entry[languages[y]]["String"] = file.read(string_size).decode("UTF-8")
 		STRINGS.append(entry)
 	file.close()
 	return STRINGS
