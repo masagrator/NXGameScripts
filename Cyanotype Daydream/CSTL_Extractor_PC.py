@@ -12,13 +12,6 @@ def GetSerializedInt(file):
 		if (value != 255):
 			return Int
 
-def GetFileSize(file):
-	pos = file.tell()
-	file.seek(0, 2)
-	size = file.tell()
-	file.seek(pos)
-	return size
-
 def readCSTL(file):
 	if (file.read(8) != b"CSTL\x00\x00\x00\x00"):
 		print("UNKNOWN MAGIC!")
