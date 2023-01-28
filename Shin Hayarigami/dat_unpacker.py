@@ -1,5 +1,4 @@
 import sys
-import numpy
 import os
 
 def readString(myfile):
@@ -16,7 +15,7 @@ if (file.read(0x8) != b"PS_FS_V1"):
     print("WRONG MAGIC!")
     sys.exit()
 
-file_count = numpy.fromfile(file, dtype=numpy.uint64, count=1)[0]
+file_count = int.from_bytes(file.read(8), "little")
 
 filenames = []
 sizes = []
@@ -26,8 +25,8 @@ for i in range(0, file_count):
     og_pos = file.tell()
     filenames.append(readString(file))
     file.seek(og_pos + 0x30)
-    sizes.append(numpy.fromfile(file, dtype=numpy.uint64, count=1)[0])
-    offsets.append(numpy.fromfile(file, dtype=numpy.uint64, count=1)[0])
+    sizes.append(int.from_bytes(file.read(8), "little"))
+    offsets.append(int.from_bytes(file.read(8), "little"))
 
 os.makedirs("%s" % sys.argv[1][:-4], exist_ok=True)
 
