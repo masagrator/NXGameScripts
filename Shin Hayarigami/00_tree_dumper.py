@@ -1,5 +1,4 @@
 import json
-import sys
 from pathlib import Path
 
 def readString(myfile):
@@ -10,7 +9,7 @@ def readString(myfile):
             return str(b"".join(chars).decode("shift_jis_2004"))
         chars.append(c)
 
-file = open(sys.argv[1], "rb")
+file = open("00_tree.dat", "rb")
 
 if (file.read(0x4) != b"TRE2"):
     print("WRONG MAGIC!")
@@ -47,5 +46,5 @@ for i in range(0, len(Offsets)):
             DUMP["%d-%d" % (ID, i)] = entry
 
 new_dict = dict(sorted(DUMP.items()))
-file_new = open(f"{Path(sys.argv[1]).stem}_dump.json", "w", encoding="UTF-8")
+file_new = open("00_tree_dump.json", "w", encoding="UTF-8")
 json.dump(new_dict, file_new, indent="\t", ensure_ascii=False)
