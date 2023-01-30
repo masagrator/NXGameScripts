@@ -10,6 +10,9 @@ def splitToList(string: str):
 	return string[1:-1].split(",")
 
 def AddToStrings(string: str):
+	print(string)
+	print(string[1:-1])
+	input()
 	if (string[1:-1] not in STRINGS):
 		index = len(STRINGS)
 		STRINGS.append(string[1:-1])
@@ -50,7 +53,7 @@ for i in range(0, len(files)):
 					DUMP.append(0x6.to_bytes(4, "little"))
 					DUMP.append(int(Args[1], base=16).to_bytes(4, "little"))
 				case "PUSH_CUSTOM_TEXT":
-					DUMP.append(0x6.to_bytes(4, "little"))
+					DUMP.append(0x9.to_bytes(4, "little"))
 					DUMP.append(0x1.to_bytes(4, "little"))
 				case "SET_EFFECT":
 					DUMP.append(0x0.to_bytes(4, "little"))
