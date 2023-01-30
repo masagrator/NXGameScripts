@@ -4,15 +4,11 @@ from pathlib import Path
 import os
 
 STRINGS = []
-STRINGS.append("")
 
 def splitToList(string: str):
 	return string[1:-1].split(",")
 
 def AddToStrings(string: str):
-	print(string)
-	print(string[1:-1])
-	input()
 	if (string[1:-1] not in STRINGS):
 		index = len(STRINGS)
 		STRINGS.append(string[1:-1])
@@ -25,6 +21,8 @@ os.makedirs("Compiled", exist_ok=True)
 
 for i in range(0, len(files)):
 	DUMP = []
+	STRINGS = []
+	STRINGS.append("")
 	print(Path(files[i]).stem)
 	file = open(files[i], "r", encoding="UTF-8")
 	for line in file:
@@ -60,6 +58,12 @@ for i in range(0, len(files)):
 					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
 					DUMP.append(0x4.to_bytes(4, "little"))
 					DUMP.append(int(Args[1], base=16).to_bytes(4, "little"))
+				case "SPECIAL_TEXT":
+					DUMP.append(0x0.to_bytes(4, "little"))
+					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
+					DUMP.append(0xE.to_bytes(4, "little"))
+					value = int(Args[1], base=16) + 0x80000000
+					DUMP.append(value.to_bytes(4, "little"))
 				case _:
 					print("Undetected command!")
 					print(Args[0])

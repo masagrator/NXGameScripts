@@ -13,7 +13,7 @@ def swap32(x: str):
 		string = string[1:]
 	return string
 
-files = glob.glob("Script/*.binu8")
+files = glob.glob(f"{sys.argv[1]}/*.binu8")
 
 def Sort(key: int):
 	return key
@@ -69,6 +69,18 @@ def ProcessDump(BLOB: list):
 				BLOB["COMMANDS"][i-2]["CMD"] = "SET_EFFECT"
 				BLOB["COMMANDS"][i-2]["STRING"] = BLOB["STRINGS"][string_id]
 				BLOB["COMMANDS"][i-2].pop("U32")
+				if string_id not in pops:
+					pops.append(string_id)
+			case 0xE:
+				if (BLOB["COMMANDS"][i]["DATA"][6:] != "80"):
+					continue
+				string_id = int.from_bytes(bytes.fromhex(BLOB["COMMANDS"][i]["U32"][0]), "little", signed=True)
+				if (string_id < 0):
+					continue
+				BLOB["COMMANDS"][i]["CMD"] = "SPECIAL_TEXT"
+				BLOB["COMMANDS"][i].pop("U32")
+				BLOB["COMMANDS"][i]["DATA"] = BLOB["COMMANDS"][i]["DATA"][:6] + "00"
+				BLOB["COMMANDS"][i]["STRING"] = BLOB["STRINGS"][string_id]
 				if string_id not in pops:
 					pops.append(string_id)
 			case _:
@@ -147,7 +159,7 @@ for i in range(len(files)):
 		BLOB["STRINGS"].append(string)
 	BLOB["COMMANDS"]= COMMANDS
 	new_file = open(f"Unpacked/{Path(files[i]).stem}.json", "w", encoding="UTF-8")
-	json.dump(BLOB["STRINGS"], new_file, indent="\t", ensure_ascii=False)
+	json.dump(BLOB, new_file, indent="\t", ensure_ascii=False)
 	BLOB = ProcessDump(BLOB)
 
 	new_file = open(f"Unpacked/{Path(files[i]).stem}.asm", "w", encoding="UTF-8")
@@ -170,7 +182,7 @@ for i in range(len(files)):
 			match(BLOB[x]["CMD"]):
 				case "LOAD_STRING":
 					new_file.write("'%s'\n" % BLOB[x]["STRING"])
-				case "LOAD_CUSTOM_TEXT" | "SET_EFFECT":
+				case "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
 					new_file.write("0x%s\t" % swap32(BLOB[x]["DATA"]))
 					new_file.write("'%s'\n" % BLOB[x]["STRING"])
 				case _:
