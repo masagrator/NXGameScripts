@@ -1,8 +1,8 @@
-import json
 import glob
 import sys
 from pathlib import Path
 import os
+import json
 
 def swap32(x: str):
 	string = x[6:8] + x[4:6] + x[2:4] + x[0:2]
@@ -53,6 +53,7 @@ def ProcessDump(BLOB: list):
 				if (string_id < 0):
 					continue
 				BLOB["COMMANDS"][i]["CMD"] = "PUSH_CUSTOM_TEXT"
+				BLOB["COMMANDS"][i].pop("DATA")
 				BLOB["COMMANDS"][i-1]["STRING"] = BLOB["STRINGS"][string_id]
 				BLOB["COMMANDS"][i-1].pop("U32")
 				BLOB["COMMANDS"][i-1]["CMD"] = "LOAD_CUSTOM_TEXT"
@@ -65,6 +66,7 @@ def ProcessDump(BLOB: list):
 				string_id = int.from_bytes(bytes.fromhex(BLOB["COMMANDS"][i-2]["U32"][0]), "little", signed=True)
 				if (string_id < 0):
 					continue
+				BLOB["COMMANDS"][i-2]["CMD"] = "SET_EFFECT"
 				BLOB["COMMANDS"][i-2]["STRING"] = BLOB["STRINGS"][string_id]
 				BLOB["COMMANDS"][i-2].pop("U32")
 				if string_id not in pops:
@@ -75,13 +77,18 @@ def ProcessDump(BLOB: list):
 	pops.reverse()
 	for i in range(len(pops)):
 		BLOB["STRINGS"].pop(pops[i])
-	if len(BLOB["STRINGS"]) > 0:
+	if len(BLOB["STRINGS"]) == 1:
+		if BLOB["STRINGS"][0] != "":
+			print("Some string were not pulled!")
+			print(BLOB["STRINGS"])
+			sys.exit()
+	elif len(BLOB["STRINGS"]) > 0:
 		print("Some string were not pulled!")
 		print(BLOB["STRINGS"])
 		sys.exit()
-	else:
-		BLOB.pop("STRINGS")
-		BLOB = BLOB["COMMANDS"]
+	
+	BLOB.pop("STRINGS")
+	BLOB = BLOB["COMMANDS"]
 	return BLOB
 
 
@@ -139,6 +146,8 @@ for i in range(len(files)):
 			sys.exit()
 		BLOB["STRINGS"].append(string)
 	BLOB["COMMANDS"]= COMMANDS
+	new_file = open(f"Unpacked/{Path(files[i]).stem}.json", "w", encoding="UTF-8")
+	json.dump(BLOB["STRINGS"], new_file, indent="\t", ensure_ascii=False)
 	BLOB = ProcessDump(BLOB)
 
 	new_file = open(f"Unpacked/{Path(files[i]).stem}.asm", "w", encoding="UTF-8")
@@ -161,16 +170,9 @@ for i in range(len(files)):
 			match(BLOB[x]["CMD"]):
 				case "LOAD_STRING":
 					new_file.write("'%s'\n" % BLOB[x]["STRING"])
-				case "LOAD_CUSTOM_TEXT":
+				case "LOAD_CUSTOM_TEXT" | "SET_EFFECT":
 					new_file.write("0x%s\t" % swap32(BLOB[x]["DATA"]))
 					new_file.write("'%s'\n" % BLOB[x]["STRING"])
-				case "PUSH_CUSTOM_TEXT":
-					new_file.write("0x%s\n" % swap32(BLOB[x]["DATA"]))
 				case _:
 					new_file.write("\n")
 	new_file.close()
-			
-	new_file = open(f"Unpacked/{Path(files[i]).stem}.json", "w", encoding="UTF-8")
-	json.dump(BLOB, new_file, indent="\t", ensure_ascii=False)
-	new_file.close()
-	
