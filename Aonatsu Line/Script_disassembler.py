@@ -40,10 +40,7 @@ def ProcessDump(BLOB: list):
 				if string_id not in pops:
 					pops.append(string_id)
 			case 7:
-				if (BLOB["COMMANDS"][i]["DATA"] != "6f000400"):
-					continue
-				BLOB["COMMANDS"][i]["CMD"] = "PUSH_MESSAGE"
-				BLOB["COMMANDS"][i].pop("DATA")
+					BLOB["COMMANDS"][i]["CMD"] = "FUNC"
 			case 9:
 				if (BLOB["COMMANDS"][i]["DATA"] != "01000000"):
 					continue
@@ -83,6 +80,10 @@ def ProcessDump(BLOB: list):
 				BLOB["COMMANDS"][i]["STRING"] = BLOB["STRINGS"][string_id]
 				if string_id not in pops:
 					pops.append(string_id)
+			case 0x41:
+				BLOB["COMMANDS"][i]["CMD"] = "JUMP.41"
+			case 0x42:
+				BLOB["COMMANDS"][i]["CMD"] = "JUMP.42"
 			case _:
 				continue
 	pops.sort(key=Sort)
@@ -126,18 +127,18 @@ for i in range(len(files)):
 	commands_count = int.from_bytes(script.read(4), "little")
 	COMMANDS = []
 	u32_value = []
-	label = ""
+	label = 0
 	for x in range(commands_count):
 		entry = {}
-		if (label == ""):
-			label = "0x%X" % script.tell()
+		if (label == 0):
+			label = script.tell()
 		cmd = int.from_bytes(script.read(4), "little")
 		if (cmd == 0):
 			u32_value.append(script.read(4).hex())
 			continue
 		else:
-			#entry["LABEL"] = label
-			label = ""
+			entry["LABEL"] = label
+			label = 0
 			if (len(u32_value) > 0):
 				entry["U32"] = u32_value
 				u32_value = []
@@ -174,17 +175,40 @@ for i in range(len(files)):
 					new_file.write("0x%s" % swap32(BLOB[x]["U32"][y]))
 					if (y+1 < iters):
 						new_file.write(",")
-				new_file.write("]\n")
+				new_file.write("]\t")
 			else:
-				new_file.write("\n")
+				new_file.write("\t")
+			new_file.write("{0x%X}\n" % (int(BLOB[x]["LABEL"]/8) - 1))
 		else:
-			new_file.write("\t%s\t" % BLOB[x]["CMD"])
+			new_file.write("\t%s" % BLOB[x]["CMD"])
 			match(BLOB[x]["CMD"]):
+				case "JUMP.41" | "JUMP.42":
+					new_file.write("\t0x%s" % swap32(BLOB[x]["DATA"]))
 				case "LOAD_STRING":
-					new_file.write("'%s'\n" % BLOB[x]["STRING"])
+					new_file.write("\t'%s'" % BLOB[x]["STRING"])
 				case "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
-					new_file.write("0x%s\t" % swap32(BLOB[x]["DATA"]))
-					new_file.write("'%s'\n" % BLOB[x]["STRING"])
-				case _:
-					new_file.write("\n")
+					new_file.write("\t0x%s" % swap32(BLOB[x]["DATA"]))
+					new_file.write("\t'%s'" % BLOB[x]["STRING"])
+				case "FUNC":
+					FUNC_ID = int.from_bytes(bytes.fromhex(BLOB[x]["DATA"]), "little", signed=True)
+					match(FUNC_ID):
+						case 0x20005:
+							new_file.write("\t'WAIT'")
+						case 0x2009A:
+							new_file.write("\t'BG_FADE'")
+						case 0x2014f:
+							new_file.write("\t'TEX_CLEAR'")
+						case 0x301C2:
+							new_file.write("\t'VOICE_FADE'")
+						case 0x4006f:
+							new_file.write("\t'PUSH_MESSAGE'")
+						case 0x60165:
+							new_file.write("\t'TEX_FADE'")
+						case 0x8803E:
+							new_file.write("\t'BG_PUSH'")
+						case 0x90143:
+							new_file.write("\t'TEX_PUSH'")
+						case _:
+							new_file.write("\t0x%X" % FUNC_ID)
+			new_file.write("\t{0x%X}\n" % (int(BLOB[x]["LABEL"]/8) - 1))
 	new_file.close()
