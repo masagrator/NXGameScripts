@@ -19,9 +19,8 @@ def AddToStrings(string: str):
 files = glob.glob(f"{sys.argv[1]}/*.asm")
 os.makedirs("Compiled", exist_ok=True)
 
-BASE = {}
-
 for i in range(0, len(files)):
+	BASE = {}
 	DUMP = []
 	STRINGS = []
 	STRINGS.append("")
@@ -33,32 +32,57 @@ for i in range(0, len(files)):
 		if (Args[0][0] == ";"):
 			continue
 		if(Args[-1][0:1] == "{"):
-			BASE[Args[-1][1:-1].lower()] = itr
-		match(Args[0]):
-			case "JUMP.41":
-				itr += 1
-			case "JUMP.42":
-				itr += 1
-			case "LOAD_STRING":
-				itr += 2
-			case "PUSH_MESSAGE":
-				itr += 1
-			case "FUNC":
-				itr += 1
-			case "LOAD_CUSTOM_TEXT":
-				itr += 2
-			case "PUSH_CUSTOM_TEXT":
-				itr += 1
-			case "SET_EFFECT":
-				itr += 2
-			case "SPECIAL_TEXT":
-				itr += 2
-			case _:
-				if (len(Args) == 4):
-					values = splitToList(Args[2])
-					itr = itr + 1 + len(values)
-				else:
+			if (Args[-1][1:-1].lower() in BASE):
+				print("DETECTED IDENTICAL LABELS! CEASING OPERATION")
+				print(Args[-1])
+				sys.exit()
+			match(Args[0]):
+				case "JUMP.41":
+					BASE[Args[-1][1:-1].lower()] = itr
 					itr += 1
+				case "JUMP.42":
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 1
+				case "LOAD_STRING":
+					value = int(Args[-1][1:-1], base=16)
+					BASE["0x%x" % (value - 1)] = itr - 1
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 2
+				case "PUSH_MESSAGE":
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 1
+				case "FUNC":
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 1
+				case "LOAD_CUSTOM_TEXT":
+					value = int(Args[-1][1:-1], base=16)
+					BASE["0x%x" % (value - 1)] = itr - 1
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 2
+				case "PUSH_CUSTOM_TEXT":
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 1
+				case "SET_EFFECT":
+					value = int(Args[-1][1:-1], base=16)
+					BASE["0x%x" % (value - 1)] = itr - 1
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 2
+				case "SPECIAL_TEXT":
+					value = int(Args[-1][1:-1], base=16)
+					BASE["0x%x" % (value - 1)] = itr - 1
+					BASE[Args[-1][1:-1].lower()] = itr
+					itr += 2
+				case _:
+					if (len(Args) == 4):
+						values = splitToList(Args[2])
+						for z in range(1, len(values)+1):
+							value = int(Args[-1][1:-1], base=16)
+							BASE["0x%x" % (value - z)] = itr - z
+						BASE[Args[-1][1:-1].lower()] = itr
+						itr = itr + 1 + len(values)
+					else:
+						BASE[Args[-1][1:-1].lower()] = itr
+						itr += 1
 	file.seek(0)
 	for line in file:
 		Args = line.strip().split("\t")
