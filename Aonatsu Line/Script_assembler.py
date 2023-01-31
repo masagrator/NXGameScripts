@@ -32,7 +32,8 @@ for i in range(0, len(files)):
 		Args = line.strip().split("\t")
 		if (Args[0][0] == ";"):
 			continue
-		BASE[Args[-1][1:-1].lower()] = itr
+		if(Args[-1][0:1] == "{"):
+			BASE[Args[-1][1:-1].lower()] = itr
 		match(Args[0]):
 			case "JUMP.41":
 				itr += 1
