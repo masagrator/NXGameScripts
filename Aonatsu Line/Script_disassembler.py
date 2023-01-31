@@ -81,9 +81,9 @@ def ProcessDump(BLOB: list):
 				if string_id not in pops:
 					pops.append(string_id)
 			case 0x41:
-				BLOB["COMMANDS"][i]["CMD"] = "JUMP.41"
+				BLOB["COMMANDS"][i]["CMD"] = "JNGE" # Used this name only for syntax highlighting, how this command works exactly is unknown to me
 			case 0x42:
-				BLOB["COMMANDS"][i]["CMD"] = "JUMP.42"
+				BLOB["COMMANDS"][i]["CMD"] = "JNLE" # Used this name only for syntax highlighting, how this command works exactly is unknown to me
 			case _:
 				continue
 	pops.sort(key=Sort)
@@ -166,6 +166,7 @@ for i in range(len(files)):
 	new_file = open(f"Unpacked/{Path(files[i]).stem}.asm", "w", encoding="UTF-8")
 	for x in range(len(BLOB)):
 		if isinstance(BLOB[x]["CMD"], int) == True:
+			new_file.write("{0x%04X}" % (int(BLOB[x]["LABEL"]/8) - 1))
 			new_file.write("\tCMD.%X\t" % BLOB[x]["CMD"])
 			new_file.write("0x%s" % swap32(BLOB[x]["DATA"]))
 			if "U32" in BLOB[x].keys():
@@ -175,14 +176,13 @@ for i in range(len(files)):
 					new_file.write("0x%s" % swap32(BLOB[x]["U32"][y]))
 					if (y+1 < iters):
 						new_file.write(",")
-				new_file.write("]\t")
-			else:
-				new_file.write("\t")
-			new_file.write("{0x%X}\n" % (int(BLOB[x]["LABEL"]/8) - 1))
+				new_file.write("]")
+			new_file.write("\n")
 		else:
+			new_file.write("{0x%04X}" % (int(BLOB[x]["LABEL"]/8) - 1))
 			new_file.write("\t%s" % BLOB[x]["CMD"])
 			match(BLOB[x]["CMD"]):
-				case "JUMP.41" | "JUMP.42":
+				case "JNGE" | "JNLE":
 					new_file.write("\t0x%s" % swap32(BLOB[x]["DATA"]))
 				case "LOAD_STRING":
 					new_file.write("\t'%s'" % BLOB[x]["STRING"])
@@ -204,6 +204,8 @@ for i in range(len(files)):
 							new_file.write("\t'PUSH_MESSAGE'")
 						case 0x501b2:
 							new_file.write("\t'BGM_PLAY'")
+						case 0x501bf:
+							new_file.write("\t'SE_PLAY'")
 						case 0x60165:
 							new_file.write("\t'TEX_FADE'")
 						case 0x8803E:
@@ -212,5 +214,5 @@ for i in range(len(files)):
 							new_file.write("\t'TEX_PUSH'")
 						case _:
 							new_file.write("\t0x%X" % FUNC_ID)
-			new_file.write("\t{0x%X}\n" % (int(BLOB[x]["LABEL"]/8) - 1))
+			new_file.write("\n")
 	new_file.close()

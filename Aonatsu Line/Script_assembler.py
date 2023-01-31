@@ -31,82 +31,78 @@ for i in range(0, len(files)):
 		Args = line.strip().split("\t")
 		if (Args[0][0] == ";"):
 			continue
-		if(Args[-1][0:1] == "{"):
-			if (Args[-1][1:-1].lower() in BASE):
+		if(Args[0][0:1] == "{"):
+			value = int(Args[0][1:-1], base=16)
+			if (("0x%x" % value) in BASE):
 				print("DETECTED IDENTICAL LABELS! CEASING OPERATION")
-				print(Args[-1])
+				print(Args[0])
 				sys.exit()
-			match(Args[0]):
+			match(Args[1]):
 				case "JUMP.41":
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 1
 				case "JUMP.42":
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 1
 				case "LOAD_STRING":
-					value = int(Args[-1][1:-1], base=16)
 					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 2
 				case "PUSH_MESSAGE":
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 1
 				case "FUNC":
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 1
 				case "LOAD_CUSTOM_TEXT":
-					value = int(Args[-1][1:-1], base=16)
 					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 2
 				case "PUSH_CUSTOM_TEXT":
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 1
 				case "SET_EFFECT":
-					value = int(Args[-1][1:-1], base=16)
 					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 2
 				case "SPECIAL_TEXT":
-					value = int(Args[-1][1:-1], base=16)
 					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE[Args[-1][1:-1].lower()] = itr
+					BASE["0x%x" % value] = itr
 					itr += 2
 				case _:
 					if (len(Args) == 4):
-						values = splitToList(Args[2])
+						values = splitToList(Args[3])
 						for z in range(1, len(values)+1):
-							value = int(Args[-1][1:-1], base=16)
 							BASE["0x%x" % (value - z)] = itr - z
-						BASE[Args[-1][1:-1].lower()] = itr
+						BASE["0x%x" % value] = itr
 						itr = itr + 1 + len(values)
 					else:
-						BASE[Args[-1][1:-1].lower()] = itr
+						BASE["0x%x" % value] = itr
 						itr += 1
 	file.seek(0)
 	for line in file:
 		Args = line.strip().split("\t")
 		if (Args[0][0] == ";"):
 			continue
-		elif (Args[0][0:3] == "CMD"):
+		elif (Args[1][0:3] == "CMD"):
 			if (len(Args) == 4):
-				values = splitToList(Args[2])
+				values = splitToList(Args[3])
 				for x in range(len(values)):
 					DUMP.append(0x0.to_bytes(4, "little"))
 					DUMP.append(int(values[x], base=16).to_bytes(4, "little"))
-			DUMP.append(int(Args[0][4:], base=16).to_bytes(4, "little"))
-			DUMP.append(int(Args[1], base=16).to_bytes(4, "little"))
+			DUMP.append(int(Args[1][4:], base=16).to_bytes(4, "little"))
+			DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 		else: 
-			match(Args[0]):
-				case "JUMP.41":
+			match(Args[1]):
+				case "JNGE":
 					DUMP.append(0x41.to_bytes(4, "little"))
-					DUMP.append(BASE[Args[1]].to_bytes(4, "little"))
-				case "JUMP.42":
+					DUMP.append(BASE[Args[2]].to_bytes(4, "little"))
+				case "JNLE":
 					DUMP.append(0x42.to_bytes(4, "little"))
-					DUMP.append(BASE[Args[1]].to_bytes(4, "little"))
+					DUMP.append(BASE[Args[2]].to_bytes(4, "little"))
 				case "LOAD_STRING":
 					DUMP.append(0x0.to_bytes(4, "little"))
-					DUMP.append(AddToStrings(Args[1]).to_bytes(4, "little"))
+					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
 					DUMP.append(0x5.to_bytes(4, "little"))
 					DUMP.append(0x1.to_bytes(4, "little"))
 				case "PUSH_MESSAGE":
@@ -114,7 +110,7 @@ for i in range(0, len(files)):
 					DUMP.append(0x4006f.to_bytes(4, "little"))
 				case "FUNC":
 					DUMP.append(0x7.to_bytes(4, "little"))
-					match(Args[1]):
+					match(Args[2]):
 						case "'WAIT'":
 							DUMP.append(0x20005.to_bytes(4, "little"))
 						case "'PUSH_MESSAGE'":
@@ -133,26 +129,28 @@ for i in range(0, len(files)):
 							DUMP.append(0x90143.to_bytes(4, "little"))
 						case "'BGM_PLAY'":
 							DUMP.append(0x501b2.to_bytes(4, "little"))
+						case "'SE_PLAY'":
+							DUMP.append(0x501bf.to_bytes(4, "little"))
 						case _:
-							DUMP.append(int(Args[1], base=16).to_bytes(4, "little"))
+							DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 				case "LOAD_CUSTOM_TEXT":
 					DUMP.append(0x0.to_bytes(4, "little"))
-					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
+					DUMP.append(AddToStrings(Args[3]).to_bytes(4, "little"))
 					DUMP.append(0x6.to_bytes(4, "little"))
-					DUMP.append(int(Args[1], base=16).to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 				case "PUSH_CUSTOM_TEXT":
 					DUMP.append(0x9.to_bytes(4, "little"))
 					DUMP.append(0x1.to_bytes(4, "little"))
 				case "SET_EFFECT":
 					DUMP.append(0x0.to_bytes(4, "little"))
-					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
+					DUMP.append(AddToStrings(Args[3]).to_bytes(4, "little"))
 					DUMP.append(0x4.to_bytes(4, "little"))
-					DUMP.append(int(Args[1], base=16).to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 				case "SPECIAL_TEXT":
 					DUMP.append(0x0.to_bytes(4, "little"))
-					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
+					DUMP.append(AddToStrings(Args[3]).to_bytes(4, "little"))
 					DUMP.append(0xE.to_bytes(4, "little"))
-					value = int(Args[1], base=16) + 0x80000000
+					value = int(Args[2], base=16) + 0x80000000
 					DUMP.append(value.to_bytes(4, "little"))
 				case _:
 					print("Undetected command!")
