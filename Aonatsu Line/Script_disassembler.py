@@ -184,7 +184,7 @@ for i in range(len(files)):
 			new_file.write("\t%s" % BLOB[x]["CMD"])
 			match(BLOB[x]["CMD"]):
 				case "JNGE" | "JNLE":
-					new_file.write("\t0x%s" % swap32(BLOB[x]["DATA"]))
+					new_file.write("\t0x%04x" % int(swap32(BLOB[x]["DATA"]), base=16))
 				case "LOAD_STRING":
 					new_file.write("\t'%s'" % BLOB[x]["STRING"])
 				case "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":

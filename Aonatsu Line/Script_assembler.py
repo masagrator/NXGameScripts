@@ -33,51 +33,51 @@ for i in range(0, len(files)):
 			continue
 		if(Args[0][0:1] == "{"):
 			value = int(Args[0][1:-1], base=16)
-			if (("0x%x" % value) in BASE):
+			if (("0x%04x" % value) in BASE):
 				print("DETECTED IDENTICAL LABELS! CEASING OPERATION")
 				print(Args[0])
 				sys.exit()
 			match(Args[1]):
 				case "JUMP.41":
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % value] = itr
 					itr += 1
 				case "JUMP.42":
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % value] = itr
 					itr += 1
 				case "LOAD_STRING":
-					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % (value - 1)] = itr - 1
+					BASE["0x%04x" % value] = itr
 					itr += 2
 				case "PUSH_MESSAGE":
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % value] = itr
 					itr += 1
 				case "FUNC":
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % value] = itr
 					itr += 1
 				case "LOAD_CUSTOM_TEXT":
-					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % (value - 1)] = itr - 1
+					BASE["0x%04x" % value] = itr
 					itr += 2
 				case "PUSH_CUSTOM_TEXT":
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % value] = itr
 					itr += 1
 				case "SET_EFFECT":
-					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % (value - 1)] = itr - 1
+					BASE["0x%04x" % value] = itr
 					itr += 2
 				case "SPECIAL_TEXT":
-					BASE["0x%x" % (value - 1)] = itr - 1
-					BASE["0x%x" % value] = itr
+					BASE["0x%04x" % (value - 1)] = itr - 1
+					BASE["0x%04x" % value] = itr
 					itr += 2
 				case _:
 					if (len(Args) == 4):
 						values = splitToList(Args[3])
 						for z in range(1, len(values)+1):
-							BASE["0x%x" % (value - z)] = itr - z
-						BASE["0x%x" % value] = itr
+							BASE["0x%04x" % (value - z)] = itr - z
+						BASE["0x%04x" % value] = itr
 						itr = itr + 1 + len(values)
 					else:
-						BASE["0x%x" % value] = itr
+						BASE["0x%04x" % value] = itr
 						itr += 1
 	file.seek(0)
 	for line in file:
