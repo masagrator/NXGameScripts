@@ -28,7 +28,6 @@ for i in range(0, len(files)):
 	print(Path(files[i]).stem)
 	file = open(files[i], "r", encoding="UTF-8")
 	itr = 0
-	print("Precalculating offsets...")
 	for line in file:
 		Args = line.strip().split("\t")
 		if (Args[0][0] == ";"):
@@ -60,7 +59,6 @@ for i in range(0, len(files)):
 				else:
 					itr += 1
 	file.seek(0)
-	print("Compiling...")
 	for line in file:
 		Args = line.strip().split("\t")
 		if (Args[0][0] == ";"):
