@@ -209,6 +209,8 @@ for i in range(len(files)):
 							new_file.write("\t'SE_PLAY'")
 						case 0x60165:
 							new_file.write("\t'TEX_FADE'")
+						case 0x601C0:
+							new_file.write("\t'SYSTEM_VOICE_PLAY'")
 						case 0x8803E:
 							new_file.write("\t'BG_PUSH'")
 						case 0x90143:
