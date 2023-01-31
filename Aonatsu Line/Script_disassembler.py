@@ -200,18 +200,10 @@ for i in range(len(files)):
 			new_file.write("{0x%04X}" % (int(BLOB[x]["LABEL"]/8) - 1))
 			new_file.write("\t%s" % BLOB[x]["CMD"])
 			match(BLOB[x]["CMD"]):
+				case "PUSH_MESSAGE" | "PUSH_CUSTOM_TEXT":
+					pass
 				case "JNGE" | "JNLE":
 					new_file.write("\t0x%04x" % int(swap32(BLOB[x]["DATA"]), base=16))
-				case "CMP" | "INF1" | "INF2" | "CMPR" | "INIT" | "DEINIT" | "CMPR2" | "CMPR3" | "CMPR4":
-					new_file.write("\t0x%x" % int(swap32(BLOB[x]["DATA"]), base=16))
-					if "U32" in BLOB[x].keys():
-						new_file.write("\t[")
-						iters = len(BLOB[x]["U32"])
-						for y in range(iters):
-							new_file.write("0x%s" % swap32(BLOB[x]["U32"][y]))
-							if (y+1 < iters):
-								new_file.write(",")
-						new_file.write("]")
 				case "LOAD_STRING":
 					new_file.write("\t'%s'" % BLOB[x]["STRING"])
 				case "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
@@ -254,5 +246,15 @@ for i in range(len(files)):
 							new_file.write("\t'TEX_PUSH'")
 						case _:
 							new_file.write("\t0x%X" % FUNC_ID)
+				case _:
+					new_file.write("\t0x%x" % int(swap32(BLOB[x]["DATA"]), base=16))
+					if "U32" in BLOB[x].keys():
+						new_file.write("\t[")
+						iters = len(BLOB[x]["U32"])
+						for y in range(iters):
+							new_file.write("0x%s" % swap32(BLOB[x]["U32"][y]))
+							if (y+1 < iters):
+								new_file.write(",")
+						new_file.write("]")
 			new_file.write("\n")
 	new_file.close()
