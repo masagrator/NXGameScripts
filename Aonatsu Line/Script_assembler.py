@@ -107,6 +107,8 @@ for i in range(0, len(files)):
 							DUMP.append(0x60165.to_bytes(4, "little"))
 						case "'TEX_PUSH'":
 							DUMP.append(0x90143.to_bytes(4, "little"))
+						case "'BGM_PLAY'":
+							DUMP.append(0x501b2.to_bytes(4, "little"))
 						case _:
 							DUMP.append(int(Args[1], base=16).to_bytes(4, "little"))
 				case "LOAD_CUSTOM_TEXT":
