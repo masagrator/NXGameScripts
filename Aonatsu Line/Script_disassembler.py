@@ -166,9 +166,9 @@ for i in range(len(files)):
 	for x in range(len(BLOB)):
 		if isinstance(BLOB[x]["CMD"], int) == True:
 			new_file.write("\tCMD.%X\t" % BLOB[x]["CMD"])
-			new_file.write("0x%s\t" % swap32(BLOB[x]["DATA"]))
+			new_file.write("0x%s" % swap32(BLOB[x]["DATA"]))
 			if "U32" in BLOB[x].keys():
-				new_file.write("[")
+				new_file.write("\t[")
 				iters = len(BLOB[x]["U32"])
 				for y in range(iters):
 					new_file.write("0x%s" % swap32(BLOB[x]["U32"][y]))
