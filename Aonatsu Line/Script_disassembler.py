@@ -24,6 +24,7 @@ def ProcessDump(BLOB: list):
 		match(BLOB["COMMANDS"][i]["CMD"]):
 			case 5:
 				if (BLOB["COMMANDS"][i]["DATA"] != "01000000"):
+					BLOB["COMMANDS"][i]["CMD"] = "PUSH"
 					continue
 				if "U32" not in BLOB["COMMANDS"][i].keys():
 					string_id = -1
@@ -80,10 +81,16 @@ def ProcessDump(BLOB: list):
 				BLOB["COMMANDS"][i]["STRING"] = BLOB["STRINGS"][string_id]
 				if string_id not in pops:
 					pops.append(string_id)
+			case 0x18:
+				BLOB["COMMANDS"][i]["CMD"] = "CMPR"
+			case 0x1D:
+				BLOB["COMMANDS"][i]["CMD"] = "INF1"
+			case 0x2C:
+				BLOB["COMMANDS"][i]["CMD"] = "INF2"
 			case 0x41:
-				BLOB["COMMANDS"][i]["CMD"] = "JNGE" # Used this name only for syntax highlighting, how this command works exactly is unknown to me
+				BLOB["COMMANDS"][i]["CMD"] = "JNGE"
 			case 0x42:
-				BLOB["COMMANDS"][i]["CMD"] = "JNLE" # Used this name only for syntax highlighting, how this command works exactly is unknown to me
+				BLOB["COMMANDS"][i]["CMD"] = "JNLE"
 			case _:
 				continue
 	pops.sort(key=Sort)
@@ -185,11 +192,31 @@ for i in range(len(files)):
 			match(BLOB[x]["CMD"]):
 				case "JNGE" | "JNLE":
 					new_file.write("\t0x%04x" % int(swap32(BLOB[x]["DATA"]), base=16))
+				case "CMP" | "INF1" | "INF2" | "CMPR":
+					new_file.write("\t0x%x" % int(swap32(BLOB[x]["DATA"]), base=16))
+					if "U32" in BLOB[x].keys():
+						new_file.write("\t[")
+						iters = len(BLOB[x]["U32"])
+						for y in range(iters):
+							new_file.write("0x%s" % swap32(BLOB[x]["U32"][y]))
+							if (y+1 < iters):
+								new_file.write(",")
+						new_file.write("]")
 				case "LOAD_STRING":
 					new_file.write("\t'%s'" % BLOB[x]["STRING"])
 				case "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
 					new_file.write("\t0x%s" % swap32(BLOB[x]["DATA"]))
 					new_file.write("\t'%s'" % BLOB[x]["STRING"])
+				case "PUSH":
+					new_file.write("\t0x%x" % int(swap32(BLOB[x]["DATA"]), base=16))
+					if "U32" in BLOB[x].keys():
+						new_file.write("\t[")
+						iters = len(BLOB[x]["U32"])
+						for y in range(iters):
+							new_file.write("0x%s" % swap32(BLOB[x]["U32"][y]))
+							if (y+1 < iters):
+								new_file.write(",")
+						new_file.write("]")
 				case "FUNC":
 					FUNC_ID = int.from_bytes(bytes.fromhex(BLOB[x]["DATA"]), "little", signed=True)
 					match(FUNC_ID):

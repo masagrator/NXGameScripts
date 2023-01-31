@@ -38,34 +38,7 @@ for i in range(0, len(files)):
 				print(Args[0])
 				sys.exit()
 			match(Args[1]):
-				case "JUMP.41":
-					BASE["0x%04x" % value] = itr
-					itr += 1
-				case "JUMP.42":
-					BASE["0x%04x" % value] = itr
-					itr += 1
-				case "LOAD_STRING":
-					BASE["0x%04x" % (value - 1)] = itr - 1
-					BASE["0x%04x" % value] = itr
-					itr += 2
-				case "PUSH_MESSAGE":
-					BASE["0x%04x" % value] = itr
-					itr += 1
-				case "FUNC":
-					BASE["0x%04x" % value] = itr
-					itr += 1
-				case "LOAD_CUSTOM_TEXT":
-					BASE["0x%04x" % (value - 1)] = itr - 1
-					BASE["0x%04x" % value] = itr
-					itr += 2
-				case "PUSH_CUSTOM_TEXT":
-					BASE["0x%04x" % value] = itr
-					itr += 1
-				case "SET_EFFECT":
-					BASE["0x%04x" % (value - 1)] = itr - 1
-					BASE["0x%04x" % value] = itr
-					itr += 2
-				case "SPECIAL_TEXT":
+				case "LOAD_STRING" | "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
 					BASE["0x%04x" % (value - 1)] = itr - 1
 					BASE["0x%04x" % value] = itr
 					itr += 2
@@ -100,6 +73,28 @@ for i in range(0, len(files)):
 				case "JNLE":
 					DUMP.append(0x42.to_bytes(4, "little"))
 					DUMP.append(BASE[Args[2]].to_bytes(4, "little"))
+				case "INF1":
+					if (len(Args) == 4):
+						values = splitToList(Args[3])
+						for x in range(len(values)):
+							DUMP.append(0x0.to_bytes(4, "little"))
+							DUMP.append(int(values[x], base=16).to_bytes(4, "little"))
+					DUMP.append(0x1D.to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
+				case "INF2":
+					DUMP.append(0x2C.to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
+				case "PUSH":
+					if (len(Args) == 4):
+						values = splitToList(Args[3])
+						for x in range(len(values)):
+							DUMP.append(0x0.to_bytes(4, "little"))
+							DUMP.append(int(values[x], base=16).to_bytes(4, "little"))
+					DUMP.append(0x5.to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
+				case "CMPR":
+					DUMP.append(0x18.to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 				case "LOAD_STRING":
 					DUMP.append(0x0.to_bytes(4, "little"))
 					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
