@@ -81,6 +81,8 @@ def ProcessDump(BLOB: list):
 				BLOB["COMMANDS"][i]["STRING"] = BLOB["STRINGS"][string_id]
 				if string_id not in pops:
 					pops.append(string_id)
+			case 0x10:
+				BLOB["COMMANDS"][i]["CMD"] = "CMPR2"
 			case 0x18:
 				BLOB["COMMANDS"][i]["CMD"] = "CMPR"
 			case 0x1B:
@@ -196,7 +198,7 @@ for i in range(len(files)):
 			match(BLOB[x]["CMD"]):
 				case "JNGE" | "JNLE":
 					new_file.write("\t0x%04x" % int(swap32(BLOB[x]["DATA"]), base=16))
-				case "CMP" | "INF1" | "INF2" | "CMPR" | "INIT" | "DEINIT":
+				case "CMP" | "INF1" | "INF2" | "CMPR" | "INIT" | "DEINIT" | "CMPR2":
 					new_file.write("\t0x%x" % int(swap32(BLOB[x]["DATA"]), base=16))
 					if "U32" in BLOB[x].keys():
 						new_file.write("\t[")

@@ -73,6 +73,9 @@ for i in range(0, len(files)):
 				case "DEINIT":
 					DUMP.append(0x1C.to_bytes(4, "little"))
 					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
+				case "CMPR2":
+					DUMP.append(0x10.to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 				case "JNGE":
 					DUMP.append(0x41.to_bytes(4, "little"))
 					DUMP.append(BASE[Args[2]].to_bytes(4, "little"))
