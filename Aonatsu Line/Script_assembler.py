@@ -73,14 +73,20 @@ for i in range(0, len(files)):
 				case "DEINIT":
 					DUMP.append(0x1C.to_bytes(4, "little"))
 					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
-				case "CMPR2":
+				case "CMPR0":
 					DUMP.append(0x10.to_bytes(4, "little"))
 					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
-				case "CMPR3":
+				case "CMPR5":
 					DUMP.append(0x15.to_bytes(4, "little"))
 					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
-				case "CMPR4":
+				case "CMPR7":
 					DUMP.append(0x17.to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
+				case "CMPR8":
+					DUMP.append(0x18.to_bytes(4, "little"))
+					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
+				case "CMPRA":
+					DUMP.append(0x1A.to_bytes(4, "little"))
 					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 				case "JNGE":
 					DUMP.append(0x41.to_bytes(4, "little"))
@@ -166,7 +172,7 @@ for i in range(0, len(files)):
 					DUMP.append(value.to_bytes(4, "little"))
 				case _:
 					print("Undetected command!")
-					print(Args[0])
+					print(Args[1])
 					sys.exit()
 
 	new_file = open(f"Compiled/{Path(files[i]).stem}.binu8", "wb")

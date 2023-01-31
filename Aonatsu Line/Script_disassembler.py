@@ -82,13 +82,15 @@ def ProcessDump(BLOB: list):
 				if string_id not in pops:
 					pops.append(string_id)
 			case 0x10:
-				BLOB["COMMANDS"][i]["CMD"] = "CMPR2"
+				BLOB["COMMANDS"][i]["CMD"] = "CMPR0"
 			case 0x15:
-				BLOB["COMMANDS"][i]["CMD"] = "CMPR3"
+				BLOB["COMMANDS"][i]["CMD"] = "CMPR5"
 			case 0x17:
-				BLOB["COMMANDS"][i]["CMD"] = "CMPR4"
+				BLOB["COMMANDS"][i]["CMD"] = "CMPR7"
 			case 0x18:
-				BLOB["COMMANDS"][i]["CMD"] = "CMPR"
+				BLOB["COMMANDS"][i]["CMD"] = "CMPR8"
+			case 0x1A:
+				BLOB["COMMANDS"][i]["CMD"] = "CMPRA"
 			case 0x1B:
 				BLOB["COMMANDS"][i]["CMD"] = "INIT"
 			case 0x1C:
