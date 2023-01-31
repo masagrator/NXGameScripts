@@ -160,7 +160,8 @@ for i in range(len(files)):
 		BLOB["STRINGS"].append(string)
 	BLOB["COMMANDS"]= COMMANDS
 	new_file = open(f"Unpacked/{Path(files[i]).stem}.json", "w", encoding="UTF-8")
-	json.dump(BLOB, new_file, indent="\t", ensure_ascii=False)
+	json.dump(BLOB["STRINGS"], new_file, indent="\t", ensure_ascii=False)
+	new_file.close()
 	BLOB = ProcessDump(BLOB)
 
 	new_file = open(f"Unpacked/{Path(files[i]).stem}.asm", "w", encoding="UTF-8")
