@@ -52,6 +52,16 @@ for i in range(0, len(files)):
 					else:
 						BASE["0x%04x" % value] = itr
 						itr += 1
+		else:
+			match(Args[1]):
+				case "LOAD_STRING" | "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
+					itr += 2
+				case _:
+					if (len(Args) == 4):
+						values = splitToList(Args[3])
+						itr = itr + 1 + len(values)
+					else:
+						itr += 1
 	file.seek(0)
 	for line in file:
 		Args = line.strip().split("\t")
