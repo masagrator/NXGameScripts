@@ -65,7 +65,7 @@ for i in range(0, len(files)):
 	file.seek(0)
 	for line in file:
 		Args = line.strip().split("\t")
-		if (Args[0][0] == ";"):
+		if (len(Args) == 0 or Args[0][0] == ";"):
 			continue
 		elif (Args[1][0:3] == "CMD"):
 			if (len(Args) == 4):
