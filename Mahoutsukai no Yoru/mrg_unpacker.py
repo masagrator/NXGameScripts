@@ -62,6 +62,7 @@ for i in range(len(FILENAMES)):
 		except:
 			print("Size didn't match!")
 			print("Expected: %dB, got: %dB" % (int.from_bytes(BLOB[4:8], "little"), len(DATA)))
+			sys.exit()
 		new_file = open(f"{sys.argv[1]}/Decompressed/{Path(FILENAMES[i]).stem}.{filetype}", "wb")
 		new_file.write(DATA)
 		new_file.close()
