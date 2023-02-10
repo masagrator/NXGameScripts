@@ -1,4 +1,5 @@
-# It requires 
+# It requires *.mrg, *.nam and *.hed
+# As argument provide filename without any type
 
 import zlib
 import sys
