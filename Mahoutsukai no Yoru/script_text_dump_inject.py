@@ -1,4 +1,5 @@
 # This script injects text into English scenario file. Everything else is just copied
+# Expect Chinese languages to be broken after injecting custom text 
 
 import json
 
