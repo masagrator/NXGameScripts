@@ -209,7 +209,7 @@ for i in range(0, len(files)):
 				case "LOAD_STRING":
 					DUMP.append(0x0.to_bytes(4, "little"))
 					try:
-						Args[2].encode("ascii")
+						Args[2].encode("ISO-8859-1")
 					except:
 						pass
 					else:
