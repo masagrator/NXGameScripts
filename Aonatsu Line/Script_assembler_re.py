@@ -69,7 +69,7 @@ def getStringLength(string: str, postprocess = False) -> int:
 				print(f"String: {string}")
 				print("Aborting...")
 				sys.exit()
-	parsed_string = parsed_string.replace("\\&", "&amp;")
+	parsed_string = parsed_string.replace("&", "&amp;")
 	if (len(parsed_string) == 0):
 		return 0
 	try:
