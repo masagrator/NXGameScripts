@@ -55,7 +55,7 @@ def getStringLength(string: str, postprocess = False) -> int:
 				while(i < len(string)):
 					i += 1
 					c = string[i:i+1]
-					if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890_".find(c) == -1):
+					if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_".find(c) == -1):
 						break
 			case "k": # wait for button press
 				i += 1
