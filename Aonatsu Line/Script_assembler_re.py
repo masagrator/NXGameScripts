@@ -3,8 +3,86 @@ import sys
 from pathlib import Path
 import os
 import regex
+import pyvips
 
 STRINGS = []
+
+def getStringLength(string: str, postprocess = False) -> int:
+	if (postprocess == False):
+		i = 1
+		sep = 1
+	else:
+		i = 0
+		sep = 0
+	parsed_string = ""
+	while(i < len(string) - sep):
+		if i+sep == len(string):
+			c = string[i:]
+		else:
+			c = string[i:i+1]
+		if (c != "@"):
+			parsed_string += c
+			i += 1
+			continue
+		i += 1
+		c = string[i:i+1]
+		match(c):
+			case "n": # Break line
+				parsed_string += "&#10;"
+				i += 1
+			case "v": # Voice file, always 8 characters
+				i += 1
+				i += 8
+			case "r": # Text over text
+				while(True):
+					i += 1
+					c = string[i:i+1]
+					if (c == "@"):
+						break
+					parsed_string += c
+				while(True):
+					i += 1
+					c = string[i:i+1]
+					if (c == "@"):
+						i += 1
+						break
+			case "b": #Bold(?) If it is, it seems Bold doesn't change width of text
+				i += 1
+			case "t": # Timed pause
+				i += 1
+				i += 4
+			case "h": #Sprite change
+				while(i < len(string)):
+					i += 1
+					c = string[i:i+1]
+					if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890_".find(c) == -1):
+						break
+			case "k": # wait for button press
+				i += 1
+			case "s": #Unknown
+				i += 1
+				i += 4
+			case "e": #Unknown
+				i += 1
+			case _:
+				print(f"Unknown case! Tag: {c}")
+				print(f"String: {string}")
+				print("Aborting...")
+				sys.exit()
+	parsed_string = parsed_string.replace("\\&", "&amp;")
+	if (len(parsed_string) == 0):
+		return 0
+	try:
+		img = pyvips.Image.text(parsed_string, dpi=159,fontfile=sys.argv[2])
+	except:
+		print("Something went wrong with text processing!")
+		print("Original string:")
+		print(string)
+		print("Parsed string len: %d" % len(parsed_string))
+		print(parsed_string)
+		print("Aborting...")
+		sys.exit()
+	return img.width
 
 def splitToList(string: str):
 	return string[1:-1].split(",")
@@ -64,8 +142,9 @@ for i in range(0, len(files)):
 					else:
 						itr += 1
 	file.seek(0)
-	for line in file:
-		Args = line.strip().split("\t")
+	line = file.readlines()
+	for iter in range(len(line)):
+		Args = line[iter].strip().split("\t")
 		if (len(Args) == 0 or Args[0][0] == ";"):
 			continue
 		elif (Args[1][0:3] == "CMD"):
@@ -137,6 +216,31 @@ for i in range(0, len(files)):
 						string = Args[2]
 						if (string[1:3] == "@v"):
 							Args[2] = regex.sub(r"@v[0-9]{8}(?![0-9])\K ", "@r@@", string)
+						Args_temp = line[iter+1].strip().split("\t")
+						if (Args_temp[0][0] != ";"):
+							if (Args_temp[1] == "FUNC" and Args_temp[2] == "'PUSH_MESSAGE'") or (Args_temp[1] == "PUSH_MESSAGE"):						
+								width = getStringLength(Args[2], False)
+								max_width = 958
+								if (width > max_width):
+									new_string = []
+									entry = []
+									old_string = Args[2][1:-1].split(" ")
+									for x in range(len(old_string)):
+										entry.append(old_string[x])
+										width = getStringLength(" ".join(entry), True)
+										if (width > max_width):
+											entry.pop()
+											new_string.append(" ".join(entry))
+											entry = []
+											entry.append(old_string[x])
+									new_string.append(" ".join(entry))
+									if (len(new_string) > 4):
+										print("Detected more than 4 lines for string:")
+										print(Args[2])
+										print("Aborting...")
+										sys.exit()
+									Args[2] = "@n".join(new_string)
+									Args[2] = f"'{Args[2]}'"
 					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
 					DUMP.append(0x5.to_bytes(4, "little"))
 					DUMP.append(0x1.to_bytes(4, "little"))
