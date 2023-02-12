@@ -74,12 +74,13 @@ def getStringLength(string: str, postprocess = False) -> int:
 		return 0
 	try:
 		img = pyvips.Image.text(parsed_string, dpi=159,fontfile=sys.argv[2])
-	except:
+	except Exception as exc:
 		print("Something went wrong with text processing!")
 		print("Original string:")
 		print(string)
 		print("Parsed string len: %d" % len(parsed_string))
 		print(parsed_string)
+		print(exc)
 		print("Aborting...")
 		sys.exit()
 	return img.width
@@ -94,6 +95,10 @@ def AddToStrings(string: str):
 	else:
 		index = STRINGS.index(string[1:-1])
 	return index
+
+if (len(sys.argv) < 3):
+	print("Arguments are not valid!")
+	print("Script_assembler_re.py [*.asm folder] [font filepath]")
 
 files = glob.glob(f"{sys.argv[1]}/*.asm")
 os.makedirs("Compiled", exist_ok=True)
@@ -214,8 +219,9 @@ for i in range(0, len(files)):
 						pass
 					else:
 						string = Args[2]
-						if (string[1:3] == "@v"):
-							Args[2] = regex.sub(r"@v[0-9]{8}(?![0-9])\K ", "@r@@", string)
+						if (string[:3] == "'@v"):
+							Args[2] = regex.sub(r"^'@v[0-9]{8}(?![0-9])\K ", "\"", string)
+							Args[2] = Args[2][:-1] + "\"" + "'"
 						Args_temp = line[iter+1].strip().split("\t")
 						if (Args_temp[0][0] != ";"):
 							if (Args_temp[1] == "FUNC" and Args_temp[2] == "'PUSH_MESSAGE'") or (Args_temp[1] == "PUSH_MESSAGE"):						
@@ -250,6 +256,10 @@ for i in range(0, len(files)):
 				case "FUNC":
 					DUMP.append(0x7.to_bytes(4, "little"))
 					match(Args[2]):
+						case "'GOTO_NEXT_SCENE'":
+							DUMP.append(0x8035.to_bytes(4, "little"))
+						case "'REGISTER_SCENE'":
+							DUMP.append(0x18036.to_bytes(4, "little"))
 						case "'WAIT'":
 							DUMP.append(0x20005.to_bytes(4, "little"))
 						case "'PUSH_MESSAGE'":

@@ -224,6 +224,10 @@ for i in range(len(files)):
 				case "FUNC":
 					FUNC_ID = int.from_bytes(bytes.fromhex(BLOB[x]["DATA"]), "little", signed=True)
 					match(FUNC_ID):
+						case 0x8035:
+							new_file.write("\t'GOTO_NEXT_SCENE'")
+						case 0x18036:
+							new_file.write("\t'REGISTER_SCENE'")
 						case 0x20005:
 							new_file.write("\t'WAIT'")
 						case 0x2009A:

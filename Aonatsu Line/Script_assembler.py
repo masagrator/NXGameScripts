@@ -137,6 +137,10 @@ for i in range(0, len(files)):
 				case "FUNC":
 					DUMP.append(0x7.to_bytes(4, "little"))
 					match(Args[2]):
+						case "'GOTO_NEXT_SCENE'":
+							DUMP.append(0x8035.to_bytes(4, "little"))
+						case "'REGISTER_SCENE'":
+							DUMP.append(0x18036.to_bytes(4, "little"))
 						case "'WAIT'":
 							DUMP.append(0x20005.to_bytes(4, "little"))
 						case "'PUSH_MESSAGE'":
