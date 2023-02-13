@@ -19,13 +19,6 @@ def checkVersion(file):
 		print("WRONG VERSION!")
 		sys.exit()
 
-def getSize(file):
-	temp_pos = file.tell()
-	file.seek(0, 2)
-	size = file.tell()
-	file.seek(temp_pos)
-	return size
-
 class Commands(Enum):
 	LineBreak = 0x0
 	NameStart = 0x1
@@ -117,12 +110,13 @@ def processString(file, string_size: int):
 			if (0xF8FF >= int.from_bytes(charset[index].encode("UTF-16-LE"), "little") >= 0xE000):
 				entry.append("<compound=\\u%02X>" % int.from_bytes(charset[index].encode("UTF-16-LE"), "little"))
 				print("Detected unknown compound: 0x%02X at offset: 0x%x" % (int.from_bytes(charset[index].encode("UTF-16-LE"), "little"), file.tell() - 2))
-			try:
-				entry.append(charset[index])
-			except Exception:
-				print("Decoding failed!")
-				print("offset: 0x%x" % (file.tell() - 2))
-				sys.exit()
+			else:
+				try:
+					entry.append(charset[index])
+				except Exception:
+					print("Decoding failed!")
+					print("offset: 0x%x" % (file.tell() - 2))
+					sys.exit()
 
 	return "".join(entry)
 
@@ -130,20 +124,18 @@ def processString(file, string_size: int):
 
 files = glob.glob("%s/*.msb" % sys.argv[1])
 
+charset_size = os.stat("charset.utf8").st_size
 charset_file = open("charset.utf8", "r", encoding="UTF-8")
-charset_file.seek(0, 2)
-charset_size = charset_file.tell()
-charset_file.seek(0)
 for i in range(charset_size):
 	charset.append(charset_file.read(1))
 charset_file.close()
 
 for file in files:
 	print(Path(file).stem)
+	file_size = os.stat(file).st_size
 	og_file = open(file, "rb")
 	checkMagic(og_file)
 	checkVersion(og_file)
-	file_size = getSize(og_file)
 	stringCount = int.from_bytes(og_file.read(4), "little")
 	if (stringCount == 0):
 		print("Strings not detected, ignoring...")
