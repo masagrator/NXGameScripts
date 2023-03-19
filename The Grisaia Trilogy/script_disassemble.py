@@ -1163,7 +1163,6 @@ def TASK(SUBCMD, MAIN_ENTRY, file, argsize):
 		case _:
 			entry['Args'] = file.read(argsize).hex()
 	MAIN_ENTRY.append(entry)
-	print(entry)
 
 def PRINTF(SUBCMD, MAIN_ENTRY, file, argsize):
 	entry = {}
