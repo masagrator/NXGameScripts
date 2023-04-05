@@ -1032,7 +1032,12 @@ class Disassemble:
     def DATABASE(F, size):
         entry = {}
         entry["TYPE"] = "DATABASE"
-        entry["UNK0"] = F.read(size).hex()
+        entry["UNK0"] = F.read(6).hex()
+        text_size = int.from_bytes(F.read(2), "big")
+        if (text_size > 0):
+            entry["STRING"] = InvertString(F.read(text_size)).decode("shift_jis_2004")
+        if (text_size + 8 != size):
+            raise Exception("DATABASE DECODING WENT WRONG!")
         return entry
 
     def SPEAKER(F, characterdatabase = None):
@@ -3254,6 +3259,9 @@ class Assemble:
         entry.append(numpy.uint8(0))
         entry.append(numpy.uint16(2013))
         entry.append(bytes.fromhex(Dict["UNK0"]))
+        string = Dict["STRING"].encode("shift_jis_2004")
+        entry.append(len(string).to_bytes(2, "big"))
+        entry.append(InvertString(string))
         entry[1] = numpy.uint8(len(b"".join(entry)))
         while (len(b"".join(entry)) % 4 != 0):
             entry.append(b"\x00")
