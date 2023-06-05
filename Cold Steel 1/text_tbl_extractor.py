@@ -357,7 +357,9 @@ for i in range(0, len(files)):
 
             case "voice":
                 entry["TYPE"] = type
-                entry["UNK"] = file.read(entry_size).hex().upper()
+                entry["ID"] = int.from_bytes(file.read(2), "little")
+                entry["NAME"] = readString(file)
+                entry["UNK"] = file.read(entry_size-3-len(entry["NAME"])).hex().upper()
             
             case "QSTitle":
                 entry["TYPE"] = type
