@@ -1,4 +1,5 @@
 import glob
+from re import split
 import sys
 from pathlib import Path
 import os
@@ -108,6 +109,7 @@ for i in range(0, len(files)):
 	DUMP = []
 	STRINGS = []
 	STRINGS.append("")
+	Extra = []
 	print(Path(files[i]).stem)
 	file = open(files[i], "r", encoding="UTF-8")
 	itr = 0
@@ -122,15 +124,16 @@ for i in range(0, len(files)):
 				print(Args[0])
 				sys.exit()
 			match(Args[1]):
-				case "LOAD_STRING" | "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
-					BASE["0x%04x" % (value - 1)] = itr - 1
+				case "LOAD_STRING" | "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT" | "CASE4":
+					BASE["0x%04x" % (value + 1)] = itr + 1
 					BASE["0x%04x" % value] = itr
 					itr += 2
+
 				case _:
 					if (len(Args) == 4):
 						values = splitToList(Args[3])
 						for z in range(1, len(values)+1):
-							BASE["0x%04x" % (value - z)] = itr - z
+							BASE["0x%04x" % (value + z)] = itr + z
 						BASE["0x%04x" % value] = itr
 						itr = itr + 1 + len(values)
 					else:
@@ -140,6 +143,8 @@ for i in range(0, len(files)):
 			match(Args[1]):
 				case "LOAD_STRING" | "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "SPECIAL_TEXT":
 					itr += 2
+				case "EXTRA":
+					continue
 				case _:
 					if (len(Args) == 4):
 						values = splitToList(Args[3])
@@ -163,6 +168,11 @@ for i in range(0, len(files)):
 		else: 
 			match(Args[1]):
 				case "INIT":
+					if (len(Args) == 4):
+						values = splitToList(Args[3])
+						for x in range(len(values)):
+							DUMP.append(0x0.to_bytes(4, "little"))
+							DUMP.append(int(values[x], base=16).to_bytes(4, "little"))
 					DUMP.append(0x1B.to_bytes(4, "little"))
 					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
 				case "DEINIT":
@@ -211,6 +221,11 @@ for i in range(0, len(files)):
 				case "CMPR":
 					DUMP.append(0x18.to_bytes(4, "little"))
 					DUMP.append(int(Args[2], base=16).to_bytes(4, "little"))
+				case "CASE4":
+					DUMP.append(0x0.to_bytes(4, "little"))
+					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
+					DUMP.append(0x4.to_bytes(4, "little"))
+					DUMP.append(0x0.to_bytes(4, "little"))
 				case "LOAD_STRING":
 					DUMP.append(0x0.to_bytes(4, "little"))
 					try:
@@ -303,13 +318,18 @@ for i in range(0, len(files)):
 					DUMP.append(0xE.to_bytes(4, "little"))
 					value = int(Args[2], base=16) + 0x80000000
 					DUMP.append(value.to_bytes(4, "little"))
+				case "EXTRA":
+					Extra = splitToList(Args[2])
 				case _:
 					print("Undetected command!")
 					print(Args[1])
+					print(Args[0])
 					sys.exit()
 
 	new_file = open(f"Compiled/{Path(files[i]).stem}.binu8", "wb")
-	new_file.write(b"\x00" * 4)
+	new_file.write(int(len(Extra)/2).to_bytes(4, "little"))
+	for x in range(len(Extra)):
+		new_file.write(int(Extra[x], base=16).to_bytes(4, "little"))
 	new_file.write(int(len(DUMP)/2).to_bytes(4, "little"))
 	new_file.write(b"".join(DUMP))
 	new_file.write(len(STRINGS).to_bytes(4, "little"))

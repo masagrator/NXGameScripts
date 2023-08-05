@@ -13,11 +13,8 @@ for i in range(len(files)):
 	compiled_script.close()
 
 	original_script = open(f"Script/{Path(files[i]).stem}.binu8", "rb")
-	script_type = int.from_bytes(original_script.read(4), "little")
-	if (script_type != 0):
-		original_script.close()
-		print("This is not a valid scenario file. Ignoring...")
-		continue
+	extra_entries = int.from_bytes(original_script.read(4), "little")
+	original_script.seek(extra_entries * 8, 1)
 	commands_count = int.from_bytes(original_script.read(4), "little")
 	original_script.seek(commands_count * 8, 1)
 	strings_count = int.from_bytes(original_script.read(4), "little")
