@@ -235,8 +235,9 @@ for i in range(0, len(files)):
 					else:
 						string = Args[2]
 						if (string[:3] == "'@v"):
-							Args[2] = regex.sub(r"^'@v[0-9]{8}(?![0-9])\K ", "\"", string)
-							Args[2] = Args[2][:-1] + "\"" + "'"
+							if (regex.search(r"^'@v[0-9]{8}(?![0-9]) ", string)):
+								Args[2] = regex.sub(r"^'@v[0-9]{8}(?![0-9])\K ", "\"", string)
+								Args[2] = Args[2][:-1] + "\"" + "'"
 						Args_temp = line[iter+1].strip().split("\t")
 						if (Args_temp[0][0] != ";"):
 							if (Args_temp[1] == "FUNC" and Args_temp[2] == "'PUSH_MESSAGE'") or (Args_temp[1] == "PUSH_MESSAGE"):						
