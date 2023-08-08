@@ -3,7 +3,6 @@ from re import split
 import sys
 from pathlib import Path
 import os
-import regex
 import pyvips
 
 STRINGS = []
@@ -58,13 +57,21 @@ def getStringLength(string: str, postprocess = False) -> int:
 					c = string[i:i+1]
 					if ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_".find(c) == -1):
 						break
-			case "k": # wait for button press
+			case "k": # activate preloaded effect
 				i += 1
 			case "s": #Unknown
 				i += 1
 				i += 4
 			case "e": #Unknown
 				i += 1
+			case "m": #Unknown
+				i += 1
+				i += 2
+			case "d": #Unknown
+				i += 1
+			case "o":
+				i += 1
+				i += 3
 			case _:
 				print(f"Unknown case! Tag: {c}")
 				print(f"String: {string}")
@@ -228,41 +235,32 @@ for i in range(0, len(files)):
 					DUMP.append(0x0.to_bytes(4, "little"))
 				case "LOAD_STRING":
 					DUMP.append(0x0.to_bytes(4, "little"))
-					try:
-						Args[2].encode("ISO-8859-15")
-					except:
-						pass
-					else:
-						string = Args[2]
-						if (string[:3] == "'@v"):
-							if (regex.search(r"^'@v[0-9]{8}(?![0-9]) ", string)):
-								Args[2] = regex.sub(r"^'@v[0-9]{8}(?![0-9])\K ", "\"", string)
-								Args[2] = Args[2][:-1] + "\"" + "'"
-						Args_temp = line[iter+1].strip().split("\t")
-						if (Args_temp[0][0] != ";"):
-							if (Args_temp[1] == "FUNC" and Args_temp[2] == "'PUSH_MESSAGE'") or (Args_temp[1] == "PUSH_MESSAGE"):						
-								width = getStringLength(Args[2], False)
-								max_width = 958
-								if (width > max_width):
-									new_string = []
-									entry = []
-									old_string = Args[2][1:-1].split(" ")
-									for x in range(len(old_string)):
+					string = Args[2]
+					Args_temp = line[iter+1].strip().split("\t")
+					if (Args_temp[0][0] != ";"):
+						if (Args_temp[1] == "FUNC" and Args_temp[2] == "'PUSH_MESSAGE'") or (Args_temp[1] == "PUSH_MESSAGE"):						
+							width = getStringLength(Args[2], False)
+							max_width = 958
+							if (width > max_width):
+								new_string = []
+								entry = []
+								old_string = Args[2][1:-1].split(" ")
+								for x in range(len(old_string)):
+									entry.append(old_string[x])
+									width = getStringLength(" ".join(entry), True)
+									if (width > max_width):
+										entry.pop()
+										new_string.append(" ".join(entry))
+										entry = []
 										entry.append(old_string[x])
-										width = getStringLength(" ".join(entry), True)
-										if (width > max_width):
-											entry.pop()
-											new_string.append(" ".join(entry))
-											entry = []
-											entry.append(old_string[x])
-									new_string.append(" ".join(entry))
-									if (len(new_string) > 4):
-										print("Detected more than 4 lines for string:")
-										print(Args[2])
-										print("Aborting...")
-										sys.exit()
-									Args[2] = "@n".join(new_string)
-									Args[2] = f"'{Args[2]}'"
+								new_string.append(" ".join(entry))
+								if (len(new_string) > 4):
+									print("Detected more than 4 lines for string:")
+									print(Args[2])
+									print("Aborting...")
+									sys.exit()
+								Args[2] = "@n".join(new_string)
+								Args[2] = f"'{Args[2]}'"
 					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
 					DUMP.append(0x5.to_bytes(4, "little"))
 					DUMP.append(0x1.to_bytes(4, "little"))
