@@ -1,5 +1,4 @@
 import glob
-from re import split
 import sys
 from pathlib import Path
 import os
