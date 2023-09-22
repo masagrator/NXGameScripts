@@ -203,9 +203,6 @@ int main(int argc, char *argv[]) {
 	size_t stream_size = final_size - offset;
 	fseek(output, 0x24, 0);
 	fwrite(&stream_size, sizeof(uint32_t), 1, output);
-	fseek(output, 0, 0);
-	void* temp_whole_buffer = malloc(final_size);
-	fread(temp_whole_buffer, final_size, 1, output);
 	fclose(output);
 
 	printf("Finished. Bitrate: %0.f kbps\n", bitsPerSecond/1000);
