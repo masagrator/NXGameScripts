@@ -33,12 +33,12 @@ def ProcessCMD(cmd: int, file, size):
 		case 1:
 			entry["CMD"] = "IFGOTO"
 			entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
-		case 2:
-			entry["CMD"] = "JMP"
-			entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
-		case 3:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
+		# case 2:
+		# 	entry["CMD"] = "JMP"
+		# 	entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
+		# case 3:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
 		case 4:
 			entry["CMD"] = "JMP4"
 			entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
@@ -62,8 +62,9 @@ def ProcessCMD(cmd: int, file, size):
 			entry["DATA"] = file.read(0x4).hex()
 			entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 		case 9:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x8).hex()
+			entry["CMD"] = "IFGOTO9"
+			entry["DATA"] = file.read(0x4).hex()
+			entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 		case 0xA:
 			entry["CMD"] = "IFGOTOA"
 			entry["DATA"] = file.read(0x4).hex()
@@ -95,10 +96,10 @@ def ProcessCMD(cmd: int, file, size):
 				entry2["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				new_list.append(entry2)
 			entry["LIST"] = new_list
-		case 0xF:
-			entry["CMD"] = "%X" % cmd
-			print("0xF is a nullsub!")
-			print("Offset: 0x%X" % file.tell())
+		# case 0xF:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0xF is a nullsub!")
+		# 	print("Offset: 0x%X" % file.tell())
 		case 0x10:
 			entry["CMD"] = "CMP"
 			entry["DATA"] = file.read(0x4).hex()
@@ -120,15 +121,15 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x16:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
-		case 0x17:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
+		# case 0x17:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
 		case 0x18:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
-		case 0x19:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x8).hex()
+		# case 0x19:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x8).hex()
 		case 0x1A:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
@@ -157,28 +158,28 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x23:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x8).hex()
-		case 0x24:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x6).hex()
+		# case 0x24:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x6).hex()
 		case 0x25:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
-		case 0x26:
-			entry["CMD"] = "%X" % cmd
-		case 0x27:
-			entry["CMD"] = "%X" % cmd
-		case 0x28:
-			entry["CMD"] = "%X" % cmd
-			print("DETECTED 0x28")
-			entry["DATA"] = file.read(0x3).hex()
-		case 0x29:
-			entry["CMD"] = "%X" % cmd
-			print("DETECTED 0x29")
-			entry["DATA"] = file.read(0x4).hex()
-		case 0x2A:
-			entry["CMD"] = "%X" % cmd
-		case 0x2B:
-			entry["CMD"] = "%X" % cmd
+		# case 0x26:
+		# 	entry["CMD"] = "%X" % cmd
+		# case 0x27:
+		# 	entry["CMD"] = "%X" % cmd
+		# case 0x28:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("DETECTED 0x28")
+		# 	entry["DATA"] = file.read(0x3).hex()
+		# case 0x29:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("DETECTED 0x29")
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# case 0x2A:
+		# 	entry["CMD"] = "%X" % cmd
+		# case 0x2B:
+		# 	entry["CMD"] = "%X" % cmd
 		case 0x2C:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
@@ -193,20 +194,20 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x30:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0xA).hex()
-		case 0x31:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex() # Always "8080"
-			count = int.from_bytes(file.read(0x2), byteorder="little")
-			entry["UNK0"] = int.from_bytes(file.read(0x2), byteorder="little")
-			new_list = []
-			for x in range(0, count):
-				entry2 = {}
-				entry2["ID"] = int.from_bytes(file.read(0x1), byteorder="little")
-				entry2["DATA"] = file.read(0x5).hex()
-				entry2["JUMP_TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
-				entry2["STRING"] = readString(file)
-				new_list.append(entry2)
-			entry["LIST"] = new_list
+		# case 0x31:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex() # Always "8080"
+		# 	count = int.from_bytes(file.read(0x2), byteorder="little")
+		# 	entry["UNK0"] = int.from_bytes(file.read(0x2), byteorder="little")
+		# 	new_list = []
+		# 	for x in range(0, count):
+		# 		entry2 = {}
+		# 		entry2["ID"] = int.from_bytes(file.read(0x1), byteorder="little")
+		# 		entry2["DATA"] = file.read(0x5).hex()
+		# 		entry2["JUMP_TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
+		# 		entry2["STRING"] = readString(file)
+		# 		new_list.append(entry2)
+		# 	entry["LIST"] = new_list
 		case 0x32:
 			entry["CMD"] = "SELECT"
 			entry["DATA"] = file.read(0x2).hex() # Always "8080"
@@ -221,8 +222,8 @@ def ProcessCMD(cmd: int, file, size):
 				entry2["STRING"] = readString(file)
 				new_list.append(entry2)
 			entry["LIST"] = new_list
-		case 0x33:
-			entry["CMD"] = "%X" % cmd
+		# case 0x33:
+		# 	entry["CMD"] = "%X" % cmd
 		case 0x34:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0xA).hex()
@@ -232,9 +233,9 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x36:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x3).hex()
-		case 0x37:
-			entry["CMD"] = "%X" % cmd
-			print("0x37 is a nullsub!")
+		# case 0x37:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x37 is a nullsub!")
 		case 0x38:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x3).hex()
@@ -250,20 +251,20 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x3C:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
-		case 0x3D:
-			entry["CMD"] = "%X" % cmd
-		case 0x3E:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-		case 0x3F:
-			entry["CMD"] = "%X" % cmd
-			print("0x3F is a nullsub!")
-		case 0x40:
-			entry["CMD"] = "%X" % cmd
-			print("0x40 is a nullsub!")
-		case 0x41:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x1).hex()
+		# case 0x3D:
+		# 	entry["CMD"] = "%X" % cmd
+		# case 0x3E:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# case 0x3F:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x3F is a nullsub!")
+		# case 0x40:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x40 is a nullsub!")
+		# case 0x41:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x1).hex()
 		case 0x42:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x8).hex()
@@ -292,11 +293,10 @@ def ProcessCMD(cmd: int, file, size):
 				print("0x%X" % file.tell())
 				sys.exit()
 		case 0x46:
-			entry["CMD"] = "%X" % cmd
+			entry["CMD"] = "TEXT3"
 			type = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
 			entry["DATA"] = file.read(0x2).hex()
 			if (type == -1):
-				entry["TYPE"] = "MESSAGE"
 				ID = int.from_bytes(file.read(0x2), byteorder="little")
 				entry["STRING"] = readString(file)
 			else:
@@ -332,30 +332,30 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x4C:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x6).hex()
-		case 0x4D:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0xA).hex()
+		# case 0x4D:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0xA).hex()
 		case 0x4E:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
 		case 0x4F:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
-		case 0x50:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-		case 0x51:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x6).hex()
-		case 0x52:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0xA).hex()
-		case 0x53:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
-		case 0x54:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x8).hex()
+		# case 0x50:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# case 0x51:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x6).hex()
+		# case 0x52:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0xA).hex()
+		# case 0x53:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
+		# case 0x54:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x8).hex()
 		case 0x55:
 			entry["CMD"] = "%X" % cmd
 			string_offset = int.from_bytes(file.read(4), "little")
@@ -371,28 +371,27 @@ def ProcessCMD(cmd: int, file, size):
 					sys.exit()
 			file.seek(string_offset)
 			entry["STRING"] = readString(file)
-		case 0x56:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
-		case 0x57:
-			entry["CMD"] = "%X" % cmd
-		case 0x58:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
+		# case 0x56:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
+		# case 0x57:
+		# 	entry["CMD"] = "%X" % cmd
+		# case 0x58:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
 		case 0x59:
 			entry["CMD"] = "%X" % cmd
-			print("0x59 is a nullsub!")
 		case 0x5A:
 			entry["CMD"] = "%X" % cmd
-		case 0x5B:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0xA).hex()
-		case 0x5C:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x6).hex()
-		case 0x5D:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
+		# case 0x5B:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0xA).hex()
+		# case 0x5C:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x6).hex()
+		# case 0x5D:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
 		case 0x5E:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
@@ -411,77 +410,77 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x60:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x6).hex()
-		case 0x61:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x6).hex()
+		# case 0x61:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x6).hex()
 		case 0x62:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
 		case 0x63:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0xA).hex()
-		case 0x64:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x6).hex()
-		case 0x65:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-		case 0x66:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
-		case 0x67:
-			entry["CMD"] = "%X" % cmd
-			print("0x67 is a nullsub!")
+		# case 0x64:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x6).hex()
+		# case 0x65:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# case 0x66:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
+		# case 0x67:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x67 is a nullsub!")
 		case 0x68:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0xA).hex()
 		case 0x69:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
-		case 0x6A:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex() # Always "FFFFFFFF"
+		# case 0x6A:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex() # Always "FFFFFFFF"
 		case 0x6B:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
 		case 0x6C:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x10).hex()
-		case 0x6D:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
-		case 0x6E:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-		case 0x6F:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x6).hex()
-		case 0x70:
-			entry["CMD"] = "%X" % cmd
+		# case 0x6D:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
+		# case 0x6E:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# case 0x6F:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x6).hex()
+		# case 0x70:
+		# 	entry["CMD"] = "%X" % cmd
 		case 0x71:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x6).hex()
 		case 0x72:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
-		case 0x73:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0xA).hex()
+		# case 0x73:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0xA).hex()
 		case 0x74:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x6).hex()
 		case 0x75:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
-		case 0x76:
-			entry["CMD"] = "%X" % cmd
-			print("0x76 is a nullsub!")
-		case 0x77:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
-		case 0x78:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
+		# case 0x76:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x76 is a nullsub!")
+		# case 0x77:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
+		# case 0x78:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
 		case 0x79:
 			entry["CMD"] = "%X" % cmd
 			string_offset = int.from_bytes(file.read(4), "little")
@@ -503,12 +502,12 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x7B:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex() # Always "00002c01"
-		case 0x7C:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-		case 0x7D:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
+		# case 0x7C:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# case 0x7D:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
 		case 0x7E:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
@@ -544,43 +543,43 @@ def ProcessCMD(cmd: int, file, size):
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
 			entry["STRING"] = readString(file)
-		case 0x87:
-			entry["CMD"] = "%X" % cmd
-			print("0x87 is a nullsub!")
-		case 0x88:
-			entry["CMD"] = "%X" % cmd
-			print("0x88 is a nullsub!")
-		case 0x89:
-			entry["CMD"] = "%X" % cmd
-			print("0x89 is a nullsub!")
-		case 0x8A:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex()
-		case 0x8B:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
+		# case 0x87:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x87 is a nullsub!")
+		# case 0x88:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x88 is a nullsub!")
+		# case 0x89:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x89 is a nullsub!")
+		# case 0x8A:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x2).hex()
+		# case 0x8B:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
 		case 0x8C:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
-		case 0x8D:
-			entry["CMD"] = "%X" % cmd
-		case 0x8E:
-			entry["CMD"] = "%X" % cmd
-			print("0x8E is a nullsub!")
-		case 0x8F:
-			entry["CMD"] = "%X" % cmd
-			print("0x8F is a nullsub!")
-		case 0x90:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-		case 0x91:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-			entry["STRING"] = readString(file)
-		case 0x92:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
-			entry["STRING"] = readString(file)
+		# case 0x8D:
+		# 	entry["CMD"] = "%X" % cmd
+		# case 0x8E:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x8E is a nullsub!")
+		# case 0x8F:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	print("0x8F is a nullsub!")
+		# case 0x90:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# case 0x91:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# 	entry["STRING"] = readString(file)
+		# case 0x92:
+		# 	entry["CMD"] = "%X" % cmd
+		# 	entry["DATA"] = file.read(0x4).hex()
+		# 	entry["STRING"] = readString(file)
 		case 0x93:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
@@ -665,9 +664,19 @@ for i in range(len(files)):
 				ERROR_COUNT.append(Path(files[i]).stem)
 				break
 
-
-	file_new = open("jsons/%s.json" % Path(files[i]).stem, "w", encoding="UTF-8")
+	if (34 >= i >= 3):
+		file_new = open("jsons/KQA%02d.json" % (i - 2), "w", encoding="UTF-8")
+	elif (70 >= i >= 35):
+		file_new = open("jsons/KQB%02d.json" % (i - 34), "w", encoding="UTF-8")
+	elif (97 >= i >= 71):
+		file_new = open("jsons/KQC%02d.json" % (i - 70), "w", encoding="UTF-8")
+	elif (143 >= i >= 98):
+		file_new = open("jsons/KQD%02d.json" % (i - 97), "w", encoding="UTF-8")
+	else:
+		file_new = open("jsons/%s.json" % Path(files[i]).stem, "w", encoding="UTF-8")
 	json.dump(OUTPUT, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
 
-print(ERROR_COUNT)
+if (len(ERROR_COUNT) > 0):
+	print("Files that failed disassembling:")
+	print(ERROR_COUNT)
