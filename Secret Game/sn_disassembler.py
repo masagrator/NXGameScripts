@@ -295,9 +295,9 @@ def ProcessCMD(cmd: int, file, size):
 		case 0x46:
 			entry["CMD"] = "TEXT3"
 			type = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
-			entry["DATA"] = file.read(0x2).hex()
 			if (type == -1):
 				ID = int.from_bytes(file.read(0x2), byteorder="little")
+				entry["DATA"] = file.read(0x2).hex()
 				entry["STRING"] = readString(file)
 			else:
 				print("UNKNOWN 0x46 TYPE! %X" % type)
