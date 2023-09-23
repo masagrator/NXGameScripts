@@ -274,19 +274,7 @@ def ProcessCMD(cmd: int, file, size):
 			entry["CMD"] = "VOICE"
 			type = int.from_bytes(file.read(0x2), byteorder="little")
 			if (type == 10):
-				entry["TYPE"] = "WITH_TEXT"
 				entry["VOICE_ID"] = int.from_bytes(file.read(0x2), byteorder="little")
-				entry["DATA"] = file.read(0x2).hex()
-				check = file.read(0x2)
-				if (check == b"\xFF\xFF"):
-					#DATA is "5945"
-					ID = int.from_bytes(file.read(0x2), byteorder="little")
-					entry["STRING"] = readString(file)
-				else:
-					file.seek(-2, 1)
-					entry["TYPE"] = "WITHOUT_TEXT"
-					entry["DATA"] += file.read(0x4).hex()
-					#DATA IS "592d06000000"
 			else:
 				print("UNKNOWN 0x44 type!")
 				print("0x%X" % file.tell())
@@ -504,7 +492,7 @@ def ProcessCMD(cmd: int, file, size):
 				case 1:
 					entry["NEXT"]["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				case _:
-					print("UNEXPECTED NEXTCMD IN 0x55!")
+					print("UNEXPECTED NEXTCMD IN 0x79!")
 					print(entry["NEXT"]["CMD"])
 					sys.exit()
 			file.seek(string_offset)
