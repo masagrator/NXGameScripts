@@ -44,7 +44,7 @@ def ProcessCMD(cmd: int, file, size):
 			entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
 		case 5:
 			entry["CMD"] = "RETURN"
-			if (file.read(0x1) == b"\x05"):
+			if (file.read(0x1) in [b"\x05", b"\x00"]):
 				file.seek(-1, 1)
 				entry["DATA"] = file.read().hex()
 			else:
@@ -496,7 +496,19 @@ def ProcessCMD(cmd: int, file, size):
 			entry["DATA"] = file.read(0x2).hex()
 		case 0x79:
 			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
+			string_offset = int.from_bytes(file.read(4), "little")
+			entry["NEXT"] = {}
+			next_cmd = int.from_bytes(file.read(1), "little")
+			entry["NEXT"]["CMD"] = "%X" % next_cmd
+			match(next_cmd):
+				case 1:
+					entry["NEXT"]["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
+				case _:
+					print("UNEXPECTED NEXTCMD IN 0x55!")
+					print(entry["NEXT"]["CMD"])
+					sys.exit()
+			file.seek(string_offset)
+			entry["STRING"] = readString(file)
 		case 0x7A:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
