@@ -411,7 +411,7 @@ def ProcessCommands(dict, precalcs = None):
 
 	return b"".join(entry)
 
-shutil.rmtree("sn_new")
+shutil.rmtree("sn_new", ignore_errors=True)
 os.makedirs("sn_new", exist_ok=True)
 
 for i in range(0, 144):
