@@ -36,6 +36,7 @@ class TOC:
 	TABLE1 = []
 	TABLE2 = []
 	TABLE3 = []
+	mount_point = "../../../"
 
 class _JSON:
 	DUMP = []
@@ -110,6 +111,15 @@ TOC.compressionMethod = readString(utoc_file)
 if (TOC.compressionMethod != "Oodle"):
 	print("This tool doesn't support other compression methods than Oodle!")
 	sys.exit()
+
+utoc_file.seek(pos + TOC.compressionMethodStringLen)
+
+string_len = int.from_bytes(utoc_file.read(4), "little")
+TOC.mount_point = readString(utoc_file)
+
+assert(string_len == (len(TOC.mount_point) + 1))
+
+print("Offset: 0x%x" % utoc_file.tell())
 
 utoc_file.close()
 
