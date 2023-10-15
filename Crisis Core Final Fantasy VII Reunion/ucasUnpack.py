@@ -25,7 +25,7 @@ class TOC:
 	compressionMethodStringId = 1
 	compressionMethodStringLen = 32
 	blockSize = 0x40000
-	directoryIndexSize = 0
+	fileTreeIndexSize = 0
 	validContainer = 0
 	containerID = 0
 	encryptionKeyGUID = 0
@@ -71,7 +71,7 @@ TOC.blockEntrySize = int.from_bytes(utoc_file.read(4), "little")
 TOC.compressionMethodStringId = int.from_bytes(utoc_file.read(4), "little")
 TOC.compressionMethodStringLen = int.from_bytes(utoc_file.read(4), "little")
 TOC.blockSize = int.from_bytes(utoc_file.read(4), "little")
-TOC.directoryIndexSize = int.from_bytes(utoc_file.read(4), "little")
+TOC.fileTreeIndexSize = int.from_bytes(utoc_file.read(4), "little")
 TOC.validContainer = int.from_bytes(utoc_file.read(4), "little")
 TOC.containerID = int.from_bytes(utoc_file.read(8), "little")
 TOC.encryptionKeyGUID = int.from_bytes(utoc_file.read(16), "little")
@@ -86,7 +86,7 @@ utoc_file.seek(TOC.headerSize)
 for i in range(TOC.fileCount):
 	entry = {}
 	entry["file_hash"] = int.from_bytes(utoc_file.read(8), "big")
-	entry["flags"] = int.from_bytes(utoc_file.read(4), "big")
+	flags = int.from_bytes(utoc_file.read(4), "big")
 	TOC.TABLE1.append(entry)
 
 for i in range(TOC.fileCount):
@@ -114,6 +114,8 @@ if (TOC.compressionMethod != "Oodle"):
 
 utoc_file.seek(pos + TOC.compressionMethodStringLen)
 
+fileTree_pos = utoc_file.tell()
+
 string_len = int.from_bytes(utoc_file.read(4), "little")
 TOC.mount_point = readString(utoc_file)
 
@@ -121,27 +123,25 @@ assert(string_len == (len(TOC.mount_point) + 1))
 
 print("Offset: 0x%x" % utoc_file.tell())
 
-utoc_file.close()
-
-json_file = open(f"{sys.argv[1]}.json", "r", encoding="UTF-8")
-_JSON.DUMP = json.load(json_file)["Files"]
-json_file.close()
-
-_JSON.DUMP.sort(key=Sort)
-
 all_dec_size = 0
 
-for i in range(len(_JSON.DUMP)):
+for i in range(TOC.fileCount):
 	entry = {}
-	entry["filepath"] = _JSON.DUMP[i]["Path"]
-	entry["com_size"] = _JSON.DUMP[i]["Compressed Size"]
-	entry["dec_size"] = _JSON.DUMP[i]["Size"]
-	all_dec_size += _JSON.DUMP[i]["Size"]
-	entry["block_count"] = _JSON.DUMP[i]["Compressed Block Count"]
-	if (_JSON.DUMP[i]["IsEncrypted"] == "True"):
-		entry["Encrypted"] = True
+	block_start_id = TOC.TABLE2[i]["block_start_id"]
+	if (i + 1 < TOC.fileCount):
+		block_end_id = TOC.TABLE2[i+1]["block_start_id"]
 	else:
-		entry["Encrypted"] = False
+		block_end_id = TOC.allBlockCount
+	entry["filepath"] = "%08X.dat" % TOC.TABLE3[block_start_id]["offset"]
+	entry["com_size"] = 0
+	for x in range(block_start_id, block_end_id):
+		entry["com_size"] += TOC.TABLE3[x]["com_size"]
+	entry["dec_size"] = 0
+	for x in range(block_start_id, block_end_id):
+		entry["dec_size"] += TOC.TABLE3[x]["unc_size"]
+	all_dec_size += entry["dec_size"]
+	entry["block_count"] = block_end_id - block_start_id
+	entry["Encrypted"] = False
 	_JSON.FILTEREDLIST.append(entry)
 
 if (TOC.encrypted == True):
@@ -161,15 +161,21 @@ if (TOC.encrypted == True):
 		sys.exit(1)
 
 print("Unpacked files will take space of: %d B, %.2f MB" % (all_dec_size, all_dec_size/1024/1024))
+print("Count of files: %d" % TOC.fileCount)
 print("To continue, press ENTER")
 input()
 
+utoc_file.close()
+	
 ucas_file = open(f"{sys.argv[1]}.ucas", "rb")
 
 FilteredListLen = len(_JSON.FILTEREDLIST)
 
+os.makedirs("Unpacked", exist_ok=True)
+
 for i in range(len(_JSON.FILTEREDLIST)):
-	os.makedirs(os.path.dirname(_JSON.FILTEREDLIST[i]["filepath"]), exist_ok=True)
+	if (os.path.dirname(_JSON.FILTEREDLIST[i]["filepath"]) != ""):
+		os.makedirs("Unpacked/%s" % os.path.dirname(_JSON.FILTEREDLIST[i]["filepath"]), exist_ok=True)
 	file_pos = ucas_file.tell()
 	print("File: %6d/%d  %s, size: %.2f MB" % (i+1, FilteredListLen, _JSON.FILTEREDLIST[i]["filepath"], _JSON.FILTEREDLIST[i]["dec_size"]/1024/1024))
 	chunks = []
@@ -204,7 +210,7 @@ for i in range(len(_JSON.FILTEREDLIST)):
 			print("File offset: 0x%X" % file_pos)
 			sys.exit(1)
 		chunks.append(catch.stdout)
-	conc_file = open(_JSON.FILTEREDLIST[i]["filepath"], "wb")
+	conc_file = open("Unpacked/%s" % _JSON.FILTEREDLIST[i]["filepath"], "wb")
 	conc_file.write(b"".join(chunks))
 	end_size = conc_file.tell()
 	conc_file.close()
