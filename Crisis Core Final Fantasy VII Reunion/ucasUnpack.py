@@ -9,6 +9,7 @@ import subprocess
 import json
 import sys
 import os
+import zlib
 from Crypto.Cipher import AES # pip install pycryptodome
 
 class _AES:
@@ -108,8 +109,8 @@ pos = utoc_file.tell()
 
 TOC.compressionMethod = readString(utoc_file)
 
-if (TOC.compressionMethod != "Oodle"):
-	print("This tool doesn't support other compression methods than Oodle!")
+if (TOC.compressionMethod not in ["Oodle", "Zlib"]):
+	print("This tool doesn't support other compression methods than Oodle and Zlib!")
 	sys.exit()
 
 utoc_file.seek(pos + TOC.compressionMethodStringLen)
@@ -200,16 +201,25 @@ for i in range(len(_JSON.FILTEREDLIST)):
 				chunks.append(ucas_file.read(_JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize)))
 			continue
 		if (x+1 < _JSON.FILTEREDLIST[i]["block_count"]):
-			catch = subprocess.run(["Oodle.exe", "-d", "%d" % TOC.blockSize, "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
+			if (TOC.compressionMethod == "Zlib"):
+				catch = zlib.decompress(buffer, bufsize = TOC.blockSize)
+			else:
+				catch = subprocess.run(["Oodle.exe", "-d", "%d" % TOC.blockSize, "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
 		else:  
-			catch = subprocess.run(["Oodle.exe", "-d", "%d" % (_JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize)), "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
-		if (catch.stderr != b""):
-			print(catch.stderr.decode("ascii"))
-			print("Chunk: %d/%d" % (x+1, _JSON.FILTEREDLIST[i]["block_count"]))
-			print("Error while decompressing chunk at offset: 0x%X!" % chunk_pos)
-			print("File offset: 0x%X" % file_pos)
-			sys.exit(1)
-		chunks.append(catch.stdout)
+			if (TOC.compressionMethod == "Zlib"):
+				catch = zlib.decompress(buffer, bufsize = _JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize))
+			else:
+				catch = subprocess.run(["Oodle.exe", "-d", "%d" % (_JSON.FILTEREDLIST[i]["dec_size"] - (x * TOC.blockSize)), "stdin=%d" % len(buffer), "stdout"], input=buffer, capture_output=True, text=False)
+		if (TOC.compressionMethod == "Oodle"):
+			if (catch.stderr != b""):
+				print(catch.stderr.decode("ascii"))
+				print("Chunk: %d/%d" % (x+1, _JSON.FILTEREDLIST[i]["block_count"]))
+				print("Error while decompressing chunk at offset: 0x%X!" % chunk_pos)
+				print("File offset: 0x%X" % file_pos)
+				sys.exit(1)
+			chunks.append(catch.stdout)
+		else:
+			chunks.append(catch)
 	conc_file = open("Unpacked/%s" % _JSON.FILTEREDLIST[i]["filepath"], "wb")
 	conc_file.write(b"".join(chunks))
 	end_size = conc_file.tell()
