@@ -1,5 +1,5 @@
 # Author: MasaGratoR
-# This tool converts PC save of Don't Starve Together to format compatible with Nintendo Switch saves
+# This tool converts PC world from save of Don't Starve Together to format compatible with Nintendo Switch saves
 
 # Provide correct folder with files from PC version of game as argument
 # Folder name should have 16 random characters like "04305C68F3229C15". It must have 4 files: 0000000002, 0000000002.meta, 0000000003, 0000000003.meta
