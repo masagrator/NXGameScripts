@@ -20,7 +20,8 @@ for i in range(file_count):
     else:
         path_name = file.read(path_length)[:-1].decode("iso-8859-1")
     filelist.append(path_name)
-    path_name = path_name[3:]
+    while (path_name[:3] in ["../", "..\\"]):
+        path_name = path_name[3:]
     section_count = int.from_bytes(file.read(4), "little")
     SECTIONS = {}
     for x in range(section_count):
@@ -51,5 +52,5 @@ for i in range(file_count):
     with open("%s/%s.json" % (Path(sys.argv[1]).stem, path_name), "w", encoding="UTF-8") as new_file:
         json.dump(SECTIONS, new_file, indent="\t", ensure_ascii=False)
 
-    with open("%s/fileorder.json" % Path(sys.argv[1]).stem, "w", encoding="UTF-8") as new_file:
-        json.dump(filelist, new_file, indent="\t", ensure_ascii=False)
+with open("%s/fileorder.json" % Path(sys.argv[1]).stem, "w", encoding="UTF-8") as new_file:
+    json.dump(filelist, new_file, indent="\t", ensure_ascii=False)

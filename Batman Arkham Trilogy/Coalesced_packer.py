@@ -21,7 +21,10 @@ for i in range(len(files)):
 	DUMP.append(string_len.to_bytes(4, "little", signed=True))
 	DUMP.append(string)
 	DUMP.append(b"\x00" * abs(null_terminator))
-	file = open("%s/%s.json" % (sys.argv[1], files[i][3:]), "r", encoding="UTF-8")
+	filepath = files[i]
+	while (filepath[:3] in ["../", "..\\"]):
+		filepath = filepath[3:]
+	file = open("%s/%s.json" % (sys.argv[1], filepath), "r", encoding="UTF-8")
 	config = json.load(file)
 	file.close()
 	DUMP.append(len(config.keys()).to_bytes(4, "little"))
