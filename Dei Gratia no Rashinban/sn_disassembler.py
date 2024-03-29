@@ -7,6 +7,117 @@ from pathlib import Path
 
 #0x110008 - function array
 
+Filenames = [
+	"0000",
+	"chapter1",
+	"chapter11",
+	"chapter12",
+	"chapter13",
+	"chapter14",
+	"chapter15",
+	"chapter16",
+	"chapter17",
+	"chapter18",
+	"chapter19",
+	"chapter2",
+	"chapter20",
+	"chapter21",
+	"chapter22",
+	"chapter23",
+	"chapter24",
+	"chapter25",
+	"chapter26",
+	"chapter27",
+	"chapter28",
+	"chapter29",
+	"chapter3",
+	"chapter30",
+	"chapter31_1",
+	"chapter31_2",
+	"chapter32_1",
+	"chapter32_2",
+	"chapter33",
+	"chapter34",
+	"chapter35_1",
+	"chapter35_2",
+	"chapter36",
+	"chapter37_1",
+	"chapter37_2",
+	"chapter38",
+	"chapter39_1",
+	"chapter39_2",
+	"chapter4_1",
+	"chapter4_2",
+	"chapter40_1",
+	"chapter40_2",
+	"chapter40_3",
+	"chapter40_4",
+	"chapter41",
+	"chapter5_1",
+	"chapter5_2",
+	"chapter6",
+	"chapter7_1",
+	"chapter7_2",
+	"chapter8",
+	"chapter9",
+	"chapterC1",
+	"chapterC2",
+	"chapterC3_alpha",
+	"chapterC3_R",
+	"chapterC4_alpa",
+	"chapterC4_R",
+	"chapterL1",
+	"chapterL10",
+	"chapterL11",
+	"chapterL12",
+	"chapterL13_1",
+	"chapterL13_2",
+	"chapterL14",
+	"chapterL15",
+	"chapterL16_1",
+	"chapterL17_1",
+	"chapterL17_2",
+	"chapterL18",
+	"chapterL19",
+	"chapterL2",
+	"chapterL20",
+	"chapterL21_1",
+	"chapterL21_2",
+	"chapterL22_1",
+	"chapterL22_2",
+	"chapterL23_1",
+	"chapterL23_2",
+	"chapterL3",
+	"chapterL4",
+	"chapterL5",
+	"chapterL6",
+	"chapterL7",
+	"chapterL8",
+	"chapterL9",
+	"chapterP_hikari",
+	"chapterP_hiragino",
+	"chapterP_reiri",
+	"chapterP_tokiwa",
+	"chapterP_touri",
+	"chapterP_yukari",
+	"chapterR1",
+	"chapterR10",
+	"chapterR11",
+	"chapterR12_1",
+	"chapterR12_2",
+	"chapterR13_1",
+	"chapterR13_2",
+	"chapterR2",
+	"chapterR3_1",
+	"chapterR3_2",
+	"chapterR4",
+	"chapterR5",
+	"chapterR6",
+	"chapterR7",
+	"chapterR8",
+	"chapterR9"
+]
+
 def readString(myfile):
 	chars = []
 	while True:
@@ -18,7 +129,6 @@ def readString(myfile):
 def ProcessCMD(cmd: int, file, size):
 	entry = {}
 	entry["LABEL"] = "0x%X" % (file.tell() - 1)
-	print("CMD: 0x%x, offset: %s" % (cmd, entry["LABEL"]))
 	match(cmd):
 		case 0:
 			entry["CMD"] = "%X" % cmd
@@ -621,6 +731,8 @@ files = glob.glob("sn/*.bin")
 
 os.makedirs("jsons", exist_ok=True)
 
+print(len(Filenames))
+
 ERROR_COUNT = []
 
 EOF_file = open(files[len(files) - 1], "rb")
@@ -673,7 +785,7 @@ for i in range(0, len(files) - 1):
 			break
 	OUTPUT["FOOTER"] = EOF_bases[i].hex()
 
-	file_new = open("jsons/%s.json" % Path(files[i]).stem, "w", encoding="UTF-8")
+	file_new = open("jsons/%s.json" % Filenames[i], "w", encoding="UTF-8")
 	json.dump(OUTPUT, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
 
