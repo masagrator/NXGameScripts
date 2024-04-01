@@ -500,7 +500,7 @@ os.makedirs("sn_new", exist_ok=True)
 for i in range(len(Filenames)):
 	OUTPUT = []
 	PrecalculateOffsets = {}
-	file = open("Patched/%s.json" % (Filenames[i]), "r", encoding="UTF-8")
+	file = open(f"{sys.argv[1]}/%s.json" % (Filenames[i]), "r", encoding="UTF-8")
 	print(file.name)
 	dump = json.load(file)
 	file.close()
@@ -536,7 +536,7 @@ for i in range(len(Filenames)):
 print("0108")
 OUTPUT = []
 
-file = open("Patched/0108.json", "r", encoding="UTF-8")
+file = open(f"{sys.argv[1]}/0108.json", "r", encoding="UTF-8")
 dump = json.load(file)
 file.close()
 
@@ -556,7 +556,7 @@ OUTPUT.append(dump[-2]["VALUE2"].to_bytes(4, "little", signed=True))
 OUTPUT.append(dump[-2]["VALUE3"].to_bytes(4, "little", signed=True))
 OUTPUT.append(dump[-2]["ID"].to_bytes(4, "little", signed=True))
 
-OUTPUT.append(dump[-1]["VALUE1"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-1]["STRING_COUNT"].to_bytes(4, "little", signed=True))
 OUTPUT.append(dump[-1]["VALUE2"].to_bytes(4, "little", signed=True))
 OUTPUT.append(dump[-1]["VALUE3"].to_bytes(4, "little", signed=True))
 OUTPUT.append(dump[-1]["ID"].to_bytes(4, "little", signed=True))

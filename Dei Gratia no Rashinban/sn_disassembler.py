@@ -695,7 +695,6 @@ CompressedData = file.read()
 file.close()
 
 DecompressedData = puyo_lz01.Decompress(CompressedData, DecompressedSize)
-os.makedirs("Decompressed", exist_ok=True)
 new_file = open("sn_dec.bin", "wb")
 new_file.write(DecompressedData)
 new_file.close()
@@ -741,7 +740,7 @@ EOF_file.close()
 x = 0
 while (x < EOF_filesize):
 	entry = {}
-	entry["VALUE1"] = int.from_bytes(temp[x:x+4], "little", signed=True)
+	entry["STRING_COUNT"] = int.from_bytes(temp[x:x+4], "little", signed=True)
 	entry["VALUE2"] = int.from_bytes(temp[x+4:x+8], "little", signed=True)
 	entry["VALUE3"] = int.from_bytes(temp[x+8:x+12], "little", signed=True)
 	entry["ID"] = int.from_bytes(temp[x+12:x+16], "little", signed=True)
