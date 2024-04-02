@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import glob
+import puyo_lz01
 
 def readString(myfile):
 	chars = []
@@ -10,6 +11,16 @@ def readString(myfile):
 		if c == b'\x00':
 			return str(b"".join(chars).decode("shift_jis_2004"))
 		chars.append(c)
+
+file = open("sn.bin", "rb")
+DecompressedSize = int.from_bytes(file.read(4), "little")
+CompressedData = file.read()
+file.close()
+
+DecompressedData = puyo_lz01.Decompress(CompressedData, DecompressedSize)
+new_file = open("sn_dec.bin", "wb")
+new_file.write(DecompressedData)
+new_file.close()
 
 os.makedirs("sn", exist_ok=True)
 
