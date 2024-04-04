@@ -27,7 +27,7 @@ height = int.from_bytes(file.read(4), "big")
 pos_x = int.from_bytes(file.read(4), "big")
 pos_y = int.from_bytes(file.read(4), "big")
 
-if (format_type not in [1, 5, 9]):
+if (format_type not in [5, 9]):
     print("UNKNOWN format_type!")
     sys.exit()
 
@@ -35,10 +35,8 @@ data = file.read()
 file.close()
 
 match(format_type):
-    case 1:
-        # Secret Game executable doesn't support this case, info was extracted from Root Double
-        print("#TODO")
-        sys.exit()
+        # case 1
+        # Secret Game executable doesn't support case 1, info was extracted from Root Double
     case 5:
         # BGRA4
         if (isFont == True):
@@ -57,7 +55,7 @@ match(format_type):
                 B = (data[i+1] & 0b00001111) << 4
                 new_data3.append(b"\x00" * 3)
                 new_data3.append(B.to_bytes(1, "little"))
-                A = data[i] & 0b11110000
+                A = data[i+1] & 0b11110000
                 new_data4.append(b"\x00" * 3)
                 new_data4.append(A.to_bytes(1, "little"))
             img = Image.frombytes('RGBA', (width, height), b"".join(new_data1))
@@ -77,4 +75,4 @@ match(format_type):
         block_height = 4
         is_srgb : bool = False
         img = Image.frombytes('RGBA', (width, height), data, "astc", (block_width, block_height, is_srgb))
-img.save(sys.argv[2])
+        img.save(sys.argv[2])
