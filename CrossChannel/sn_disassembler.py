@@ -635,7 +635,7 @@ for i in range(len(files) - 1):
 				sys.exit()
 		OUTPUT["COMMANDS"].append(entry)
 
-	OUTPUT["FOOTER"] = file.read().hex()
+	OUTPUT["FOOTER"] = EOF_bases[i].hex()
 	file.close()
 	file_new = open("jsons/%s.json" % files[i][3:-4], "w", encoding="UTF-8")
 	json.dump(OUTPUT, file_new, indent="\t", ensure_ascii=False)
