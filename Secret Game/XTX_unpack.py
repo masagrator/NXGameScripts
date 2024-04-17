@@ -61,11 +61,11 @@ match(format_type):
             img = Image.frombytes('RGBA', (width, height), b"".join(new_data1))
             img.save("0.png")
             img = Image.frombytes('RGBA', (width, height), b"".join(new_data2))
-            img.save("1.png")
+            img.save("3.png")
             img = Image.frombytes('RGBA', (width, height), b"".join(new_data3))
             img.save("2.png")
             img = Image.frombytes('RGBA', (width, height), b"".join(new_data4))
-            img.save("3.png")
+            img.save("1.png")
         else:
             print("SUPPORTED ONLY FOR FILES WITH \"font\" IN FILENAME!")
             sys.exit()
