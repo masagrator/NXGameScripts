@@ -25,9 +25,9 @@ new_raw = []
 
 for i in range(len(channels[0])):
     R = channels[0][i] >> 4
-    G = channels[3][i]
+    G = channels[3][i] & 0b11110000
     B = channels[2][i] >> 4
-    A = channels[1][i]
+    A = channels[1][i] & 0b11110000
 
     RG = G | R
     BA = B | A
