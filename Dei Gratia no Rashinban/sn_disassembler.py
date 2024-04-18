@@ -66,7 +66,7 @@ Filenames = [
 	"chapterC2",
 	"chapterC3_alpha",
 	"chapterC3_R",
-	"chapterC4_alpa",
+	"chapterC4_alpha",
 	"chapterC4_R",
 	"chapterL1",
 	"chapterL10",
