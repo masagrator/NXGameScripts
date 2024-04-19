@@ -21,15 +21,6 @@ def ProcessCMD(cmd: int, file, size):
 	match(cmd):
 		case 0:
 			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = ""
-			while(file.tell() < size):
-				test = file.read(0x1)
-				if ((test != b"\x00") and (test != b"\xFF")):
-					print("DETECTED WRONG NOP AT 0x%X" % (file.tell() - 1))
-					print(test)
-					sys.exit()
-				else:
-					entry["DATA"] += test.hex()
 		case 1:
 			entry["CMD"] = "IFGOTO"
 			entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
@@ -44,11 +35,6 @@ def ProcessCMD(cmd: int, file, size):
 			entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
 		case 5:
 			entry["CMD"] = "RETURN"
-			if (file.read(0x1) in [b"\x05", b"\x00"]):
-				file.seek(-1, 1)
-				entry["DATA"] = file.read().hex()
-			else:
-				file.seek(-1, 1)
 		case 6:
 			entry["CMD"] = "IFGOTO6"
 			entry["DATA"] = file.read(0x4).hex()
@@ -297,7 +283,6 @@ def ProcessCMD(cmd: int, file, size):
 			type = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
 			if (type == -1):
 				ID = int.from_bytes(file.read(0x2), byteorder="little")
-				entry["DATA"] = file.read(0x2).hex()
 				entry["STRING"] = readString(file)
 			else:
 				print("UNKNOWN 0x46 TYPE! %X" % type)
@@ -357,7 +342,7 @@ def ProcessCMD(cmd: int, file, size):
 		# 	entry["CMD"] = "%X" % cmd
 		# 	entry["DATA"] = file.read(0x8).hex()
 		case 0x55:
-			entry["CMD"] = "%X" % cmd
+			entry["CMD"] = "TITLE"
 			string_offset = int.from_bytes(file.read(4), "little")
 			entry["NEXT"] = {}
 			next_cmd = int.from_bytes(file.read(1), "little")
@@ -629,40 +614,56 @@ os.makedirs("jsons", exist_ok=True)
 
 ERROR_COUNT = []
 
-for i in range(len(files)):
+EOF_file = open(files[len(files) - 1], "rb")
+temp = EOF_file.read()
+EOF_filesize = EOF_file.tell()
+EOF_file.seek(0)
+EOF_bases = []
+EOF_bases2 = []
+for i in range(len(files) - 1):
+	EOF_bases.append(EOF_file.read(16))
+EOF_file.close()
+x = 0
+while (x < EOF_filesize):
+	entry = {}
+	entry["STRING_COUNT"] = int.from_bytes(temp[x:x+4], "little", signed=True)
+	entry["VALUE2"] = int.from_bytes(temp[x+4:x+8], "little", signed=True)
+	entry["VALUE3"] = int.from_bytes(temp[x+8:x+12], "little", signed=True)
+	entry["ID"] = int.from_bytes(temp[x+12:x+16], "little", signed=True)
+	EOF_bases2.append(entry)
+	x += 16
+
+file_new = open("jsons/%s.json" % Path(files[len(files) - 1]).stem, "w", encoding="UTF-8")
+json.dump(EOF_bases2, file_new, indent="\t", ensure_ascii=False)
+file_new.close()
+
+for i in range(len(files) - 1):
 	print(files[i])
 	file = open(files[i], "rb")
 
-	file.seek(0, 2)
+	temp_buffer = file.read()
 	size = file.tell()
 	file.seek(0, 0)
+	end_pos = temp_buffer.rfind(EOF_bases[i])
 
-	if (Path(files[i]).stem == "0144"):
-		OUTPUT = []
-		while(file.tell() < size):
-			entry = []
-			entry.append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
-			entry.append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
-			entry.append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
-			entry.append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
-			OUTPUT.append(entry)
-	else:
-		OUTPUT = {}
-		OUTPUT["HEADER"] = []
-		OUTPUT["COMMANDS"] = []
-		header_size = int.from_bytes(file.read(0x4), byteorder="little")
-		while(file.tell() < header_size):
-			OUTPUT["HEADER"].append(int.from_bytes(file.read(0x2), byteorder="little", signed=True))
-		while (file.tell() < size):
-			cmd = int.from_bytes(file.read(0x1), byteorder="little")
-			try:
-				OUTPUT["COMMANDS"].append(ProcessCMD(cmd, file, size))
-			except:
-				entry = {}
-				entry["ERROR"] = "ERROR"
-				OUTPUT["COMMANDS"].append(entry)
-				ERROR_COUNT.append(Path(files[i]).stem)
-				break
+	OUTPUT = {}
+	OUTPUT["HEADER"] = []
+	OUTPUT["COMMANDS"] = []
+	header_size = int.from_bytes(file.read(0x4), byteorder="little")
+	while(file.tell() < header_size):
+		OUTPUT["HEADER"].append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
+	while (file.tell() < end_pos):
+		cmd = int.from_bytes(file.read(0x1), byteorder="little")
+		try:
+			OUTPUT["COMMANDS"].append(ProcessCMD(cmd, file, end_pos))
+		except:
+			entry = {}
+			entry["ERROR"] = "ERROR"
+			OUTPUT["COMMANDS"].append(entry)
+			ERROR_COUNT.append(Path(files[i]).stem)
+			break
+	
+	OUTPUT["FOOTER"] = EOF_bases[i].hex()
 
 	if (34 >= i >= 3):
 		file_new = open("jsons/KQA%02d.json" % (i - 2), "w", encoding="UTF-8")

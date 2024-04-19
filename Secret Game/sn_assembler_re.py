@@ -7,6 +7,7 @@ from random import randint
 class Utils:
 	text_counter = 0
 	name = None
+	STRINGS_COUNTS = []
 
 linesize = 68
 
@@ -23,7 +24,6 @@ def ProcessCommands(dict, precalcs = None):
 	match(dict["CMD"]):
 		case "0":
 			entry.append(b"\x00")
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "IFGOTO":
 			entry.append(b"\x01")
 			if (precalcs == None):
@@ -35,12 +35,6 @@ def ProcessCommands(dict, precalcs = None):
 			entry.append(dict["ID"].to_bytes(4, "little"))
 		case "RETURN":
 			entry.append(b"\x05")
-			try:
-				dict["DATA"]
-			except:
-				pass
-			else:
-				entry.append(bytes.fromhex(dict["DATA"]))
 		case "IFGOTO6":
 			entry.append(b"\x06")
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -454,12 +448,12 @@ for i in range(0, 144):
 		continue
 
 	file_new = open("sn_new/%04d.bin" % i, "wb")
-	file_new.write((len(dump["HEADER"]) * 2 + 4).to_bytes(4, "little"))
+	file_new.write((len(dump["HEADER"]) * 4 + 4).to_bytes(4, "little"))
 
 	for x in range(0, len(dump["HEADER"])):
-		file_new.write(dump["HEADER"][x].to_bytes(2, "little", signed=True))
+		file_new.write(dump["HEADER"][x].to_bytes(4, "little", signed=True))
 	
-	offset = len(dump["HEADER"]) * 2 + 4
+	offset = len(dump["HEADER"]) * 4 + 4
 
 	for x in range(0, len(dump["COMMANDS"])):
 		PrecalculateOffsets[dump["COMMANDS"][x]["LABEL"]] = offset
@@ -469,7 +463,13 @@ for i in range(0, 144):
 	for x in range(0, len(dump["COMMANDS"])):
 		OUTPUT.append(ProcessCommands(dump["COMMANDS"][x], PrecalculateOffsets))
 	
+	if (i > 2):
+		Utils.STRINGS_COUNTS.append(Utils.text_counter)
+	OUTPUT.append(Utils.text_counter.to_bytes(4, "little"))
+	OUTPUT.append(bytes.fromhex(dump["FOOTER"][8:]))
 	file_new.write(b"".join(OUTPUT))
+	if (file_new.tell() % 16 != 0):
+		file_new.write(b"\x00" * (16 - (file_new.tell() % 16)))
 	file_new.close()
 
 print("0144")
@@ -480,9 +480,30 @@ dump = json.load(file)
 file.close()
 
 file_new = open("sn_new/0144.bin", "wb")
-for i in range(0, len(dump)):
-	for x in range(0, len(dump[i])):
-		OUTPUT.append(dump[i][x].to_bytes(4, "little", signed=True))
+
+for x in dump[0].keys():
+	OUTPUT.append(dump[0][x].to_bytes(4, "little", signed=True))
+for x in dump[1].keys():
+	OUTPUT.append(dump[0][x].to_bytes(4, "little", signed=True))
+for x in dump[2].keys():
+	OUTPUT.append(dump[0][x].to_bytes(4, "little", signed=True))
+
+for i in range(3, len(dump) - 2):
+	OUTPUT.append(Utils.STRINGS_COUNTS[i-3].to_bytes(4, "little", signed=True))
+	OUTPUT.append(dump[i]["VALUE2"].to_bytes(4, "little", signed=True))
+	OUTPUT.append(dump[i]["VALUE3"].to_bytes(4, "little", signed=True))
+	OUTPUT.append(dump[i]["ID"].to_bytes(4, "little", signed=True))
+
+print("Text counter: %d" % sum(Utils.STRINGS_COUNTS))
+OUTPUT.append(sum(Utils.STRINGS_COUNTS).to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-2]["VALUE2"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-2]["VALUE3"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-2]["ID"].to_bytes(4, "little", signed=True))
+
+OUTPUT.append(dump[-1]["STRING_COUNT"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-1]["VALUE2"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-1]["VALUE3"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-1]["ID"].to_bytes(4, "little", signed=True))
 
 file_new.write(b"".join(OUTPUT))
 file_new.close()
