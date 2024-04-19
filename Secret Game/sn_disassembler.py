@@ -391,7 +391,6 @@ def ProcessCMD(cmd: int, file, size):
 					case _:
 						print("UNKNOWN 0x5F flag!")
 						sys.exit()
-			entry["DATA"] = file.read(0xF).hex()
 		case 0x60:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x6).hex()
@@ -510,13 +509,7 @@ def ProcessCMD(cmd: int, file, size):
 			entry["DATA"] = file.read(0x2).hex()
 		case 0x83:
 			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x2).hex() # Always "ff800300"
-			new_entries = int.from_bytes(file.read(2), "little")
-			entry["NEW_CMDS"] = []
-			for i in range(new_entries+1):
-				flag = int.from_bytes(file.read(1), "little")
-				entry["NEW_CMDS"].append(ProcessCMD(flag, file, size))
-			entry["STRING"] = readString(file)
+			entry["DATA"] = file.read(0x4).hex()
 		case 0x84:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
@@ -650,8 +643,10 @@ for i in range(len(files) - 1):
 	OUTPUT["HEADER"] = []
 	OUTPUT["COMMANDS"] = []
 	header_size = int.from_bytes(file.read(0x4), byteorder="little")
+	if (header_size % 2 != 0):
+		print("Header is not divisible by 2!")
 	while(file.tell() < header_size):
-		OUTPUT["HEADER"].append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
+		OUTPUT["HEADER"].append(int.from_bytes(file.read(0x2), byteorder="little", signed=True))
 	while (file.tell() < end_pos):
 		cmd = int.from_bytes(file.read(0x1), byteorder="little")
 		try:

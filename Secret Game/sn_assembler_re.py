@@ -233,7 +233,19 @@ def ProcessCommands(dict, precalcs = None):
 				Utils.text_counter += 1
 			else:
 				entry.append(dict["ID"].to_bytes(2, "little"))
-			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+			new_string = ""
+			if (len(dict["STRING"].encode("shift_jis_2004")) > linesize):
+				string = dict["STRING"].split()
+				begin = 0
+				for i in range(len(string) + 1):
+					temp_string = " ".join(string[begin:i])
+					if (len(temp_string.encode("shift_jis_2004")) > linesize):
+						new_string += " ".join(string[begin:i-1]) + "%N"
+						begin = i - 1
+				new_string += " ".join(string[begin:])
+			if (new_string != ""):
+				entry.append(new_string.encode("shift_jis_2004") + b"\x00")
+			else: entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 			Utils.name = None
 		case "TEXT3":
 			entry.append(b"\x46")
@@ -245,14 +257,38 @@ def ProcessCommands(dict, precalcs = None):
 				Utils.text_counter += 1
 			else:
 				entry.append(dict["ID"].to_bytes(2, "little"))
-			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+			new_string = ""
+			if (len(dict["STRING"].encode("shift_jis_2004")) > linesize):
+				string = dict["STRING"].split()
+				begin = 0
+				for i in range(len(string) + 1):
+					temp_string = " ".join(string[begin:i])
+					if (len(temp_string.encode("shift_jis_2004")) > linesize):
+						new_string += " ".join(string[begin:i-1]) + "%N"
+						begin = i - 1
+				new_string += " ".join(string[begin:])
+			if (new_string != ""):
+				entry.append(new_string.encode("shift_jis_2004") + b"\x00")
+			else: entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 		case "TEXT":
 			entry.append(b"\x47")
 			if (dict["TYPE"] == "MESSAGE"):
 				entry.append(b"\xFF\xFF")
 				entry.append(Utils.text_counter.to_bytes(2, "little"))
 				Utils.text_counter += 1
-				entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+				new_string = ""
+				if (len(dict["STRING"].encode("shift_jis_2004")) > linesize):
+					string = dict["STRING"].split()
+					begin = 0
+					for i in range(len(string) + 1):
+						temp_string = " ".join(string[begin:i])
+						if (len(temp_string.encode("shift_jis_2004")) > linesize):
+							new_string += " ".join(string[begin:i-1]) + "%N"
+							begin = i - 1
+					new_string += " ".join(string[begin:])
+				if (new_string != ""):
+					entry.append(new_string.encode("shift_jis_2004") + b"\x00")
+				else: entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 			elif (dict["TYPE"] == "NAME"):
 				entry.append(0xD.to_bytes(2, "little"))
 				entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
@@ -312,7 +348,6 @@ def ProcessCommands(dict, precalcs = None):
 							entry.append(0x0.to_bytes(4, "little"))
 						else:
 							entry.append(precalcs[dict["TO_LABEL"]].to_bytes(4, "little"))
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "60":
 			entry.append(b"\x60")
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -383,9 +418,6 @@ def ProcessCommands(dict, precalcs = None):
 		case "83":
 			entry.append(b"\x83")
 			entry.append(bytes.fromhex(dict["DATA"]))
-			entry.append(len(dict["NEW_CMDS"]).to_bytes(2, "little"))
-			for i in range(len(dict["NEW_CMDS"])):
-				ProcessCommands(dict["NEW_CMDS"][i], precalcs)
 		case "84":
 			entry.append(b"\x84")
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -438,7 +470,7 @@ for i in range(0, 144):
 		except:
 			file = open("jsons/KQD%02d.json" % (i - 97), "r", encoding="UTF-8")
 	else:
-		continue
+		file = open("jsons/%04d.json" % i, "r", encoding="UTF-8")
 	print(file.name)
 	dump = json.load(file)
 	file.close()
@@ -448,12 +480,12 @@ for i in range(0, 144):
 		continue
 
 	file_new = open("sn_new/%04d.bin" % i, "wb")
-	file_new.write((len(dump["HEADER"]) * 4 + 4).to_bytes(4, "little"))
+	file_new.write((len(dump["HEADER"]) * 2 + 4).to_bytes(4, "little"))
 
 	for x in range(0, len(dump["HEADER"])):
-		file_new.write(dump["HEADER"][x].to_bytes(4, "little", signed=True))
+		file_new.write(dump["HEADER"][x].to_bytes(2, "little", signed=True))
 	
-	offset = len(dump["HEADER"]) * 4 + 4
+	offset = len(dump["HEADER"]) * 2 + 4
 
 	for x in range(0, len(dump["COMMANDS"])):
 		PrecalculateOffsets[dump["COMMANDS"][x]["LABEL"]] = offset
