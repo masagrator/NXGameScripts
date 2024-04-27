@@ -2,7 +2,7 @@ import os
 import json
 import sys
 import shutil
-from random import randint
+import lzss
 
 Filenames = [
 	"0000",
@@ -565,7 +565,7 @@ file_new.write(b"".join(OUTPUT))
 file_new.close()
 
 header = []
-sn_newfile = open("sn_new_dec.bin", "wb")
+
 offset = 0x6D0
 
 for i in range(0, 109):
@@ -582,9 +582,20 @@ for i in range(0, 109):
 	file.close()
 	header.append(b"\x00" * 8)
 
-sn_newfile.write(b"".join(header))
+data = b"".join(header)
 
 for i in range(0, 109):
 	file = open("sn_new/%04d.bin" % i, "rb")
-	sn_newfile.write(file.read())
+	data += file.read()
 	file.close()
+
+dec_filesize = len(data)
+
+dump = lzss.compress(data, 0)
+
+os.makedirs("010071C00CBA4000/romfs", exist_ok=True)
+
+file_new = open("010071C00CBA4000/romfs/sn.bin", "wb")
+file_new.write(dec_filesize.to_bytes(4, "little"))
+file_new.write(dump)
+file_new.close()
