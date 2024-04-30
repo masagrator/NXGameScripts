@@ -4,6 +4,117 @@ import sys
 import shutil
 import lzss
 
+Filenames = [
+	"0000",
+	"chapter1",
+	"chapter11",
+	"chapter12",
+	"chapter13",
+	"chapter14",
+	"chapter15",
+	"chapter16",
+	"chapter17",
+	"chapter18",
+	"chapter19",
+	"chapter2",
+	"chapter20",
+	"chapter21",
+	"chapter22",
+	"chapter23",
+	"chapter24",
+	"chapter25",
+	"chapter26",
+	"chapter27",
+	"chapter28",
+	"chapter29",
+	"chapter3",
+	"chapter30",
+	"chapter31_1",
+	"chapter31_2",
+	"chapter32_1",
+	"chapter32_2",
+	"chapter33",
+	"chapter34",
+	"chapter35_1",
+	"chapter35_2",
+	"chapter36",
+	"chapter37_1",
+	"chapter37_2",
+	"chapter38",
+	"chapter39_1",
+	"chapter39_2",
+	"chapter4_1",
+	"chapter4_2",
+	"chapter40_1",
+	"chapter40_2",
+	"chapter40_3",
+	"chapter40_4",
+	"chapter41",
+	"chapter5_1",
+	"chapter5_2",
+	"chapter6",
+	"chapter7_1",
+	"chapter7_2",
+	"chapter8",
+	"chapter9",
+	"chapterC1",
+	"chapterC2",
+	"chapterC3_alpha",
+	"chapterC3_R",
+	"chapterC4_alpha",
+	"chapterC4_R",
+	"chapterL1",
+	"chapterL10",
+	"chapterL11",
+	"chapterL12",
+	"chapterL13_1",
+	"chapterL13_2",
+	"chapterL14",
+	"chapterL15",
+	"chapterL16_1",
+	"chapterL17_1",
+	"chapterL17_2",
+	"chapterL18",
+	"chapterL19",
+	"chapterL2",
+	"chapterL20",
+	"chapterL21_1",
+	"chapterL21_2",
+	"chapterL22_1",
+	"chapterL22_2",
+	"chapterL23_1",
+	"chapterL23_2",
+	"chapterL3",
+	"chapterL4",
+	"chapterL5",
+	"chapterL6",
+	"chapterL7",
+	"chapterL8",
+	"chapterL9",
+	"chapterP_hikari",
+	"chapterP_hiragino",
+	"chapterP_reiri",
+	"chapterP_tokiwa",
+	"chapterP_touri",
+	"chapterP_yukari",
+	"chapterR1",
+	"chapterR10",
+	"chapterR11",
+	"chapterR12_1",
+	"chapterR12_2",
+	"chapterR13_1",
+	"chapterR13_2",
+	"chapterR2",
+	"chapterR3_1",
+	"chapterR3_2",
+	"chapterR4",
+	"chapterR5",
+	"chapterR6",
+	"chapterR7",
+	"chapterR8",
+	"chapterR9"
+]
+
 class Utils:
 	text_counter = 0
 	name = None
@@ -30,6 +141,9 @@ def ProcessCommands(dict, precalcs = None):
 				entry.append(0x0.to_bytes(4, "little"))
 			else:
 				entry.append(precalcs[dict["TO_LABEL"]].to_bytes(4, "little"))
+		case "JMP":
+			entry.append(b"\x02")
+			entry.append(dict["ID"].to_bytes(4, "little"))
 		case "JMP4":
 			entry.append(b"\x04")
 			entry.append(dict["ID"].to_bytes(4, "little"))
@@ -51,13 +165,6 @@ def ProcessCommands(dict, precalcs = None):
 				entry.append(precalcs[dict["TO_LABEL"]].to_bytes(4, "little"))
 		case "IFGOTO8":
 			entry.append(b"\x08")
-			entry.append(bytes.fromhex(dict["DATA"]))
-			if (precalcs == None):
-				entry.append(0x0.to_bytes(4, "little"))
-			else:
-				entry.append(precalcs[dict["TO_LABEL"]].to_bytes(4, "little"))
-		case "IFGOTO9":
-			entry.append(b"\x09")
 			entry.append(bytes.fromhex(dict["DATA"]))
 			if (precalcs == None):
 				entry.append(0x0.to_bytes(4, "little"))
@@ -109,8 +216,8 @@ def ProcessCommands(dict, precalcs = None):
 					entry.append(precalcs[dict["LIST"][s]["TO_LABEL"]].to_bytes(4, "little"))
 		case "MOV":
 			entry.append(b"\x10")
-			entry.append(dict["ID"].to_bytes(2, "little"))
-			entry.append(dict["VALUE"].to_bytes(2, "little"))
+			entry.append((dict["ID"]).to_bytes(2, "little"))
+			entry.append((dict["VALUE"]).to_bytes(2, "little"))
 		case "11":
 			entry.append(b"\x11")
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -123,14 +230,8 @@ def ProcessCommands(dict, precalcs = None):
 		case "14":
 			entry.append(b"\x14")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "15":
-			entry.append(b"\x15")
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "16":
 			entry.append(b"\x16")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "18":
-			entry.append(b"\x18")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "1A":
 			entry.append(b"\x1A")
@@ -157,14 +258,8 @@ def ProcessCommands(dict, precalcs = None):
 		case "22":
 			entry.append(b"\x22")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "23":
-			entry.append(b"\x23")
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "25":
 			entry.append(b"\x25")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "2C":
-			entry.append(b"\x2C")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "2D":
 			entry.append(b"\x2D")
@@ -174,9 +269,19 @@ def ProcessCommands(dict, precalcs = None):
 		case "2F":
 			entry.append(b"\x2F")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "30":
-			entry.append(b"\x30")
+		case "31":
+			entry.append(b"\x31")
 			entry.append(bytes.fromhex(dict["DATA"]))
+			entry.append(len(dict["LIST"]).to_bytes(2, "little"))
+			entry.append(dict["UNK0"].to_bytes(2, "little"))
+			for s in range(0, len(dict["LIST"])):
+				entry.append(dict["LIST"][s]["ID"].to_bytes(1, "little"))
+				entry.append(bytes.fromhex(dict["LIST"][s]["DATA"]))
+				if ((precalcs == None) or (dict["LIST"][s]["JUMP_TO_LABEL"] == "0x0")):
+					entry.append(0x0.to_bytes(4, "little"))
+				else:
+					entry.append(precalcs[dict["LIST"][s]["JUMP_TO_LABEL"]].to_bytes(4, "little"))
+				entry.append(dict["LIST"][s]["STRING"].encode("shift_jis_2004") + b"\x00")
 		case "SELECT":
 			entry.append(b"\x32")
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -193,24 +298,13 @@ def ProcessCommands(dict, precalcs = None):
 		case "34":
 			entry.append(b"\x34")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "35":
-			entry.append(b"\x35")
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "36":
 			entry.append(b"\x36")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "38":
-			entry.append(b"\x38")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "FACE_NAME":
 			entry.append(b"\x39")
 			entry.append(bytes.fromhex(dict["DATA"]))
-			if (dict["ID"] == "HIDE"):
-				entry.append(b"\xFF\xFF")
-			else: entry.append(dict["ID"].to_bytes(2, "little"))
-		case "3A":
-			entry.append(b"\x3A")
-			entry.append(bytes.fromhex(dict["DATA"]))
+			entry.append(dict["ID"].to_bytes(2, "little"))
 		case "3B":
 			entry.append(b"\x3B")
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -223,80 +317,50 @@ def ProcessCommands(dict, precalcs = None):
 		case "43":
 			entry.append(b"\x43")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "VOICE":
-			entry.append(b"\x44")
-			entry.append(0xA.to_bytes(2, "little"))
-			entry.append(dict["VOICE_ID"].to_bytes(2, "little"))
 		case "TEXT2":
 			entry.append(b"\x45")
-			entry.append(b"\xFF\xFF")
-			try:
-				dict["ID"]
-			except:
-				entry.append(Utils.text_counter.to_bytes(2, "little"))
-				Utils.text_counter += 1
-			else:
-				entry.append(dict["ID"].to_bytes(2, "little"))
-			new_string = ""
-			if (len(dict["STRING"].encode("shift_jis_2004")) > linesize):
-				string = dict["STRING"].split()
-				begin = 0
-				for i in range(len(string) + 1):
-					temp_string = " ".join(string[begin:i])
-					if (len(temp_string.encode("shift_jis_2004")) > linesize):
-						new_string += " ".join(string[begin:i-1]) + "%N"
-						begin = i - 1
-				new_string += " ".join(string[begin:])
-			if (new_string != ""):
-				entry.append(new_string.encode("shift_jis_2004") + b"\x00")
-			else: entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
-			Utils.name = None
+			entry.append(dict["TYPE"].to_bytes(2, "little", signed=True))
+			if (dict["TYPE"] in [-1, 10]):
+				try:
+					dict["ID"]
+				except:
+					entry.append(Utils.text_counter.to_bytes(2, "little"))
+					Utils.text_counter += 1
+				else:
+					entry.append(dict["ID"].to_bytes(2, "little", signed=True))
+			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 		case "TEXT3":
 			entry.append(b"\x46")
-			entry.append(b"\xFF\xFF")
-			try:
-				dict["ID"]
-			except:
-				entry.append(Utils.text_counter.to_bytes(2, "little"))
-				Utils.text_counter += 1
-			else:
-				entry.append(dict["ID"].to_bytes(2, "little"))
-			new_string = ""
-			if (len(dict["STRING"].encode("shift_jis_2004")) > linesize):
-				string = dict["STRING"].split()
-				begin = 0
-				for i in range(len(string) + 1):
-					temp_string = " ".join(string[begin:i])
-					if (len(temp_string.encode("shift_jis_2004")) > linesize):
-						new_string += " ".join(string[begin:i-1]) + "%N"
-						begin = i - 1
-				new_string += " ".join(string[begin:])
-			if (new_string != ""):
-				entry.append(new_string.encode("shift_jis_2004") + b"\x00")
-			else: entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+			entry.append(dict["TYPE"].to_bytes(2, "little", signed=True))
+			if (dict["TYPE"] in [-1, 10]):
+				try:
+					dict["ID"]
+				except:
+					entry.append(Utils.text_counter.to_bytes(2, "little"))
+					Utils.text_counter += 1
+				else:
+					entry.append(dict["ID"].to_bytes(2, "little"))
+				if (dict["TYPE"] == -1): entry.append(bytes.fromhex(dict["DATA"]))
+			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 		case "TEXT":
 			entry.append(b"\x47")
 			if (dict["TYPE"] == "MESSAGE"):
 				entry.append(b"\xFF\xFF")
 				entry.append(Utils.text_counter.to_bytes(2, "little"))
 				Utils.text_counter += 1
-				new_string = ""
-				if (len(dict["STRING"].encode("shift_jis_2004")) > linesize):
-					string = dict["STRING"].split()
-					begin = 0
-					for i in range(len(string) + 1):
-						temp_string = " ".join(string[begin:i])
-						if (len(temp_string.encode("shift_jis_2004")) > linesize):
-							new_string += " ".join(string[begin:i-1]) + "%N"
-							begin = i - 1
-					new_string += " ".join(string[begin:])
-				if (new_string != ""):
-					entry.append(new_string.encode("shift_jis_2004") + b"\x00")
-				else: entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+				entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 			elif (dict["TYPE"] == "NAME"):
 				entry.append(0xD.to_bytes(2, "little"))
 				entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 				Utils.name = dict["STRING"]
+			elif (dict["TYPE"] == "MESSAGE2"):
+				entry.append(0xA.to_bytes(2, "little"))
+				entry.append(Utils.text_counter.to_bytes(2, "little"))
+				Utils.text_counter += 1
+				entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+			elif (dict["TYPE"] == "MESSAGE3"):
+				entry.append(0x46.to_bytes(2, "little"))
+				entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 			else:
 				print("UNKNOWN TEXT TYPE!")
 				print(dict["TYPE"])
@@ -322,6 +386,22 @@ def ProcessCommands(dict, precalcs = None):
 		case "4F":
 			entry.append(b"\x4F")
 			entry.append(bytes.fromhex(dict["DATA"]))
+		case "51":
+			entry.append(b"\x51")
+			entry.append(bytes.fromhex(dict["DATA"]))
+		case "55":
+			entry.append(b"\x55")
+			if (precalcs == None):
+				offset = 0
+			else:
+				offset = precalcs[dict["LABEL"]] + 10
+			entry.append(offset.to_bytes(4, "little"))
+			entry.append(b"\x01")
+			if (precalcs == None):
+				entry.append(0x0.to_bytes(4, "little"))
+			else:
+				entry.append(precalcs[dict["NEXT"]["TO_LABEL"]].to_bytes(4, "little"))
+			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 		case "TITLE":
 			entry.append(b"\x55")
 			if (precalcs == None):
@@ -335,31 +415,12 @@ def ProcessCommands(dict, precalcs = None):
 			else:
 				entry.append(precalcs[dict["NEXT"]["TO_LABEL"]].to_bytes(4, "little"))
 			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
-		case "59":
-			entry.append(b"\x59")
 		case "5A":
 			entry.append(b"\x5A")
-		case "5E":
-			entry.append(b"\x5E")
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "5F":
 			entry.append(b"\x5F")
-			entry.append(dict["FLAG"].to_bytes(1, "little"))
-			if (dict["FLAG"] > 0):
-				match(dict["FLAG"]):
-					case 1:
-						if (precalcs == None):
-							entry.append(0x0.to_bytes(4, "little"))
-						else:
-							entry.append(precalcs[dict["TO_LABEL"]].to_bytes(4, "little"))
-		case "60":
-			entry.append(b"\x60")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "62":
-			entry.append(b"\x62")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "63":
-			entry.append(b"\x63")
+		case "66":
+			entry.append(b"\x66")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "68":
 			entry.append(b"\x68")
@@ -370,8 +431,11 @@ def ProcessCommands(dict, precalcs = None):
 		case "6B":
 			entry.append(b"\x6B")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "6C":
-			entry.append(b"\x6C")
+		case "6E":
+			entry.append(b"\x6E")
+			entry.append(bytes.fromhex(dict["DATA"]))
+		case "6F":
+			entry.append(b"\x6F")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "71":
 			entry.append(b"\x71")
@@ -385,45 +449,17 @@ def ProcessCommands(dict, precalcs = None):
 		case "75":
 			entry.append(b"\x75")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "79":
-			entry.append(b"\x79")
-			if (precalcs == None):
-				offset = 0
-			else:
-				offset = precalcs[dict["LABEL"]] + 10
-			entry.append(offset.to_bytes(4, "little"))
-			entry.append(b"\x01")
-			if (precalcs == None):
-				entry.append(0x0.to_bytes(4, "little"))
-			else:
-				entry.append(precalcs[dict["NEXT"]["TO_LABEL"]].to_bytes(4, "little"))
-			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 		case "7A":
 			entry.append(b"\x7A")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "7B":
 			entry.append(b"\x7B")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "7E":
-			entry.append(b"\x7E")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "7F":
-			entry.append(b"\x7F")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "80":
-			entry.append(b"\x80")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "81":
-			entry.append(b"\x81")
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "82":
 			entry.append(b"\x82")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "83":
 			entry.append(b"\x83")
-			entry.append(bytes.fromhex(dict["DATA"]))
-		case "84":
-			entry.append(b"\x84")
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "85":
 			entry.append(b"\x85")
@@ -436,10 +472,20 @@ def ProcessCommands(dict, precalcs = None):
 		case "8C":
 			entry.append(b"\x8C")
 			entry.append(bytes.fromhex(dict["DATA"]))
-		case "93":
-			entry.append(b"\x93")
+		case "8D":
+			entry.append(b"\x8D")
+		case "94":
+			entry.append(b"\x94")
 			entry.append(bytes.fromhex(dict["DATA"]))
-			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+			entry.append(len(dict["LIST"]).to_bytes(2, "little"))
+			entry.append(bytes.fromhex(dict["DATA2"]))
+			for s in range(0, len(dict["LIST"])):
+				entry.append(dict["LIST"][s]["VALUE"].to_bytes(2, "little"))
+				if (precalcs == None):
+					entry.append(0x0.to_bytes(4, "little"))
+				else:
+					entry.append(precalcs[dict["LIST"][s]["TO_LABEL"]].to_bytes(4, "little"))
+				entry.append(bytes.fromhex(dict["LIST"][s]["DATA"]))
 		case _:
 			print("UNKNOWN COMMAND!")
 			print(dict["CMD"])
@@ -450,31 +496,10 @@ def ProcessCommands(dict, precalcs = None):
 shutil.rmtree("sn_new", ignore_errors=True)
 os.makedirs("sn_new", exist_ok=True)
 
-for i in range(0, 144):
+for i in range(len(Filenames)):
 	OUTPUT = []
 	PrecalculateOffsets = {}
-	if (34 >= i >= 3):
-		try:
-			file = open("Patched/KQA%02d.json" % (i - 2), "r", encoding="UTF-8")
-		except:
-			file = open("jsons/KQA%02d.json" % (i - 2), "r", encoding="UTF-8")
-	elif (70 >= i >= 35):
-		try:
-			file = open("Patched/KQB%02d.json" % (i - 34), "r", encoding="UTF-8")
-		except:
-			file = open("jsons/KQB%02d.json" % (i - 34), "r", encoding="UTF-8")
-	elif (97 >= i >= 71):
-		try:
-			file = open("Patched/KQC%02d.json" % (i - 70), "r", encoding="UTF-8")
-		except:
-			file = open("jsons/KQC%02d.json" % (i - 70), "r", encoding="UTF-8")
-	elif (143 >= i >= 98):
-		try:
-			file = open("Patched/KQD%02d.json" % (i - 97), "r", encoding="UTF-8")
-		except:
-			file = open("jsons/KQD%02d.json" % (i - 97), "r", encoding="UTF-8")
-	else:
-		file = open("jsons/%04d.json" % i, "r", encoding="UTF-8")
+	file = open(f"{sys.argv[1]}/%s.json" % (Filenames[i]), "r", encoding="UTF-8")
 	print(file.name)
 	dump = json.load(file)
 	file.close()
@@ -484,23 +509,22 @@ for i in range(0, 144):
 		continue
 
 	file_new = open("sn_new/%04d.bin" % i, "wb")
-	file_new.write((len(dump["HEADER"]) * 2 + 4).to_bytes(4, "little"))
+	file_new.write((len(dump["HEADER"]) * 4 + 4).to_bytes(4, "little"))
 
 	for x in range(0, len(dump["HEADER"])):
-		file_new.write(dump["HEADER"][x].to_bytes(2, "little", signed=True))
+		file_new.write(dump["HEADER"][x].to_bytes(4, "little", signed=True))
 	
-	offset = len(dump["HEADER"]) * 2 + 4
+	offset = len(dump["HEADER"]) * 4 + 4
 
 	for x in range(0, len(dump["COMMANDS"])):
 		PrecalculateOffsets[dump["COMMANDS"][x]["LABEL"]] = offset
 		offset += len(ProcessCommands(dump["COMMANDS"][x]))
-
+	
 	Utils.text_counter = 0
 	for x in range(0, len(dump["COMMANDS"])):
 		OUTPUT.append(ProcessCommands(dump["COMMANDS"][x], PrecalculateOffsets))
 	
-	if (i > 2):
-		Utils.STRINGS_COUNTS.append(Utils.text_counter)
+	Utils.STRINGS_COUNTS.append(Utils.text_counter)
 	OUTPUT.append(Utils.text_counter.to_bytes(4, "little"))
 	OUTPUT.append(bytes.fromhex(dump["FOOTER"][8:]))
 	file_new.write(b"".join(OUTPUT))
@@ -508,29 +532,24 @@ for i in range(0, 144):
 		file_new.write(b"\x00" * (16 - (file_new.tell() % 16)))
 	file_new.close()
 
-print("0144")
+print("0108")
 OUTPUT = []
 
-file = open("jsons/0144.json", "r", encoding="UTF-8")
+file = open(f"{sys.argv[1]}/0108.json", "r", encoding="UTF-8")
 dump = json.load(file)
 file.close()
 
-file_new = open("sn_new/0144.bin", "wb")
+file_new = open("sn_new/0108.bin", "wb")
 
 for x in dump[0].keys():
 	OUTPUT.append(dump[0][x].to_bytes(4, "little", signed=True))
-for x in dump[1].keys():
-	OUTPUT.append(dump[0][x].to_bytes(4, "little", signed=True))
-for x in dump[2].keys():
-	OUTPUT.append(dump[0][x].to_bytes(4, "little", signed=True))
 
-for i in range(3, len(dump) - 2):
-	OUTPUT.append(Utils.STRINGS_COUNTS[i-3].to_bytes(4, "little", signed=True))
+for i in range(1, len(dump) - 2):
+	OUTPUT.append(Utils.STRINGS_COUNTS[i].to_bytes(4, "little", signed=True))
 	OUTPUT.append(dump[i]["VALUE2"].to_bytes(4, "little", signed=True))
 	OUTPUT.append(dump[i]["VALUE3"].to_bytes(4, "little", signed=True))
 	OUTPUT.append(dump[i]["ID"].to_bytes(4, "little", signed=True))
 
-print("Text counter: %d" % sum(Utils.STRINGS_COUNTS))
 OUTPUT.append(sum(Utils.STRINGS_COUNTS).to_bytes(4, "little", signed=True))
 OUTPUT.append(dump[-2]["VALUE2"].to_bytes(4, "little", signed=True))
 OUTPUT.append(dump[-2]["VALUE3"].to_bytes(4, "little", signed=True))
@@ -545,9 +564,10 @@ file_new.write(b"".join(OUTPUT))
 file_new.close()
 
 header = []
-offset = 0x910
 
-for i in range(0, 145):
+offset = 0x6D0
+
+for i in range(0, 109):
 	try:
 		file = open("sn_new/%04d.bin" % i, "rb")
 	except:
@@ -563,18 +583,18 @@ for i in range(0, 145):
 
 data = b"".join(header)
 
-for i in range(0, 145):
+for i in range(0, 109):
 	file = open("sn_new/%04d.bin" % i, "rb")
 	data += file.read()
 	file.close()
 
-size = len(data)
+dec_filesize = len(data)
 
 dump = lzss.compress(data, 0)
 
-os.makedirs("010022B00AD18000/romfs", exist_ok=True)
+os.makedirs("010071C00CBA4000/romfs", exist_ok=True)
 
-file_new = open("010022B00AD18000/romfs/sn.bin", "wb")
-file_new.write(size.to_bytes(4, "little"))
+file_new = open("010071C00CBA4000/romfs/sn.bin", "wb")
+file_new.write(dec_filesize.to_bytes(4, "little"))
 file_new.write(dump)
 file_new.close()
