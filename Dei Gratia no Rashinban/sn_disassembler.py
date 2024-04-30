@@ -202,8 +202,9 @@ def ProcessCMD(cmd: int, file, size):
 		# 	print("0xF is a nullsub!")
 		# 	print("Offset: 0x%X" % file.tell())
 		case 0x10:
-			entry["CMD"] = "CMP"
-			entry["DATA"] = file.read(0x4).hex()
+			entry["CMD"] = "MOV"
+			entry["ID"] = int.from_bytes(file.read(0x2), "little")
+			entry["VALUE"] = int.from_bytes(file.read(0x2), "little")
 		case 0x11:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x4).hex()
@@ -340,8 +341,10 @@ def ProcessCMD(cmd: int, file, size):
 		# 	entry["CMD"] = "%X" % cmd
 		# 	entry["DATA"] = file.read(0x3).hex() #2?
 		case 0x39:
-			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex()
+			entry["CMD"] = "FACE_NAME"
+			entry["DATA"] = file.read(0x2).hex()
+			entry["ID"] = int.from_bytes(file.read(0x2), "little")
+			if (entry["ID"] == 65535): entry["ID"] = "HIDE"
 		# case 0x3A:
 		# 	entry["CMD"] = "%X" % cmd
 		# 	entry["DATA"] = file.read(0x4).hex()
@@ -435,7 +438,7 @@ def ProcessCMD(cmd: int, file, size):
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex() # Always "FFFF"
 		case 0x49:
-			entry["CMD"] = "%X" % cmd
+			entry["CMD"] = "NEW_PAGE" % cmd
 			entry["DATA"] = file.read(0x4).hex() # Always "FFFFFFFF"
 		case 0x4A:
 			entry["CMD"] = "KEY_WAIT"
