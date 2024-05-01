@@ -34,3 +34,6 @@ for i in range(channel_count):
     new_file.write(data[i])
     new_file.write(b"\x00" * (0x100 - ((new_file.tell() - header_size) % 0x100)))
 new_file.close()
+
+for i in range(channel_count):
+    os.remove("%s-%d.dsp" % (sys.argv[1][:-4], i+1))
