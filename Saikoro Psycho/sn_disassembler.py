@@ -8,12 +8,14 @@ from pathlib import Path
 def Sort(key):
 	return key
 
-CMDS = []
-JUMP_POINTS = [0xC]
+class Utils:
+	CMDS = []
+	JUMP_POINTS = []
+	string_counter = 0
 
 Filenames = [
 	"0000",
-	"purororgu",
+	"purorogu",
 	"1/day1",
 	"1/day2",
 	"1/day3",
@@ -58,13 +60,12 @@ def ProcessMessage(entry, file):
 		ID = int.from_bytes(file.read(0x2), byteorder="little", signed=True)
 		if (ID < 0):
 			entry["ID"] = ID
+		else: Utils.string_counter += 1
 	entry["STRING"] = readString(file)
 	return entry
 
 # 0x1677D0 - Command array
 def ProcessCMD(cmd: int, file, size):
-	if (cmd not in CMDS):
-		CMDS.append(cmd)
 	entry = {}
 	entry["LABEL"] = "0x%X" % (file.tell() - 1)
 	match(cmd):
@@ -81,15 +82,14 @@ def ProcessCMD(cmd: int, file, size):
 			pos = file.tell()
 			label = int.from_bytes(file.read(0x4), byteorder="little")
 			assert(label == pos)
-			JUMP_POINTS.append(label)
-			entry["STRING"] = readString(file)
-			entry["DATA"] = file.read(4).hex()
+			Utils.JUMP_POINTS.append(label)
+			entry["DATA"] = file.read(8).hex()
 		case 4:
 			entry["CMD"] = "%X" % cmd
 			pos = file.tell()
 			label = int.from_bytes(file.read(0x4), byteorder="little")
 			assert(label == pos)
-			JUMP_POINTS.append(label)
+			Utils.JUMP_POINTS.append(label)
 			pos = file.tell()
 			entry["DATA"] = file.read(8).hex()
 		case 5:
@@ -236,11 +236,11 @@ def ProcessCMD(cmd: int, file, size):
 		# 	entry["DATA"] = file.read(0xA).hex()
 		case 0x31:
 			entry["CMD"] = "SELECT2"
-			entry["DATA"] = file.read(0x2).hex() # Always "8080"
+			assert(file.read(0x2) == b"\x80\x80")
 			count = int.from_bytes(file.read(0x2), byteorder="little")
-			entry["COUNT_TYPE"] = 0 if count < 0x100 else 1
+			entry["COUNT_TYPE"] = count // 100
 			count %= 100
-			entry["TYPE"] = file.read(0x2).hex()
+			assert(file.read(0x2) == b"\x00\x00")
 			new_list = []
 			for x in range(0, count):
 				entry2 = {}
@@ -253,14 +253,15 @@ def ProcessCMD(cmd: int, file, size):
 			entry["LIST"] = new_list
 		case 0x32:
 			entry["CMD"] = "SELECT"
-			entry["DATA"] = file.read(0x2).hex() # Always "8080"
+			assert(file.read(0x2) == b"\x80\x80")
 			count = int.from_bytes(file.read(0x2), byteorder="little")
 			entry["UNK0"] = int.from_bytes(file.read(0x2), byteorder="little")
 			new_list = []
 			for x in range(0, count):
 				entry2 = {}
-				entry2["ID"] = int.from_bytes(file.read(0x1), byteorder="little")
-				entry2["DATA"] = file.read(0x5).hex()
+				entry2["UNK0"] = int.from_bytes(file.read(0x2), byteorder="little")
+				entry2["ID"] = int.from_bytes(file.read(0x2), byteorder="little")
+				entry2["UNK1"] = int.from_bytes(file.read(0x2), byteorder="little")
 				entry2["JUMP_TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 				entry2["STRING"] = readString(file)
 				new_list.append(entry2)
@@ -331,7 +332,7 @@ def ProcessCMD(cmd: int, file, size):
 		# 	entry["MESSAGE_TYPE_ID"] = int.from_bytes(file.read(0x2), "little", signed=True)
 		case 0x49:
 			entry["CMD"] = "NEW_PAGE"
-			file.seek(4, 1) #Always 0xFFFFFFFF, value ignored by code
+			assert(file.read(4) == b"\xFF\xFF\xFF\xFF")
 		case 0x4A:
 			entry["CMD"] = "KEY_WAIT"
 			entry["MESSAGE_TYPE_ID"] = int.from_bytes(file.read(0x2), "little", signed=True) #It's ignored in code
@@ -403,7 +404,7 @@ def ProcessCMD(cmd: int, file, size):
 			pos = file.tell()
 			label = int.from_bytes(file.read(0x4), byteorder="little")
 			assert(label == pos)
-			JUMP_POINTS.append(label)
+			Utils.JUMP_POINTS.append(label)
 			entry["DATA"] = file.read(4).hex()
 		# case 0x60:
 		# 	entry["CMD"] = "%X" % cmd
@@ -438,7 +439,7 @@ def ProcessCMD(cmd: int, file, size):
 			entry["DATA"] = file.read(0x2).hex()
 		case 0x6A:
 			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x4).hex() # Always "FFFFFFFF"
+			assert(file.read(0x4) == b"\xFF\xFF\xFF\xFF")
 		case 0x6B:
 			entry["CMD"] = "%X" % cmd
 			entry["DATA"] = file.read(0x2).hex()
@@ -676,10 +677,6 @@ while (x < EOF_filesize):
 	EOF_bases2.append(entry)
 	x += 16
 
-file_new = open("jsons/%s.json" % Path(files[len(files) - 1]).stem, "w", encoding="UTF-8")
-json.dump(EOF_bases2, file_new, indent="\t", ensure_ascii=False)
-file_new.close()
-
 JUMP_POINT_file = open(files[len(files) - 2], "rb")
 file_count = int.from_bytes(JUMP_POINT_file.read(4), "little") // 0x10
 table = []
@@ -712,6 +709,7 @@ if (len(Filenames) != len(files) - 2):
 for i in range(0, len(files) - 2):
 	print(files[i])
 	file = open(files[i], "rb")
+	Utils.string_counter = 0
 
 	temp_buffer = file.read()
 	size = file.tell()
@@ -735,19 +733,32 @@ for i in range(0, len(files) - 2):
 			OUTPUT["COMMANDS"].append(entry)
 			ERROR_COUNT.append(Path(files[i]).stem)
 			break
-	OUTPUT["FOOTER"] = EOF_bases[i].hex()
+	OUTPUT["FOOTER"] = {}
+	OUTPUT["FOOTER"]["STRING_COUNT"] = int.from_bytes(EOF_bases[i][0:4], "little")
+	OUTPUT["FOOTER"]["CHOICES_COUNT"] = int.from_bytes(EOF_bases[i][4:8], "little")
+	OUTPUT["FOOTER"]["JUMP_POINTS"] = int.from_bytes(EOF_bases[i][8:12], "little")
+	OUTPUT["FOOTER"]["ID"] = int.from_bytes(EOF_bases[i][12:16], "little", signed=True)
 
 	os.makedirs(os.path.dirname("jsons/%s.json" % Filenames[i]), exist_ok=True)
 	file_new = open("jsons/%s.json" % Filenames[i], "w", encoding="UTF-8")
 	json.dump(OUTPUT, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
 
-	if (JUMP_POINTS_DUMP[i] != JUMP_POINTS):
-		print("JUMP_POINTS ARE WRONG! Those offsets were inside 0030 while not being appended from %s:" % Path(files[i]).stem)
-		print(set(JUMP_POINTS_DUMP[i]) - set(JUMP_POINTS))
+	if (OUTPUT["FOOTER"]["JUMP_POINTS"] == 0):
+		assert(OUTPUT["FOOTER"]["JUMP_POINTS"] == len(Utils.JUMP_POINTS))
+		Utils.JUMP_POINTS.append(header_size)
+		OUTPUT["FOOTER"]["JUMP_POINTS"] = 1
+	if (OUTPUT["FOOTER"]["JUMP_POINTS"] != len(JUMP_POINTS_DUMP[i]) or JUMP_POINTS_DUMP[i] != Utils.JUMP_POINTS):
+		print("JUMP_POINTS ARE WRONG!")
+		print(set(JUMP_POINTS_DUMP[i]) - set(Utils.JUMP_POINTS))
+		print("%d vs %d" % (OUTPUT["FOOTER"]["JUMP_POINTS"], len(JUMP_POINTS_DUMP[i])))
+		sys.exit()
+	
+	if (Utils.string_counter != OUTPUT["FOOTER"]["STRING_COUNT"]):
+		print("Expected string count with ID: %d, got: %d" % (OUTPUT["FOOTER"]["STRING_COUNT"], Utils.string_counter))
 		sys.exit()
 
-	JUMP_POINTS = []
+	Utils.JUMP_POINTS = []
 
 if (len(ERROR_COUNT) > 0):
 	print("Files that failed disassembling:")
