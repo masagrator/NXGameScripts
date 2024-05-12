@@ -9,6 +9,7 @@ def Sort(key):
 	return key
 
 CMDS = []
+JUMP_POINTS = [0xC]
 
 Filenames = [
 	"0000",
@@ -40,8 +41,7 @@ Filenames = [
 	"if",
 	"if123",
 	"if456",
-	"omake",
-	"sp"
+	"omake"
 ]
 
 def readString(myfile):
@@ -78,14 +78,20 @@ def ProcessCMD(cmd: int, file, size):
 			entry["ID"] = int.from_bytes(file.read(0x4), byteorder="little")
 		case 3:
 			entry["CMD"] = "%X" % cmd
-			entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
-			entry["STRING"] = file.read(4).hex()
+			pos = file.tell()
+			label = int.from_bytes(file.read(0x4), byteorder="little")
+			assert(label == pos)
+			JUMP_POINTS.append(label)
+			entry["STRING"] = readString(file)
 			entry["DATA"] = file.read(4).hex()
 		case 4:
 			entry["CMD"] = "%X" % cmd
-			entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
-			entry["STRING"] = file.read(4).hex()
-			entry["DATA"] = file.read(4).hex()
+			pos = file.tell()
+			label = int.from_bytes(file.read(0x4), byteorder="little")
+			assert(label == pos)
+			JUMP_POINTS.append(label)
+			pos = file.tell()
+			entry["DATA"] = file.read(8).hex()
 		case 5:
 			entry["CMD"] = "RETURN"
 		case 6:
@@ -394,7 +400,11 @@ def ProcessCMD(cmd: int, file, size):
 		# 	entry["DATA"] = file.read(0x2).hex()
 		case 0x5F:
 			entry["CMD"] = "%X" % cmd
-			entry["DATA"] = file.read(0x8).hex()
+			pos = file.tell()
+			label = int.from_bytes(file.read(0x4), byteorder="little")
+			assert(label == pos)
+			JUMP_POINTS.append(label)
+			entry["DATA"] = file.read(4).hex()
 		# case 0x60:
 		# 	entry["CMD"] = "%X" % cmd
 		# 	entry["DATA"] = file.read(0x6).hex()
@@ -670,12 +680,36 @@ file_new = open("jsons/%s.json" % Path(files[len(files) - 1]).stem, "w", encodin
 json.dump(EOF_bases2, file_new, indent="\t", ensure_ascii=False)
 file_new.close()
 
-if (len(Filenames) != len(files) - 1):
+JUMP_POINT_file = open(files[len(files) - 2], "rb")
+file_count = int.from_bytes(JUMP_POINT_file.read(4), "little") // 0x10
+table = []
+JUMP_POINT_file.seek(0)
+for i in range(file_count):
+	entry = {}
+	entry["start_offset"] = int.from_bytes(JUMP_POINT_file.read(4), "little")
+	entry["elements"] = int.from_bytes(JUMP_POINT_file.read(4), "little") // 4
+	JUMP_POINT_file.seek(8, 1)
+	table.append(entry)
+
+JUMP_POINTS_DUMP = []
+for i in range(file_count):
+	JUMP_POINT_file.seek(table[i]["start_offset"])
+	entry = []
+	for x in range(table[i]["elements"]):
+		offset = int.from_bytes(JUMP_POINT_file.read(4), "little")
+		if (offset == 0):
+			break
+		entry.append(offset)
+	JUMP_POINTS_DUMP.append(entry)
+
+JUMP_POINT_file.close()
+
+if (len(Filenames) != len(files) - 2):
 	print("Hardcoded filename list doesn't match count of files.")
 	print("Only 0000 and %04d file will be disassembled. You can fill out filename list based on 0000." % (len(files) - 1))
 	files = [files[0], files[len(files) - 1]]
 
-for i in range(0, len(files) - 1):
+for i in range(0, len(files) - 2):
 	print(files[i])
 	file = open(files[i], "rb")
 
@@ -707,6 +741,13 @@ for i in range(0, len(files) - 1):
 	file_new = open("jsons/%s.json" % Filenames[i], "w", encoding="UTF-8")
 	json.dump(OUTPUT, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
+
+	if (JUMP_POINTS_DUMP[i] != JUMP_POINTS):
+		print("JUMP_POINTS ARE WRONG! Those offsets were inside 0030 while not being appended from %s:" % Path(files[i]).stem)
+		print(set(JUMP_POINTS_DUMP[i]) - set(JUMP_POINTS))
+		sys.exit()
+
+	JUMP_POINTS = []
 
 if (len(ERROR_COUNT) > 0):
 	print("Files that failed disassembling:")
