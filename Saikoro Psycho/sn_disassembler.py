@@ -83,7 +83,10 @@ def ProcessCMD(cmd: int, file, size):
 			label = int.from_bytes(file.read(0x4), byteorder="little")
 			assert(label == pos)
 			Utils.JUMP_POINTS.append(label)
-			entry["DATA"] = file.read(8).hex()
+			entry["ID"] = int.from_bytes(file.read(2), "little")
+			entry["VALUE"] = int.from_bytes(file.read(2), "little")
+			label = int.from_bytes(file.read(0x4), byteorder="little")
+			entry["TO_LABEL"] = "0x%X" % label
 		case 4:
 			entry["CMD"] = "%X" % cmd
 			pos = file.tell()
@@ -91,7 +94,10 @@ def ProcessCMD(cmd: int, file, size):
 			assert(label == pos)
 			Utils.JUMP_POINTS.append(label)
 			pos = file.tell()
-			entry["DATA"] = file.read(8).hex()
+			entry["ID1"] = int.from_bytes(file.read(2), "little")
+			entry["VALUE1"] = int.from_bytes(file.read(2), "little")
+			entry["ID2"] = int.from_bytes(file.read(2), "little")
+			entry["VALUE2"] = int.from_bytes(file.read(2), "little")
 		case 5:
 			entry["CMD"] = "RETURN"
 		case 6:
@@ -124,7 +130,7 @@ def ProcessCMD(cmd: int, file, size):
 		# 	entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 		case 0xD:
 			entry["CMD"] = "GOTO"
-			entry["DATA"] = file.read(0x2).hex()
+			entry["ID"] = int.from_bytes(file.read(0x2), byteorder="little")
 			entry["TO_LABEL"] = "0x%X" % int.from_bytes(file.read(0x4), byteorder="little")
 		case 0xE:
 			entry["CMD"] = "IFGOTOE"
@@ -405,7 +411,8 @@ def ProcessCMD(cmd: int, file, size):
 			label = int.from_bytes(file.read(0x4), byteorder="little")
 			assert(label == pos)
 			Utils.JUMP_POINTS.append(label)
-			entry["DATA"] = file.read(4).hex()
+			entry["ID"] = int.from_bytes(file.read(2), "little")
+			entry["VALUE"] = int.from_bytes(file.read(2), "little")
 		# case 0x60:
 		# 	entry["CMD"] = "%X" % cmd
 		# 	entry["DATA"] = file.read(0x6).hex()
@@ -722,7 +729,7 @@ for i in range(0, len(files) - 2):
 	header_size = int.from_bytes(file.read(0x4), byteorder="little")
 	assert(header_size % 4 == 0)
 	while(file.tell() < header_size):
-		OUTPUT["HEADER"].append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
+		OUTPUT["HEADER"].append("0x%X" % int.from_bytes(file.read(0x4), byteorder="little", signed=True))
 	while (file.tell() < end_pos):
 		cmd = int.from_bytes(file.read(0x1), byteorder="little")
 		try:

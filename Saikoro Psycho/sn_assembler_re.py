@@ -46,7 +46,8 @@ class Utils:
 	jump_counter = 0
 	choices_counter = 0
 
-linesize = 68
+linesize = 63
+linesize2 = 9999
 
 def GetFileSize(file):
 	pos = file.tell()
@@ -57,6 +58,7 @@ def GetFileSize(file):
 	
 def ProcessMessage(entry, dict):
 	entry.append(dict["MESSAGE_TYPE_ID"].to_bytes(2, "little", signed=True))
+	new_string = ""
 	if (dict["MESSAGE_TYPE_ID"] in [-1, 10]):
 		try:
 			dict["ID"]
@@ -65,10 +67,26 @@ def ProcessMessage(entry, dict):
 			Utils.text_counter += 1
 		else:
 			entry.append(dict["ID"].to_bytes(2, "little", signed=True))
-	entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
+		if (dict["STRING"].count("%N") == 0) and (len(dict["STRING"].encode("shift_jis_2004")) > (linesize if dict["MESSAGE_TYPE_ID"] != 10 else linesize2)):
+			string = dict["STRING"].split(" ")
+			begin = 0
+			for i in range(len(string) + 1):
+				temp_string = " ".join(string[begin:i])
+				if (len(temp_string.encode("shift_jis_2004")) > (linesize if dict["MESSAGE_TYPE_ID"] != 10 else linesize2)):
+					new_string += " ".join(string[begin:i-1]) + "%N"
+					begin = i - 1
+			new_string += " ".join(string[begin:])
+	if (new_string != ""):
+		if (dict["MESSAGE_TYPE_ID"] != 10 and new_string.count("%N") > 2):
+			print("Text has too many lines! %d lines!" % (new_string.count("%N") + 1))
+			print("LINE: ")
+			print(new_string)
+			input("Press ENTER to continue")
+		entry.append(new_string.encode("shift_jis_2004") + b"\x00")
+	else: entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 	return entry
 
-def ProcessCommands(dict, precalcs = None, offset = None):
+def ProcessCommands(dict, precalcs = None):
 	entry = []
 	match(dict["CMD"]):
 		case "0":
@@ -84,22 +102,30 @@ def ProcessCommands(dict, precalcs = None, offset = None):
 			entry.append(dict["ID"].to_bytes(4, "little"))
 		case "3":
 			entry.append(b"\x03")
-			if (offset == None):
+			if (precalcs == None):
 				entry.append(0x0.to_bytes(4, "little"))
 			else:
-				entry.append((offset+1).to_bytes(4, "little"))
-				Utils.EEOF_temp.append(offset+1)
+				entry.append((precalcs[dict["LABEL"]]+1).to_bytes(4, "little"))
+				Utils.EEOF_temp.append(precalcs[dict["LABEL"]]+1)
 				Utils.jump_counter += 1
-			entry.append(bytes.fromhex(dict["DATA"]))
+			entry.append(dict["ID"].to_bytes(2, "little"))
+			entry.append(dict["VALUE"].to_bytes(2, "little"))
+			if (precalcs == None):
+				entry.append(0x0.to_bytes(4, "little"))
+			else:
+				entry.append((precalcs[dict["TO_LABEL"]]).to_bytes(4, "little"))
 		case "4":
 			entry.append(b"\x04")
-			if (offset == None):
+			if (precalcs == None):
 				entry.append(0x0.to_bytes(4, "little"))
 			else:
-				entry.append((offset+1).to_bytes(4, "little"))
-				Utils.EEOF_temp.append(offset+1)
+				entry.append((precalcs[dict["LABEL"]]+1).to_bytes(4, "little"))
+				Utils.EEOF_temp.append(precalcs[dict["LABEL"]]+1)
 				Utils.jump_counter += 1
-			entry.append(bytes.fromhex(dict["DATA"]))
+			entry.append(dict["ID1"].to_bytes(2, "little"))
+			entry.append(dict["VALUE1"].to_bytes(2, "little"))
+			entry.append(dict["ID2"].to_bytes(2, "little"))
+			entry.append(dict["VALUE2"].to_bytes(2, "little"))
 		case "RETURN":
 			entry.append(b"\x05")
 		case "IFGOTO6":
@@ -132,7 +158,7 @@ def ProcessCommands(dict, precalcs = None, offset = None):
 				entry.append(precalcs[dict["TO_LABEL"]].to_bytes(4, "little"))
 		case "GOTO":
 			entry.append(b"\x0D")
-			entry.append(bytes.fromhex(dict["DATA"]))
+			entry.append(dict["ID"].to_bytes(2, "little"))
 			if (precalcs == None):
 				entry.append(0x0.to_bytes(4, "little"))
 			else:
@@ -288,13 +314,14 @@ def ProcessCommands(dict, precalcs = None, offset = None):
 			entry.append(b"\x5A")
 		case "5F":
 			entry.append(b"\x5F")
-			if (offset == None):
+			if (precalcs == None):
 				entry.append(0x0.to_bytes(4, "little"))
 			else:
-				entry.append((offset+1).to_bytes(4, "little"))
-				Utils.EEOF_temp.append(offset+1)
+				entry.append((precalcs[dict["LABEL"]]+1).to_bytes(4, "little"))
+				Utils.EEOF_temp.append(precalcs[dict["LABEL"]]+1)
 				Utils.jump_counter += 1
-			entry.append(bytes.fromhex(dict["DATA"]))
+			entry.append(dict["ID"].to_bytes(2, "little"))
+			entry.append(dict["VALUE"].to_bytes(2, "little"))
 		case "68":
 			entry.append(b"\x68")
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -375,9 +402,6 @@ for i in range(len(Filenames)):
 
 	file_new = open("sn_new/%04d.bin" % i, "wb")
 	file_new.write((len(dump["HEADER"]) * 4 + 4).to_bytes(4, "little"))
-
-	for x in range(0, len(dump["HEADER"])):
-		file_new.write(dump["HEADER"][x].to_bytes(4, "little", signed=True))
 	
 	offset = len(dump["HEADER"]) * 4 + 4
 
@@ -387,7 +411,10 @@ for i in range(len(Filenames)):
 	
 	Utils.text_counter = 0
 	for x in range(0, len(dump["COMMANDS"])):
-		OUTPUT.append(ProcessCommands(dump["COMMANDS"][x], PrecalculateOffsets, PrecalculateOffsets[dump["COMMANDS"][x]["LABEL"]]))
+		OUTPUT.append(ProcessCommands(dump["COMMANDS"][x], PrecalculateOffsets))
+
+	for x in range(0, len(dump["HEADER"])):
+		file_new.write(PrecalculateOffsets[dump["HEADER"][x]].to_bytes(4, "little", signed=True))
 	
 	footer = []
 	footer.append(Utils.text_counter.to_bytes(4, "little"))
