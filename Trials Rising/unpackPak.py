@@ -40,10 +40,10 @@ for i in range(file_count - 1):
 	file.seek(DUMP[i]["offset"])
 	if (DUMP[i]["flag"] == 1):
 		dump = zlib.decompress(file.read(DUMP[i]["com_size"]))
+		assert(len(dump) == DUMP[i]["unc_size"])
 	elif (DUMP[i]["flag"] == 0):
 		assert(DUMP[i]["com_size"] == DUMP[i]["unc_size"])
 		dump = file.read(DUMP[i]["unc_size"])
-	assert(len(dump) == DUMP[i]["unc_size"])
 	os.makedirs(os.path.dirname(os.path.normpath(f"{Path(sys.argv[1]).stem}/{Filenames[i]}")), exist_ok=True)
 	new_file = open(os.path.normpath(f"{Path(sys.argv[1]).stem}/{Filenames[i]}"), "wb")
 	new_file.write(dump)
