@@ -50,7 +50,7 @@ def ProcessMessage(entry, file):
 	entry["STRING"] = readString(file)
 	return entry
 
-# 0x1677D0 - Command array
+# 0x164F58 - Command array
 def ProcessCMD(cmd: int, file, size):
 	entry = {}
 	entry["LABEL"] = "0x%X" % (file.tell() - 1)
