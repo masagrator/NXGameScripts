@@ -309,6 +309,27 @@ def ProcessCommands(dict, precalcs = None):
 		case "7B":
 			entry.append(b"\x7B")
 			entry.append(bytes.fromhex(dict["DATA"]))
+		case "82":
+			entry.append(b"\x82")
+			entry.append(bytes.fromhex(dict["DATA"]))
+		case "83":
+			entry.append(b"\x83")
+			entry.append(bytes.fromhex(dict["DATA"]))
+		case "85":
+			entry.append(b"\x85")
+			entry = ProcessMessage(entry, dict)
+		case "8D":
+			entry.append(b"\x8D")
+		case "92":
+			entry.append(b"\x92")
+			entry.append(bytes.fromhex(dict["DATA"]))
+		case "93":
+			entry.append(b"\x93")
+			entry.append(bytes.fromhex(dict["DATA"]))
+		case "9D":
+			entry.append(b"\x9D")
+			entry.append((dict["ID"]).to_bytes(2, "little"))
+			entry.append(bytes.fromhex(dict["DATA"]))
 		case _:
 			print("UNKNOWN COMMAND!")
 			print(dict["CMD"])
