@@ -414,9 +414,9 @@ file_new.close()
 
 header = []
 
-offset = (len(Filenames)) * 0x10
+offset = (len(Filenames) + 1) * 0x10
 
-for i in range(len(Filenames)):
+for i in range(len(Filenames) + 1):
 	try:
 		file = open("sn_new/%04d.bin" % i, "rb")
 	except:
@@ -432,7 +432,7 @@ for i in range(len(Filenames)):
 
 data = b"".join(header)
 
-for i in range(len(Filenames)):
+for i in range(len(Filenames) + 1):
 	file = open("sn_new/%04d.bin" % i, "rb")
 	data += file.read()
 	file.close()
