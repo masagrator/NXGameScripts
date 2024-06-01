@@ -1,16 +1,6 @@
 import json
 import sys
 
-def readString(myfile):
-    chars = []
-    while True:
-        c = myfile.read(1)
-        if c == b'\x00':
-            return str(b"".join(chars).decode("UTF-8"))
-        chars.append(c)
-
-MESSAGES = []
-
 file = open(sys.argv[1], "r", encoding="UTF-8")
 dump = json.load(file)
 file.close()
