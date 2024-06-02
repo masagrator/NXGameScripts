@@ -46,8 +46,8 @@ for i in range(file_count):
     entry = {}
     sector_offset = int.from_bytes(file.read(2), "little")
     entry["offset"] = sector_offset * 0x800 + int.from_bytes(file.read(2), "little")
-    entry["sector_size_upper_boundary"] = int.from_bytes(file.read(2), "little")
-    entry["size"] = int.from_bytes(file.read(2), "little")
+    sector_size_upper_boundary = int.from_bytes(file.read(2), "little") * 0x800
+    entry["size"] = (sector_size_upper_boundary & ~0xFFFF) + int.from_bytes(file.read(2), "little")
     DATA.append(entry)
 
 base_pos = file.tell()
@@ -66,7 +66,12 @@ os.makedirs(Path(sys.argv[1]).stem, exist_ok=True)
 for i in range(1, file_count-1):
     print(FILENAMES[i-1])
     file.seek(base_pos + DATA[i]["offset"])
-    new_file = open(f"{Path(sys.argv[1]).stem}/{FILENAMES[i-1]}.dat", "wb")
+    MAGIC = file.read(4)
+    file.seek(base_pos + DATA[i]["offset"])
+    if (MAGIC in [b"mrgd", b"MZX0"]):
+        new_file = open(f"{Path(sys.argv[1]).stem}/{FILENAMES[i-1]}.{MAGIC.decode('ascii').lower()}", "wb")
+    else:
+        new_file = open(f"{Path(sys.argv[1]).stem}/{FILENAMES[i-1]}.dat", "wb")
     new_file.write(file.read(DATA[i]["size"]))
     new_file.close()
 
