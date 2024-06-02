@@ -77,13 +77,7 @@ os.makedirs("Parsed", exist_ok=True)
 file = open(sys.argv[1], "rb")
 unc_data = mzx0_decompress(file, True)
 
-try:
-    unc_data = unc_data.decode("shift_jis_2004")
-except:
-    print("Couldn't decode file to UTF-8, writing in bytes format")
-    new_file = open(f"Parsed/{Path(sys.argv[1]).stem}.txt", "wb")
-else:
-    unc_data = unc_data.replace(";", ";\n")
-    new_file = open(f"Parsed/{Path(sys.argv[1]).stem}.txt", "w", encoding="UTF-8")
+unc_data = unc_data.replace(b";", b";\n")
+new_file = open(f"Parsed/{Path(sys.argv[1]).stem}.txt", "wb")
 new_file.write(unc_data)
 new_file.close()
