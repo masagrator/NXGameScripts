@@ -112,6 +112,7 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "RUBY"
 			F.seek(1, 1) # string size
 			entry["STRING"] = readString(F)
+			entry["ENG"] = ""
 			F.seek(start_offset + argsize)
 		case 209:
 			entry["TYPE"] = "RUBYtm"
@@ -146,6 +147,7 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "STRING"
 			entry["ID"] = int.from_bytes(F.read(1), "little")
 			entry["STRING"] = readString(F)
+			entry["ENG"] = ""
 			F.seek(start_offset + argsize)
 		case 903:
 			entry["TYPE"] = "BGM_WAIT"
@@ -159,6 +161,7 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["UNK0"] = F.read(5).hex()
 			entry["ID2"] = int.from_bytes(F.read(1), "little")
 			entry["STRING"] = readString(F)
+			entry["ENG"] = ""
 			F.seek(start_offset + argsize)
 		case 1301:
 			entry["TYPE"] = "CALL_DEMO"
@@ -182,6 +185,7 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "PHRASE_SET"
 			entry["ID"] = int.from_bytes(F.read(4), "little")
 			entry["STRING"] = readString(F)
+			entry["ENG"] = ""
 			F.seek(start_offset + argsize)
 		case 1402:
 			entry["TYPE"] = "PHRASE_FADE"
@@ -244,12 +248,17 @@ def processAssembly(file, size):
 		else:
 			file.seek(-1, 1)
 			entry2 = {}
-			entry2["OFFSET"] = "0x%X" % (file.tell())
+			entry2["TYPE"] = "MESSAGE"
 			if (file.read(2) == b"\x00\x00"):
 				if (file.tell() % 4 != 0):
 					file.seek(4 - (file.tell() % 4), 1)
 			else: file.seek(-2, 1)
 			entry2["STRING"] = readString(file)
+			if (entry2["STRING"] != ""):
+				entry2["ENG"] = ""
+			else: 
+				entry2.pop("STRING")
+				entry2["TYPE"] = "MESSAGE_EMPTY"
 			if (file.tell() % 4 != 0):
 				file.seek(4 - (file.tell() % 4), 1)
 			if (page == False):
