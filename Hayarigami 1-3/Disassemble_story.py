@@ -43,7 +43,6 @@ def GetFileSize(F):
 def Disassemble_CMD(F, cmd, argsize):
 	start_offset = F.tell()
 	entry = {}
-	entry["OFFSET"] = "0x%X" % (start_offset - 4)
 	match(cmd):
 		case 1:
 			entry["TYPE"] = "DEMO"
@@ -53,8 +52,8 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "DEMOtm"
 		case 3:
 			entry["TYPE"] = "PAGE"
-			entry["UNK0"] = F.read(2).hex()
-			entry["WINDOW_SIZE"] = int.from_bytes(F.read(2), "little")
+			entry["POS_X"] = int.from_bytes(F.read(2), "little")
+			entry["POS_Y"] = int.from_bytes(F.read(2), "little")
 			entry["PAGE_NUMBER"] = int.from_bytes(F.read(2), "little")
 			return entry
 		case 4:
@@ -93,9 +92,6 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 202:
 			entry["TYPE"] = "BWAIT"
 			entry["ARG"] = int.from_bytes(F.read(4), "little")
-		case 212:
-			entry["TYPE"] = "TEXT_TOP"
-			entry["ARG"] = int.from_bytes(F.read(2), "little")
 		case 203:
 			entry["TYPE"] = "TWAIT"
 		case 204:
@@ -104,6 +100,11 @@ def Disassemble_CMD(F, cmd, argsize):
 			if (entry["ARGS"] == [0, 0]): entry["ARGS"] = "BREAK_LINE"
 			elif (entry["ARGS"] == [1, 0]): entry["ARGS"] = "PRESS_TO_BREAK_LINE"
 			elif (entry["ARGS"] == [1, 3]): entry["ARGS"] = "PRESS_TO_END_MESSAGE"
+		case 205:
+			entry["TYPE"] = "FONT"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 206:
+			entry["TYPE"] = "FONTtm"
 		case 207:
 			entry["TYPE"] = "MSPEED"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
@@ -114,6 +115,9 @@ def Disassemble_CMD(F, cmd, argsize):
 			F.seek(start_offset + argsize)
 		case 209:
 			entry["TYPE"] = "RUBYtm"
+		case 212:
+			entry["TYPE"] = "TEXT_TOP"
+			entry["ARG"] = int.from_bytes(F.read(2), "little")
 		case 213:
 			entry["TYPE"] = "EMBED"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
@@ -143,6 +147,12 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["ID"] = int.from_bytes(F.read(1), "little")
 			entry["STRING"] = readString(F)
 			F.seek(start_offset + argsize)
+		case 903:
+			entry["TYPE"] = "BGM_WAIT"
+		case 906:
+			entry["TYPE"] = "BGM_STOP"
+		case 917:
+			entry["TYPE"] = "SE_ALL_STOP"
 		case 1001:
 			entry["TYPE"] = "EMBED_EDIT"
 			entry["ID1"] = int.from_bytes(F.read(2), "little")
@@ -158,12 +168,16 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 1303:
 			entry["TYPE"] = "OPTWND"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
+		case 1307:
+			entry["TYPE"] = "BACKLOG_CLEAR"
 		case 1308:
 			entry["TYPE"] = "HIDE_SELECTER_MENU"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
 		case 1309:
 			entry["TYPE"] = "HIDE_NAMEEDIT_MENU"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
+		case 1311:
+			entry["TYPE"] = "STOP_SKIP"
 		case 1401:
 			entry["TYPE"] = "PHRASE_SET"
 			entry["ID"] = int.from_bytes(F.read(4), "little")
@@ -177,16 +191,31 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "PHRASE_MOVE"
 			entry["UNK0"] = F.read(argsize-2).hex()
 			entry["PHRASE_ID"] = int.from_bytes(F.read(2), "little")
+		case 2012:
+			entry["TYPE"] = "LOGIC_CLEAR_KEY"
+		case 2101:
+			entry["TYPE"] = "DLPAGE"
+		case 2102:
+			entry["TYPE"] = "DLPAGEtm"
+		case 2104:
+			entry["TYPE"] = "DLSELSET"
+		case 2105:
+			entry["TYPE"] = "DLSELSETtm"
+		case 2107:
+			entry["TYPE"] = "DLSELECT"
 		case _:
 			entry["TYPE"] = "%d" % cmd
-			entry["UNK0"] = F.read(argsize).hex()
+			if (argsize > 0):
+				entry["UNK0"] = F.read(argsize).hex()
 	return entry
 
 def processAssembly(file, size):
 	Dump = []
 	file.seek(0x0)
+	page = False
 	while (file.tell() < size):
-		entry = {}
+		if (page == False):
+			entry = {}
 		if (file.read(0x1) == b"\xFF"):
 			command_size = int.from_bytes(file.read(1), "little") - 4
 			command_ID = int.from_bytes(file.read(2), "little")
@@ -194,22 +223,38 @@ def processAssembly(file, size):
 			if (Result == None):
 				entry["ARGS"] = file.read(command_size).hex()
 				entry["CMD_ID"] = int(command_ID)
-				Dump.append(entry)
-			else:
+				Result = entry
+			elif (Result["TYPE"] == "PAGE"):
+				entry = {}
+				entry["TYPE"] = "PAGE"
+				entry["POS_X"] = Result["POS_X"]
+				entry["POS_Y"] = Result["POS_Y"]
+				entry["PAGE_NUMBER"] = Result["PAGE_NUMBER"]
+				entry["COMMANDS"] = []
+				page = True
+			elif (Result["TYPE"] == "PAGEtm"):
+				Result = entry
+				page = False
+			if (page == False):
 				Dump.append(Result)
+			elif (Result["TYPE"] != "PAGE"):
+				entry["COMMANDS"].append(Result)
 			while (file.tell() % 4 != 0):
 				file.seek(1, 1)
 		else:
 			file.seek(-1, 1)
-			entry["OFFSET"] = "0x%X" % (file.tell())
+			entry2 = {}
+			entry2["OFFSET"] = "0x%X" % (file.tell())
 			if (file.read(2) == b"\x00\x00"):
 				if (file.tell() % 4 != 0):
 					file.seek(4 - (file.tell() % 4), 1)
 			else: file.seek(-2, 1)
-			entry["STRING"] = readString(file)
+			entry2["STRING"] = readString(file)
 			if (file.tell() % 4 != 0):
 				file.seek(4 - (file.tell() % 4), 1)
-			Dump.append(entry)
+			if (page == False):
+				Dump.append(entry2)
+			else: entry["COMMANDS"].append(entry2)
 	return Dump
 
 file = open("story1.dat", "rb")
