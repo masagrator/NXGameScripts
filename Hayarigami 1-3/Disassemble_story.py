@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import shutil
+import sys
 
 string = False
 
@@ -243,7 +244,8 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["UNK0"] = F.read(argsize).hex()
 		case 913:
 			entry["TYPE"] = "MSG_UNK_913"
-			entry["UNK0"] = F.read(argsize).hex()
+			entry["ARG"] = int.from_bytes(F.read(2), "little")
+			F.seek(6, 1) # For some reason this command has additional bytes that are not counted
 		case 914:
 			entry["TYPE"] = "SE_PLAY"
 			entry["UNK0"] = F.read(argsize).hex()
@@ -342,10 +344,10 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "LOGIC_GET_KEY"
 			entry["UNK0"] = F.read(argsize).hex()
 		case 2007:
-			entry["TYPE"] = "BG_LOAD"
+			entry["TYPE"] = "LOGIC_CTL"
 			entry["UNK0"] = F.read(argsize).hex()
 		case 2008:
-			entry["TYPE"] = "LOGIC_CTL"
+			entry["TYPE"] = "LOGIC_LOAD"
 			entry["UNK0"] = F.read(argsize).hex()
 		case 2009:
 			entry["TYPE"] = "GAME_END"
@@ -428,9 +430,9 @@ def processAssembly(file, size):
 			entry2["STRING"] = readString(file)
 			if (entry2["STRING"] != ""):
 				entry2["ENG"] = ""
-			else: 
-				entry2.pop("STRING")
-				entry2["TYPE"] = "MESSAGE_EMPTY"
+			else:
+				print("Invalid string detected!")
+				sys.exit()
 			if (file.tell() % 4 != 0):
 				file.seek(4 - (file.tell() % 4), 1)
 			if (page == False):
@@ -474,10 +476,12 @@ for i in range(0, len(files)):
 	size = GetFileSize(file)
 	Dump = processAssembly(file, size)
 	file.close()
-	file_new = open("json\%s.json" % ID, "w", encoding="UTF-8")
+	file_new = open("json/%s.json" % ID, "w", encoding="UTF-8")
 	json.dump(Dump, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
 	if (readString.string == True):
-		shutil.copyfile("json\%s.json" % ID, "scenario\%s.json" % ID)
-
-shutil.rmtree('extracted')
+		shutil.copyfile("json/%s.json" % ID, "scenario\%s.json" % ID)
+file_new = open("json/order.txt", "w", encoding="ASCII")
+for x in range(len(IDs)):
+	file_new.write("%d\n" % IDs[x])
+file_new.close()
