@@ -3,6 +3,8 @@ import json
 import os
 import shutil
 
+string = False
+
 def SortNumber(elem):
 	return elem
 
@@ -16,15 +18,15 @@ def InvertString(bytes):
 	return b"".join(chars)
 
 def readString(myfile):
+	readString.string = True
 	chars = []
 	while True:
 		c = myfile.read(1)
 		if ((c == b'\x00') or (c == b'\xFF')):
 			myfile.seek(-1, 1)
-			while (myfile.tell() % 4 != 0):
-				myfile.seek(1, 1)
 			return str(InvertString(b"".join(chars)).decode("shift_jis_2004"))
 		chars.append(c)
+readString.string = False
 
 def TakeID(F):
 	pos = F.tell()
@@ -112,10 +114,17 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "RUBY"
 			F.seek(1, 1) # string size
 			entry["STRING"] = readString(F)
+			F.seek(1, 1)
 			entry["ENG"] = ""
-			F.seek(start_offset + argsize)
+			assert(start_offset + argsize == F.tell())
 		case 209:
 			entry["TYPE"] = "RUBYtm"
+		case 210:
+			entry["TYPE"] = "TEXT_LEFT"
+			entry["ARG"] = int.from_bytes(F.read(2), "little")
+		case 211:
+			entry["TYPE"] = "TEXT_RIGHT"
+			entry["ARG"] = int.from_bytes(F.read(2), "little")
 		case 212:
 			entry["TYPE"] = "TEXT_TOP"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
@@ -125,14 +134,74 @@ def Disassemble_CMD(F, cmd, argsize):
 		case 214:
 			entry["TYPE"] = "SPACE"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
+		case 215:
+			entry["TYPE"] = "CURSOR"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 216:
+			entry["TYPE"] = "TEXT_FADE"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 217:
 			entry["TYPE"] = "ICON"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
+		case 401:
+			entry["TYPE"] = "BG_LOAD"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 402:
+			entry["TYPE"] = "BG_WAIT"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 403:
+			entry["TYPE"] = "BG_FADE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 404:
+			entry["TYPE"] = "BG_COLOR"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 405:
+			entry["TYPE"] = "BG_MOVE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 406:
+			entry["TYPE"] = "BG_SIZE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 407:
+			entry["TYPE"] = "BG_ST"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 501:
+			entry["TYPE"] = "TX2_LOAD"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 502:
+			entry["TYPE"] = "TX2_MOVE"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 503:
 			entry["TYPE"] = "TX2_FADE"
 			entry["UNK0"] = F.read(argsize).hex()
+		case 504:
+			entry["TYPE"] = "TX2_SIZE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 505:
+			entry["TYPE"] = "TX2_ST"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 506:
+			entry["TYPE"] = "TX2_COLOR"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 507:
+			entry["TYPE"] = "TX2_ZGP"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 508:
+			entry["TYPE"] = "TX2_CENTERING"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 509:
+			entry["TYPE"] = "TX2_CTL_TRACK"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 551:
+			entry["TYPE"] = "TX2_PACK_READ"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 552:
+			entry["TYPE"] = "TX2_PACK_WAIT"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 701:
 			entry["TYPE"] = "SCR_FADE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 702:
+			entry["TYPE"] = "SCR_VIB"
 			entry["UNK0"] = F.read(argsize).hex()
 		case 801:
 			entry["TYPE"] = "FLAG"
@@ -147,12 +216,43 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "STRING"
 			entry["ID"] = int.from_bytes(F.read(1), "little")
 			entry["STRING"] = readString(F)
+			F.seek(1, 1)
 			entry["ENG"] = ""
-			F.seek(start_offset + argsize)
+			assert(start_offset + argsize == F.tell())
+		case 804:
+			entry["TYPE"] = "PARAM_COMPARE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 806:
+			entry["TYPE"] = "PARAM_COPY"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 902:
+			entry["TYPE"] = "BGM_READY"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 903:
 			entry["TYPE"] = "BGM_WAIT"
+		case 904:
+			entry["TYPE"] = "BGM_PLAY"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 905:
+			entry["TYPE"] = "BGM_VOL"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 906:
 			entry["TYPE"] = "BGM_STOP"
+		case 912:
+			entry["TYPE"] = "MSG_UNK_912"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 913:
+			entry["TYPE"] = "MSG_UNK_913"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 914:
+			entry["TYPE"] = "SE_PLAY"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 915:
+			entry["TYPE"] = "SE_VOL"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 916:
+			entry["TYPE"] = "SE_STOP"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 917:
 			entry["TYPE"] = "SE_ALL_STOP"
 		case 1001:
@@ -161,16 +261,42 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["UNK0"] = F.read(5).hex()
 			entry["ID2"] = int.from_bytes(F.read(1), "little")
 			entry["STRING"] = readString(F)
+			F.seek(1, 1)
 			entry["ENG"] = ""
-			F.seek(start_offset + argsize)
+			assert(start_offset + argsize == F.tell())
+		case 1005:
+			entry["TYPE"] = "LOGIC_INFER"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 1006:
+			entry["TYPE"] = "SAVE_POINT"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 1102:
+			entry["TYPE"] = "PAD_VIB"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 1201:
+			entry["TYPE"] = "CODE_3D_PLAY"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 1203:
+			entry["TYPE"] = "CODE_3D_FADE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 1204:
+			entry["TYPE"] = "CODE_3D_ROTATE"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 1301:
 			entry["TYPE"] = "CALL_DEMO"
-			entry["UNK0"] = F.read(argsize).hex()
+			entry["FILE_ID"] = int.from_bytes(F.read(4), "little")
+			entry["UNK0"] = F.read(argsize-4).hex()
 		case 1302:
 			entry["TYPE"] = "WAIT_DEMO_ALL"
 		case 1303:
 			entry["TYPE"] = "OPTWND"
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
+		case 1304:
+			entry["TYPE"] = "RANDOM"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 1306:
+			entry["TYPE"] = "DENY_SKIP"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 1307:
 			entry["TYPE"] = "BACKLOG_CLEAR"
 		case 1308:
@@ -181,12 +307,17 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["ARG"] = int.from_bytes(F.read(2), "little")
 		case 1311:
 			entry["TYPE"] = "STOP_SKIP"
+		case 1312:
+			entry["TYPE"] = "TXTHIDE_CTL"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 1401:
 			entry["TYPE"] = "PHRASE_SET"
 			entry["ID"] = int.from_bytes(F.read(4), "little")
 			entry["STRING"] = readString(F)
+			F.seek(1, 1)
 			entry["ENG"] = ""
-			F.seek(start_offset + argsize)
+			entry["UNK"] = int.from_bytes(F.read(1), "little")
+			assert(start_offset + argsize == F.tell())
 		case 1402:
 			entry["TYPE"] = "PHRASE_FADE"
 			entry["UNK0"] = F.read(argsize-2).hex()
@@ -195,20 +326,61 @@ def Disassemble_CMD(F, cmd, argsize):
 			entry["TYPE"] = "PHRASE_MOVE"
 			entry["UNK0"] = F.read(argsize-2).hex()
 			entry["PHRASE_ID"] = int.from_bytes(F.read(2), "little")
+		case 2001:
+			entry["TYPE"] = "KEYWORD"
+			entry["KEYWORD_ID"] = int.from_bytes(F.read(2), "little")
+		case 2003:
+			entry["TYPE"] = "ADD_MEMO"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2004:
+			entry["TYPE"] = "LOGIC_MODE"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2005:
+			entry["TYPE"] = "LOGIC_SET_KEY"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2006:
+			entry["TYPE"] = "LOGIC_GET_KEY"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2007:
+			entry["TYPE"] = "BG_LOAD"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2008:
+			entry["TYPE"] = "LOGIC_CTL"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2009:
+			entry["TYPE"] = "GAME_END"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2011:
+			entry["TYPE"] = "CHOOSE_KEYWORD"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 2012:
 			entry["TYPE"] = "LOGIC_CLEAR_KEY"
 		case 2101:
 			entry["TYPE"] = "DLPAGE"
 		case 2102:
 			entry["TYPE"] = "DLPAGEtm"
+		case 2103:
+			entry["TYPE"] = "DLKEY"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 2104:
 			entry["TYPE"] = "DLSELSET"
 		case 2105:
 			entry["TYPE"] = "DLSELSETtm"
+		case 2106:
+			entry["TYPE"] = "DLSEL"
+			entry["UNK0"] = F.read(argsize).hex()
 		case 2107:
 			entry["TYPE"] = "DLSELECT"
+		case 2108:
+			entry["TYPE"] = "ILCAMERA"
+			entry["UNK0"] = F.read(argsize).hex()
+		case 2109:
+			entry["TYPE"] = "ILZOOM"
+			entry["UNK0"] = F.read(argsize).hex()
 		case _:
 			entry["TYPE"] = "%d" % cmd
+			print("New CMD: %d" % cmd)
+			input()
 			if (argsize > 0):
 				entry["UNK0"] = F.read(argsize).hex()
 	return entry
@@ -293,15 +465,19 @@ file.close()
 files = glob.glob("extracted/*.dat")
 
 os.makedirs("json", exist_ok=True)
+os.makedirs("scenario", exist_ok=True)
 for i in range(0, len(files)):
+	readString.string = False
 	file = open(files[i], "rb")
 	ID = TakeID(file)
 	print(ID)
 	size = GetFileSize(file)
-	file_new = open("json\%s.json" % ID, "w", encoding="UTF-8")
 	Dump = processAssembly(file, size)
 	file.close()
+	file_new = open("json\%s.json" % ID, "w", encoding="UTF-8")
 	json.dump(Dump, file_new, indent="\t", ensure_ascii=False)
 	file_new.close()
+	if (readString.string == True):
+		shutil.copyfile("json\%s.json" % ID, "scenario\%s.json" % ID)
 
 shutil.rmtree('extracted')
