@@ -238,7 +238,16 @@ for i in range(len(TABLE)):
     try:
         dec_data = zlib.decompress(b"".join(RDI_OUTPUT[8:]))
     except:
-        print("Failed decompressing data! Ignoring...")
+        print("Failed decompressing data! Dumping raw file to \"FAILED\" folder. Ignoring...")
+        os.makedirs("FAILED/RAW", exist_ok=True)
+        os.makedirs("FAILED/DECRYPTED", exist_ok=True)
+        new_file = open("FAILED/DECRYPTED/%s" % TABLE[i]["FILENAME"], "wb")
+        new_file.write(b"".join(RDI_OUTPUT))
+        new_file.close()
+        new_file = open("FAILED/RAW/%s" % TABLE[i]["FILENAME"], "wb")
+        for x in range(len(DATA)):
+            new_file.write(DATA[x].to_bytes(4, "little"))
+        new_file.close()
         continue
     new_file = open("RES/%s" % TABLE[i]["FILENAME"], "wb")
     new_file.write(b"".join(RDI_OUTPUT[0:8]))
