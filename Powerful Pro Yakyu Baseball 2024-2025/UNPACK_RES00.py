@@ -220,10 +220,16 @@ for i in range(file_count):
 file.close()
 
 file = open("RES00.RDB", "rb")
+file.seek(0, 2)
+RDBfilesize = file.tell()
 for i in range(len(TABLE)):
     if (TABLE[i]["flag"] > 0x20):
+        print("%d/%d: %s, unsupported flag. Ignoring..." % (i+1, len(TABLE), TABLE[i]["FILENAME"]))
         continue
-    print("%d/%d: %s" % (i+1, len(TABLE), TABLE[i]["FILENAME"]))
+    else: print("%d/%d: %s" % (i+1, len(TABLE), TABLE[i]["FILENAME"]))
+    if (TABLE[i]["OFFSET"] > RDBfilesize):
+        print("READ OFFSET IS WRONG: %s, IGNORING..." % hex(TABLE[i]["OFFSET"]))
+        continue
     file.seek(TABLE[i]["OFFSET"])
     DATA = array('I')
     DATA.fromfile(file, TABLE[i]["DEC_SIZE"] // 4)
@@ -234,21 +240,25 @@ for i in range(len(TABLE)):
         KEYTABLE[x % 64] = KEYTABLE[x % 64] ^ KEYTABLE[(x+3) % 64]
         RDI_OUTPUT.append((DATA[x] ^ KEYTABLE[(x+1) % 64]).to_bytes(4, "little"))  
 
+
     filesize = RDI_OUTPUT[6]
-    try:
-        dec_data = zlib.decompress(b"".join(RDI_OUTPUT[8:]))
-    except:
-        print("Failed decompressing data! Dumping raw file to \"FAILED\" folder. Ignoring...")
-        os.makedirs("FAILED/RAW", exist_ok=True)
-        os.makedirs("FAILED/DECRYPTED", exist_ok=True)
-        new_file = open("FAILED/DECRYPTED/%s" % TABLE[i]["FILENAME"], "wb")
-        new_file.write(b"".join(RDI_OUTPUT))
-        new_file.close()
-        new_file = open("FAILED/RAW/%s" % TABLE[i]["FILENAME"], "wb")
-        for x in range(len(DATA)):
-            new_file.write(DATA[x].to_bytes(4, "little"))
-        new_file.close()
-        continue
+    if (TABLE[i]["flag"] > 0):
+        try:
+            dec_data = zlib.decompress(b"".join(RDI_OUTPUT[8:]))
+        except:
+            print("Failed decompressing data! Dumping raw file to \"FAILED\" folder. Ignoring...")
+            os.makedirs("FAILED/RAW", exist_ok=True)
+            os.makedirs("FAILED/DECRYPTED", exist_ok=True)
+            new_file = open("FAILED/DECRYPTED/%s" % TABLE[i]["FILENAME"], "wb")
+            new_file.write(b"".join(RDI_OUTPUT))
+            new_file.close()
+            new_file = open("FAILED/RAW/%s" % TABLE[i]["FILENAME"], "wb")
+            for x in range(len(DATA)):
+                new_file.write(DATA[x].to_bytes(4, "little"))
+            new_file.close()
+            continue
+    else:
+        dec_data = b"".join(RDI_OUTPUT[8:])
     new_file = open("RES/%s" % TABLE[i]["FILENAME"], "wb")
     new_file.write(b"".join(RDI_OUTPUT[0:8]))
     new_file.write(dec_data)
