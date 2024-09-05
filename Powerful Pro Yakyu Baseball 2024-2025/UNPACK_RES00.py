@@ -223,7 +223,7 @@ file = open("RES00.RDB", "rb")
 for i in range(len(TABLE)):
     if (TABLE[i]["flag"] > 0x20):
         continue
-    print(TABLE[i]["FILENAME"])
+    print("%d/%d: %s" % (i+1, len(TABLE), TABLE[i]["FILENAME"]))
     file.seek(TABLE[i]["OFFSET"])
     DATA = array('I')
     DATA.fromfile(file, TABLE[i]["DEC_SIZE"] // 4)
