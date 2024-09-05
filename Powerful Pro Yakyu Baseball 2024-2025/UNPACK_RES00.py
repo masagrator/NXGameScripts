@@ -235,7 +235,11 @@ for i in range(len(TABLE)):
         RDI_OUTPUT.append((DATA[x] ^ KEYTABLE[(x+1) % 64]).to_bytes(4, "little"))  
 
     filesize = RDI_OUTPUT[6]
-    dec_data = zlib.decompress(b"".join(RDI_OUTPUT[8:]))
+    try:
+        dec_data = zlib.decompress(b"".join(RDI_OUTPUT[8:]))
+    except:
+        print("Failed decompressing data! Ignoring...")
+        continue
     new_file = open("RES/%s" % TABLE[i]["FILENAME"], "wb")
     new_file.write(b"".join(RDI_OUTPUT[0:8]))
     new_file.write(dec_data)
