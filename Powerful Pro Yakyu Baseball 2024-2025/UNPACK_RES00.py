@@ -147,7 +147,7 @@ file = open("DEC_RES00.RDI", "wb")
 file.write(b"".join(RDI_OUTPUT))
 file.close()
 
-os.makedirs("RES", exist_ok=True)
+os.makedirs("RES/COM", exist_ok=True)
 
 file = open("DEC_RES00.RDI", "rb")
 if (file.read(4) != b"RDI2"):
@@ -230,6 +230,9 @@ for i in range(len(TABLE)):
     if (TABLE[i]["OFFSET"] > RDBfilesize):
         print("READ OFFSET IS WRONG: %s, IGNORING..." % hex(TABLE[i]["OFFSET"]))
         continue
+    if (TABLE[i]["OFFSET"] + TABLE[i]["DEC_SIZE"] > RDBfilesize):
+        print("READ OFFSET or SIZE IS WRONG: %s, IGNORING..." % hex(TABLE[i]["OFFSET"]))
+        continue
     file.seek(TABLE[i]["OFFSET"])
     DATA = array('I')
     DATA.fromfile(file, TABLE[i]["DEC_SIZE"] // 4)
@@ -241,7 +244,7 @@ for i in range(len(TABLE)):
         RDI_OUTPUT.append((DATA[x] ^ KEYTABLE[(x+1) % 64]).to_bytes(4, "little"))  
 
 
-    filesize = RDI_OUTPUT[6]
+    filesize = int.from_bytes(RDI_OUTPUT[6], "little")
     if (TABLE[i]["flag"] > 0):
         try:
             dec_data = zlib.decompress(b"".join(RDI_OUTPUT[8:]))
