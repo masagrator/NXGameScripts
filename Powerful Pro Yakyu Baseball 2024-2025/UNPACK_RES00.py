@@ -147,7 +147,7 @@ file = open("DEC_RES00.RDI", "wb")
 file.write(b"".join(RDI_OUTPUT))
 file.close()
 
-os.makedirs("RES/COM", exist_ok=True)
+os.makedirs("RES", exist_ok=True)
 
 file = open("DEC_RES00.RDI", "rb")
 if (file.read(4) != b"RDI2"):
