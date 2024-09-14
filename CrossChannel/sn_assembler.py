@@ -2,9 +2,13 @@ import os
 import json
 import numpy
 import sys
+import lzss
+import glob
+from pathlib import Path
 
 class Utils:
 	text_counter = 0
+	STRINGS_COUNTS = []
 
 def GetFileSize(file):
 	pos = file.tell()
@@ -18,7 +22,6 @@ def ProcessCommands(dict, precalcs = None):
 	match(dict["CMD"]):
 		case "0":
 			entry.append(numpy.uint8(0))
-			entry.append(bytes.fromhex(dict["DATA"]))
 		case "IFGOTO":
 			entry.append(numpy.uint8(1))
 			if (precalcs == None):
@@ -28,17 +31,14 @@ def ProcessCommands(dict, precalcs = None):
 		case "JMP":
 			entry.append(numpy.uint8(2))
 			entry.append(numpy.uint32(dict["ID"]))
+		case "3":
+			entry.append(numpy.uint8(3))
+			entry.append(bytes.fromhex(dict["DATA"]))			
 		case "JMP4":
 			entry.append(numpy.uint8(4))
 			entry.append(numpy.uint32(dict["ID"]))
 		case "RETURN":
 			entry.append(numpy.uint8(5))
-			try:
-				dict["DATA"]
-			except:
-				pass
-			else:
-				entry.append(bytes.fromhex(dict["DATA"]))
 		case "IFGOTO6":
 			entry.append(numpy.uint8(6))
 			entry.append(bytes.fromhex(dict["DATA"]))
@@ -218,15 +218,9 @@ def ProcessCommands(dict, precalcs = None):
 			entry.append(bytes.fromhex(dict["DATA"]))
 		case "VOICE":
 			entry.append(numpy.uint8(0x44))
-			entry.append(numpy.uint16(0xA))
-			entry.append(numpy.uint16(dict["VOICE_ID"]))
 			if (dict["TYPE"] == "WITH_TEXT"):
-				entry.append(bytes.fromhex("5945FFFF"))
-				entry.append(numpy.uint16(Utils.text_counter))
-				Utils.text_counter += 1
-				entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
-			elif (dict["TYPE"] == "WITHOUT_TEXT"):
-				entry.append(bytes.fromhex("592d06000000"))
+				entry.append(numpy.uint16(0xA))
+				entry.append(numpy.uint16(dict["VOICE_ID"]))
 			else:
 				print("UNKNOWN VOICE TYPE!")
 				print(dict["TYPE"])
@@ -277,6 +271,8 @@ def ProcessCommands(dict, precalcs = None):
 		case "51":
 			entry.append(numpy.uint8(0x51))
 			entry.append(bytes.fromhex(dict["DATA"]))
+		case "59":
+			entry.append(numpy.uint8(0x59))
 		case "5A":
 			entry.append(numpy.uint8(0x5A))
 		case "5F":
@@ -327,14 +323,17 @@ def ProcessCommands(dict, precalcs = None):
 			entry.append(dict["STRING"].encode("shift_jis_2004") + b"\x00")
 		case _:
 			print("UNKNOWN COMMAND!")
-			print(dict["CMD"])
+			print("0x%x" % int(dict["CMD"], base=10))
 			sys.exit()
 
 	return b"".join(entry)
 
 os.makedirs("sn_new", exist_ok=True)
 
-for i in range(0, 316):
+files = glob.glob("jsons/*.json")
+file_count = len(files)
+
+for i in range(0, file_count-1):
 	OUTPUT = []
 	PrecalculateOffsets = {}
 	print(i)
@@ -360,21 +359,39 @@ for i in range(0, 316):
 	Utils.text_counter = 0
 	for x in range(0, len(dump["COMMANDS"])):
 		OUTPUT.append(ProcessCommands(dump["COMMANDS"][x], PrecalculateOffsets))
-	
+
+	Utils.STRINGS_COUNTS.append(Utils.text_counter)
+	OUTPUT.append(Utils.text_counter.to_bytes(4, "little"))
+	OUTPUT.append(bytes.fromhex(dump["FOOTER"][8:]))
 	file_new.write(b"".join(OUTPUT))
+	if (file_new.tell() % 16 != 0):
+		file_new.write(b"\x00" * (16 - (file_new.tell() % 16)))
 	file_new.close()
 
-print(316)
 OUTPUT = []
 
-file = open("jsons/0316.json", "r", encoding="UTF-8")
+file = open(files[-1], "r", encoding="UTF-8")
 dump = json.load(file)
 file.close()
 
-file_new = open("sn_new/0316.bin", "wb")
-for i in range(0, len(dump)):
-	for x in range(0, len(dump[i])):
-		OUTPUT.append(numpy.int32(dump[i][x]))
+file_new = open("sn_new/%s.bin" % (Path(files[-1]).stem), "wb")
+for i in range(0, len(dump) - 2):
+	OUTPUT.append(Utils.STRINGS_COUNTS[i].to_bytes(4, "little", signed=True))
+	OUTPUT.append(dump[i]["VALUE2"].to_bytes(4, "little", signed=True))
+	OUTPUT.append(dump[i]["VALUE3"].to_bytes(4, "little", signed=True))
+	OUTPUT.append(dump[i]["ID"].to_bytes(4, "little", signed=True))
+
+print("Text counter: %d" % sum(Utils.STRINGS_COUNTS))
+OUTPUT.append(sum(Utils.STRINGS_COUNTS).to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-2]["VALUE2"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-2]["VALUE3"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-2]["ID"].to_bytes(4, "little", signed=True))
+
+OUTPUT.append(dump[-1]["STRING_COUNT"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-1]["VALUE2"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-1]["VALUE3"].to_bytes(4, "little", signed=True))
+OUTPUT.append(dump[-1]["ID"].to_bytes(4, "little", signed=True))
+	
 
 file_new.write(b"".join(OUTPUT))
 file_new.close()
@@ -383,7 +400,7 @@ header = []
 sn_newfile = open("sn_new_dec.bin", "wb")
 offset = 0x13D0
 
-for i in range(0, 317):
+for i in range(0, file_count):
 	file = open("sn_new/%04d.bin" % i, "rb")
 	header.append(numpy.uint32(offset))
 	header.append(numpy.uint32(GetFileSize(file)))
@@ -393,7 +410,22 @@ for i in range(0, 317):
 
 sn_newfile.write(b"".join(header))
 
-for i in range(0, 317):
+for i in range(0, file_count):
 	file = open("sn_new/%04d.bin" % i, "rb")
 	sn_newfile.write(file.read())
 	file.close()
+
+sn_newfile.close()
+
+sn_file = open("sn_new_dec.bin", "rb")
+data = sn_file.read()
+sn_file.close()
+
+dump = lzss.compress(data, 0)
+
+os.makedirs("Out", exist_ok=True)
+
+file_new = open("Out/sn.bin", "wb")
+file_new.write(len(data).to_bytes(4, "little"))
+file_new.write(dump)
+file_new.close()

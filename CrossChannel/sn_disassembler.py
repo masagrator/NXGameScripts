@@ -86,7 +86,7 @@ for i in range(len(files) - 1):
 
 	header_size = int.from_bytes(file.read(0x4), byteorder="little")
 	while(file.tell() < header_size):
-		OUTPUT["HEADER"].append(int.from_bytes(file.read(0x4), byteorder="little", signed=True))
+		OUTPUT["HEADER"].append(int.from_bytes(file.read(0x2), byteorder="little", signed=True))
 
 	while (file.tell() < end_pos):
 		entry = {}
