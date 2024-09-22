@@ -29,9 +29,8 @@ def getStringLength(string: str, postprocess = False) -> int:
 			case "n": # Break line
 				parsed_string += "&#10;"
 				i += 1
-			case "v": # Voice file, always 8 characters
+			case "v": # Voice file, always added separately from voice number which is 5 digits
 				i += 1
-				i += 8
 			case "r": # Text over text
 				while(True):
 					i += 1
