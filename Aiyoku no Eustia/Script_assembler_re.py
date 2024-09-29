@@ -6,6 +6,8 @@ import pyvips
 
 STRINGS = []
 
+font_use = False
+
 def getStringLength(string: str, postprocess = False) -> int:
 	if (postprocess == False):
 		i = 1
@@ -92,10 +94,12 @@ def getStringLength(string: str, postprocess = False) -> int:
 	return img.width
 
 def splitToList(string: str):
+	if (string[0:2] == "['" and string[-2:] == "']"):
+		return [string[1:-1]]
 	return string[1:-1].split(",")
 
 def AddToStrings(string: str):
-	string_check = string[1:-1].replace("\\n", "\n")
+	string_check = string[1:-1].replace("\\n", "@n")
 	if (string_check not in STRINGS):
 		index = len(STRINGS)
 		STRINGS.append(string_check)
@@ -107,9 +111,12 @@ if (len(sys.argv) < 3):
 	print("Arguments are not valid!")
 	print("Script_assembler_re.py [*.asm folder] [font filepath]")
 	print("Files will be processed without autoadding break lines!")
+else: font_use = True
 
 files = glob.glob(f"{sys.argv[1]}/*.asm")
 os.makedirs("Compiled", exist_ok=True)
+
+text_width = 829
 
 for i in range(0, len(files)):
 	BASE = {}
@@ -128,7 +135,7 @@ for i in range(0, len(files)):
 			value = int(Args[0][1:-1], base=16)
 			if (("0x%04x" % value) in BASE):
 				print("DETECTED IDENTICAL LABELS! CEASING OPERATION")
-				print(Args[0])
+				print(Args)
 				sys.exit()
 			match(Args[1]):
 				case "LOAD_STRING" | "LOAD_CUSTOM_TEXT" | "SET_EFFECT" | "CASE4":
@@ -239,38 +246,25 @@ for i in range(0, len(files)):
 					DUMP.append(0x0.to_bytes(4, "little"))
 				case "LOAD_STRING":
 					DUMP.append(0x0.to_bytes(4, "little"))
-					string = Args[2]
-					Args_temp = line[iter+1].strip().split("\t")
-					if (Args_temp[0][0] != ";"):
-						if (Args_temp[1] == "FUNC" and Args_temp[2] == "'PUSH_MESSAGE'") or (Args_temp[1] == "PUSH_MESSAGE"):						
-							width = getStringLength(Args[2], False)
-							max_width = 958
-							if (width > max_width):
-								new_string = []
-								entry = []
-								old_string = Args[2][1:-1].split(" ")
-								for x in range(len(old_string)):
-									entry.append(old_string[x])
-									width = getStringLength(" ".join(entry), True)
-									if (width > max_width):
-										entry.pop()
-										new_string.append(" ".join(entry))
-										entry = []
-										entry.append(old_string[x])
-								new_string.append(" ".join(entry))
-								if (len(new_string) > 4):
-									print("Detected more than 4 lines for string:")
-									print(Args[2])
-									print("Aborting...")
-									sys.exit()
-								Args[2] = "@n".join(new_string)
-								Args[2] = f"'{Args[2]}'"
+					if (font_use and len(Args[2]) > 32):
+						width = getStringLength(Args[2][1:-1])
+						if (width > text_width):
+							string = []
+							array = Args[2][1:-1].split( )
+							b = 0
+							a = 1
+							while(a <= len(array)):
+								width = getStringLength(" ".join(array[b:a]))
+								if (width > text_width):
+									string.append(" ".join(array[b:a-1]))
+									string.append("\\n")
+									b = a - 1
+								else: a += 1
+							string.append(" ".join(array[b:]))
+							Args[2] = "'%s'" % "".join(string)
 					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
 					DUMP.append(0x5.to_bytes(4, "little"))
 					DUMP.append(0x1.to_bytes(4, "little"))
-				case "PUSH_MESSAGE":
-					DUMP.append(0x7.to_bytes(4, "little"))
-					DUMP.append(0x4006f.to_bytes(4, "little"))
 				case "FUNC":
 					DUMP.append(0x7.to_bytes(4, "little"))
 					match(Args[2]):
@@ -294,6 +288,22 @@ for i in range(0, len(files)):
 				case "SPECIAL_TEXT":
 					values = splitToList(Args[3])
 					DUMP.append(0x0.to_bytes(4, "little"))
+					if (font_use and len(values[0]) > 32):
+						width = getStringLength(values[0][1:-1])
+						if (width > text_width):
+							string = []
+							array = values[0][1:-1].split( )
+							b = 0
+							a = 1
+							while(a <= len(array)):
+								width = getStringLength(" ".join(array[b:a]))
+								if (width > text_width):
+									string.append(" ".join(array[b:a-1]))
+									string.append("\\n")
+									b = a - 1
+								else: a += 1
+							string.append(" ".join(array[b:]))
+							values[0] = "'%s'" % "".join(string)
 					DUMP.append(AddToStrings(values[0]).to_bytes(4, "little"))							
 					DUMP.append(0xE.to_bytes(4, "little"))
 					DUMP.append((int(Args[2], base=16)).to_bytes(4, "little"))
