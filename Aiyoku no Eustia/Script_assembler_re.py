@@ -116,7 +116,7 @@ else: font_use = True
 files = glob.glob(f"{sys.argv[1]}/*.asm")
 os.makedirs("Compiled", exist_ok=True)
 
-text_width = 829
+text_width = 825
 
 for i in range(0, len(files)):
 	BASE = {}
