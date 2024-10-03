@@ -5,6 +5,8 @@ import os
 import pyvips
 
 STRINGS = []
+voice = False
+load_string_last_empty = False
 
 font_use = False
 
@@ -116,7 +118,7 @@ else: font_use = True
 files = glob.glob(f"{sys.argv[1]}/*.asm")
 os.makedirs("Compiled", exist_ok=True)
 
-text_width = 825
+text_width = 807
 
 for i in range(0, len(files)):
 	BASE = {}
@@ -170,6 +172,9 @@ for i in range(0, len(files)):
 		Args = line[iter].strip().split("\t")
 		if (len(Args) == 0 or Args[0][0] == ";"):
 			continue
+		elif (Args[1][0:3] == "CMD.43"):
+				DUMP.append(0x43.to_bytes(4, "little"))
+				DUMP.append(BASE[Args[2]].to_bytes(4, "little"))			
 		elif (Args[1][0:3] == "CMD"):
 			if (len(Args) == 4):
 				values = splitToList(Args[3])
@@ -251,6 +256,7 @@ for i in range(0, len(files)):
 						if (width > text_width):
 							string = []
 							array = Args[2][1:-1].split( )
+							line_count = 1
 							b = 0
 							a = 1
 							while(a <= len(array)):
@@ -258,10 +264,14 @@ for i in range(0, len(files)):
 								if (width > text_width):
 									string.append(" ".join(array[b:a-1]))
 									string.append("\\n")
+									line_count += 1
 									b = a - 1
 								else: a += 1
 							string.append(" ".join(array[b:]))
 							Args[2] = "'%s'" % "".join(string)
+							if (line_count > 3):
+								print("Detected %d lines" % line_count)
+								print("".join(string))
 					DUMP.append(AddToStrings(Args[2]).to_bytes(4, "little"))
 					DUMP.append(0x5.to_bytes(4, "little"))
 					DUMP.append(0x1.to_bytes(4, "little"))
