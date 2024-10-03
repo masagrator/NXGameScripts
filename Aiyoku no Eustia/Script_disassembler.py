@@ -29,23 +29,25 @@ def ProcessDump(BLOB: list):
 					continue
 				if "U32" not in BLOB["COMMANDS"][i].keys():
 					continue
-				elif len(BLOB["COMMANDS"][i]["U32"]) > 1:
-					print("ERROR")
-				if (BLOB["COMMANDS"][i]["U32"][0] != "00000080"):
+				if (BLOB["COMMANDS"][i+2]["CMD"] != 0x1A):
 					continue
-				if (BLOB["COMMANDS"][i-1]["CMD"] != 4):
+				if "U32" in BLOB["COMMANDS"][i+2].keys():
 					continue
-				if "U32" not in BLOB["COMMANDS"][i-1].keys():
+				if (BLOB["COMMANDS"][i+2]["DATA"] != "01000000"):
+					continue
+				if (BLOB["COMMANDS"][i+1]["CMD"] != 6):
+					continue
+				if "U32" not in BLOB["COMMANDS"][i+1].keys():
 					string_id = -1
-				elif len(BLOB["COMMANDS"][i-1]["U32"]) > 1:
+				elif len(BLOB["COMMANDS"][i+1]["U32"]) > 1:
 					print("ERROR")
 				else: 
-					string_id = int.from_bytes(bytes.fromhex(BLOB["COMMANDS"][i-1]["U32"][0]), "little", signed=True)
+					string_id = int.from_bytes(bytes.fromhex(BLOB["COMMANDS"][i]["U32"][0]), "little", signed=True)
 				if (string_id < 0):
 					continue
-				BLOB["COMMANDS"][i-1]["CMD"] = "CASE4"
-				BLOB["COMMANDS"][i-1]["STRING"] = BLOB["STRINGS"][string_id]
-				BLOB["COMMANDS"][i-1].pop("DATA")
+				BLOB["COMMANDS"][i]["CMD"] = "CASE4"
+				BLOB["COMMANDS"][i]["STRING"] = BLOB["STRINGS"][string_id]
+				BLOB["COMMANDS"][i].pop("DATA")
 				if string_id not in pops:
 					pops.append(string_id)
 			case 5:
