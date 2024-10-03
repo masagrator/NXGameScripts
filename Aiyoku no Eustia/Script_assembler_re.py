@@ -172,9 +172,9 @@ for i in range(0, len(files)):
 		Args = line[iter].strip().split("\t")
 		if (len(Args) == 0 or Args[0][0] == ";"):
 			continue
-		elif (Args[1][0:3] == "CMD.43"):
+		elif (Args[1] == "CMD.43"):
 				DUMP.append(0x43.to_bytes(4, "little"))
-				DUMP.append(BASE[Args[2]].to_bytes(4, "little"))			
+				DUMP.append(BASE["0x%04x" % (int(Args[2], base=16))].to_bytes(4, "little"))			
 		elif (Args[1][0:3] == "CMD"):
 			if (len(Args) == 4):
 				values = splitToList(Args[3])
