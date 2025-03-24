@@ -11,8 +11,8 @@ if (os.path.isdir("%s/STREAMS" % os.path.basename(os.path.normpath(sys.argv[1]))
     print("Provided path doesn't store STREAMS folder, aborting...")
     sys.exit()
 
-bank_files = glob.glob("%s/BANKS/*.bnk" % os.path.basename(os.path.normpath(sys.argv[1])))
-stream_files = glob.glob("%s/STREAMS/*.wav" % os.path.basename(os.path.normpath(sys.argv[1])))
+bank_files = glob.glob("%s/BANKS/*.bnk" % os.path.normpath(sys.argv[1]))
+stream_files = glob.glob("%s/STREAMS/*.wav" % os.path.normpath(sys.argv[1]))
 
 print("Detected %d bank files and %d stream files. Packing...")
 
