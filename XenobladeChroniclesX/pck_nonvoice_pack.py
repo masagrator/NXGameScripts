@@ -14,7 +14,7 @@ if (os.path.isdir("%s/STREAMS" % os.path.basename(os.path.normpath(sys.argv[1]))
 bank_files = glob.glob("%s/BANKS/*.bnk" % os.path.normpath(sys.argv[1]))
 stream_files = glob.glob("%s/STREAMS/*.wav" % os.path.normpath(sys.argv[1]))
 
-print("Detected %d bank files and %d stream files. Packing...")
+print("Detected %d bank files and %d stream files. Packing..." % (len(bank_files), len(stream_files)))
 
 os.makedirs("PACKED", exist_ok=True)
 
@@ -77,7 +77,7 @@ if (new_file.tell() % 0x10 != 0):
 
 assert(new_file.tell() == bank_start)
 for i in range(len(bank_files)):
-    print("Bank file %d/%d" % (i+1, len(bank_files)))
+    print("Bank file %d/%d" % (i+1, len(bank_files)), end="\r")
     file = open(bank_files[i], "rb")
     new_file.write(file.read())
     file.close()
@@ -85,7 +85,7 @@ for i in range(len(bank_files)):
         new_file.write(b"\x00" * (0x10 - (new_file.tell() % 0x10)))
 
 for i in range(len(stream_files)):
-    print("Stream file %d/%d" % (i+1, len(stream_files)))
+    print("Stream file %d/%d" % (i+1, len(stream_files)), end="\r")
     file = open(stream_files[i], "rb")
     new_file.write(file.read())
     file.close()

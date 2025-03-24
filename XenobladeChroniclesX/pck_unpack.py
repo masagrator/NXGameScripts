@@ -70,7 +70,7 @@ for i in range(bank_count):
     new_file.write(file.read(BANKS[i]["size"]))
     new_file.close()
 
-print("Unpacked all banks!")
+print("Unpacked all banks!         ")
 
 stream_count = len(STREAMS)
 for i in range(stream_count):
@@ -80,6 +80,6 @@ for i in range(stream_count):
     new_file.write(file.read(STREAMS[i]["size"]))
     new_file.close()
 
-print("Unpacked all streams!")
+print("Unpacked all streams!       ")
 
 file.close()
