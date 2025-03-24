@@ -32,7 +32,7 @@ if (BanksSize != 0):
             offset_multiplier = int.from_bytes(file.read(4), "little")
             entry["size"] = int.from_bytes(file.read(4), "little")
             entry["offset"] = int.from_bytes(file.read(4), "little") * offset_multiplier
-            assert (int.from_bytes(file.read(4), "little") == 0)
+            file.seek(4, 1)
             BANKS.append(entry)
 
 STREAMS = []
@@ -45,7 +45,7 @@ if (StreamsSize):
             offset_multiplier = int.from_bytes(file.read(4), "little")
             entry["size"] = int.from_bytes(file.read(4), "little")
             entry["offset"] = int.from_bytes(file.read(4), "little") * offset_multiplier
-            assert (int.from_bytes(file.read(4), "little") == 0)
+            file.seek(4, 1)
             STREAMS.append(entry)
 
 
