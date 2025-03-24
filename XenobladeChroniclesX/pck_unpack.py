@@ -63,7 +63,7 @@ os.makedirs("%s/BANKS" % Path(sys.argv[1]).stem, exist_ok=True)
 os.makedirs("%s/STREAMS" % Path(sys.argv[1]).stem, exist_ok=True)
 
 for i in range(len(BANKS)):
-    print("Unpacking bank", i+1)
+    print("Unpacking bank", i+1, end="\r")
     file.seek(BANKS[i]["offset"], 0)
     new_file = open("%s/BANKS/%08X.bnk" % (Path(sys.argv[1]).stem, BANKS[i]["hash"]), "wb")
     new_file.write(file.read(BANKS[i]["size"]))
@@ -72,7 +72,7 @@ for i in range(len(BANKS)):
 print("Unpacked all banks!")
 
 for i in range(len(STREAMS)):
-    print("Unpacking stream", i+1)
+    print("Unpacking stream", i+1, end="\r")
     file.seek(STREAMS[i]["offset"], 0)
     new_file = open("%s/STREAMS/%08X.wav" % (Path(sys.argv[1]).stem, STREAMS[i]["hash"]), "wb")
     new_file.write(file.read(STREAMS[i]["size"]))
