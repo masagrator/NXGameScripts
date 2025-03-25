@@ -3,11 +3,11 @@ import glob
 import os
 from pathlib import Path
 
-if (os.path.isdir("%s/BANKS" % os.path.basename(os.path.normpath(sys.argv[1]))) == False):
+if (os.path.isdir("%s/BANKS" % os.path.normpath(sys.argv[1])) == False):
     print("Provided path doesn't store BANKS folder, aborting...")
     sys.exit()
 
-if (os.path.isdir("%s/STREAMS" % os.path.basename(os.path.normpath(sys.argv[1]))) == False):
+if (os.path.isdir("%s/STREAMS" % os.path.normpath(sys.argv[1])) == False):
     print("Provided path doesn't store STREAMS folder, aborting...")
     sys.exit()
 
