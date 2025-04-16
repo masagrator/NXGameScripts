@@ -3,11 +3,11 @@ import glob
 import os
 from pathlib import Path
 
-if (os.path.isdir("%s/BANKS" % os.path.normpath(sys.argv[1])) == False):
+if (os.path.isdir("%s/BANKS" % os.path.basename(os.path.normpath(sys.argv[1]))) == False):
     print("Provided path doesn't store BANKS folder, aborting...")
     sys.exit()
 
-if (os.path.isdir("%s/STREAMS" % os.path.normpath(sys.argv[1])) == False):
+if (os.path.isdir("%s/STREAMS" % os.path.basename(os.path.normpath(sys.argv[1]))) == False):
     print("Provided path doesn't store STREAMS folder, aborting...")
     sys.exit()
 
@@ -44,9 +44,16 @@ files_offset = bank_start
 new_file.write(len(bank_files).to_bytes(4, "little"))
 for i in range(len(bank_files)):
     size = os.path.getsize(bank_files[i])
-    hash = bytes.fromhex(Path(bank_files[i]).stem)
-    hash = int.from_bytes(hash, "big")
-    new_file.write(hash.to_bytes(4, "little"))
+    bank_file = open(bank_files[i], "rb")
+    if (bank_file.read(4) != b"BKHD"):
+        print("%s: Wrong MAGIC! Aborting..." % bank_files[i])
+        bank_file.close()
+        new_file.close()
+        os.remove("PACKED/%s.pck" % os.path.basename(os.path.normpath(sys.argv[1])))
+        sys.exit()
+    bank_file.seek(0xC)
+    new_file.write(bank_file.read(4))
+    bank_file.close()
     offset_multiplier = 0x10
     new_file.write(offset_multiplier.to_bytes(4, "little"))
     new_file.write(size.to_bytes(4, "little"))
@@ -94,4 +101,6 @@ for i in range(len(stream_files)):
 
 new_file.close()
 
-print("Packing finished!")
+print("Packing finished!         ")
+print("You can find file at:")
+print("PACKED/%s.pck" % os.path.basename(os.path.normpath(sys.argv[1])))
