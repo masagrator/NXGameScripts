@@ -11,8 +11,8 @@ if (os.path.isdir("%s/STREAMS" % os.path.basename(os.path.normpath(sys.argv[1]))
     print("Provided path doesn't store STREAMS folder, aborting...")
     sys.exit()
 
-bank_files = sorted(glob.glob("%s/BANKS/*.bnk" % os.path.normpath(sys.argv[1])), key=lambda x: x.lower())
-stream_files = sorted(glob.glob("%s/STREAMS/*.wav" % os.path.normpath(sys.argv[1])), key=lambda x: x.lower())
+bank_files = glob.glob("%s/BANKS/*.bnk" % os.path.normpath(sys.argv[1]))
+stream_files = glob.glob("%s/STREAMS/*.wav" % os.path.normpath(sys.argv[1]))
 
 print("Detected %d bank files and %d stream files. Packing..." % (len(bank_files), len(stream_files)))
 
@@ -42,11 +42,33 @@ new_file.write(b"sfx\x00")
 files_offset = bank_start
 
 new_file.write(len(bank_files).to_bytes(4, "little"))
+BANKS = {}
 for i in range(len(bank_files)):
-    size = os.path.getsize(bank_files[i])
     bank_file = open(bank_files[i], "rb")
     if (bank_file.read(4) != b"BKHD"):
         print("%s: Wrong MAGIC! Aborting..." % bank_files[i])
+        bank_file.close()
+        new_file.close()
+        os.remove("PACKED/%s.pck" % os.path.basename(os.path.normpath(sys.argv[1])))
+        sys.exit()
+    bank_file.seek(0xC)
+    hash = int.from_bytes(bank_file.read(4), "little")
+    bank_file.close()
+    if (hash in BANKS.keys()):
+        print("Doubled key detected! 0x%x" % hash)
+        print("File: %s" % bank_files[i])
+        print("Already used by: %s" % BANKS[hash])
+        sys.exit()
+    BANKS[hash] = bank_files[i]
+
+BANKS = dict(sorted(BANKS.items(), key=lambda item: int(item[0])))
+keys = list(BANKS.keys())
+
+for i in range(len(keys)):
+    size = os.path.getsize(BANKS[keys[i]])
+    bank_file = open(BANKS[keys[i]], "rb")
+    if (bank_file.read(4) != b"BKHD"):
+        print("%s: Wrong MAGIC! Aborting..." % BANKS[keys[i]])
         bank_file.close()
         new_file.close()
         os.remove("PACKED/%s.pck" % os.path.basename(os.path.normpath(sys.argv[1])))
@@ -83,9 +105,9 @@ if (new_file.tell() % 0x10 != 0):
     new_file.write(b"\x00" * (0x10 - (new_file.tell() % 0x10)))
 
 assert(new_file.tell() == bank_start)
-for i in range(len(bank_files)):
+for i in range(len(keys)):
     print("Bank file %d/%d" % (i+1, len(bank_files)), end="\r")
-    file = open(bank_files[i], "rb")
+    file = open(BANKS[keys[i]], "rb")
     new_file.write(file.read())
     file.close()
     if (new_file.tell() % 0x10 != 0):
@@ -96,7 +118,7 @@ for i in range(len(stream_files)):
     file = open(stream_files[i], "rb")
     new_file.write(file.read())
     file.close()
-    if (new_file.tell() % 0x10 != 0):
+    if ((i+1 < len(stream_files)) and (new_file.tell() % 0x10 != 0)):
         new_file.write(b"\x00" * (0x10 - (new_file.tell() % 0x10)))
 
 new_file.close()
