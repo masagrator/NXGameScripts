@@ -17,6 +17,8 @@ size = int.from_bytes(wem_file.read(4), "little")
 assert(frame_size == int.from_bytes(wem_file.read(4), "big"))
 frame_size += 8
 frame_count =  size // frame_size
+print(frame_count)
+print(size // (frame_size - 8))
 wem_file.seek(-4, 1)
 frames = []
 for i in range(frame_count):
@@ -44,10 +46,11 @@ samples_per_channel = 960
 data.append((samples_per_channel).to_bytes(2, "little"))
 data.append((12546).to_bytes(4, "little"))
 data.append((frame_count * samples_per_channel).to_bytes(8, "little"))
-data.append(size.to_bytes(4, "little"))
+size -= (frame_count * 4)
+data.append(len(b"".join(frames)).to_bytes(4, "little"))
 data.append((frame_count * 4).to_bytes(4, "little"))
 data.append(b"data")
-data.append((size + (frame_count * 4)).to_bytes(4, "little"))
+data.append((len(b"".join(frames)) + (frame_count * 4)).to_bytes(4, "little"))
 offset = 0
 for i in range(frame_count):
     data.append(offset.to_bytes(4, "little"))
@@ -58,4 +61,4 @@ data[1] = (len(b"".join(data)) - 8).to_bytes(4, "little")
 new_file = open("%s.wem" % Path(sys.argv[1]).stem, "wb")
 new_file.write(b"".join(data))
 new_file.close()
-print("Finished conversion. Sample count: %d, milliseconds: %f" % ((frame_count * samples_per_channel), (frame_count * samples_per_channel) / 48))
+print("Finished conversion. Sample count: %d, miliseconds: %f" % ((frame_count * samples_per_channel), (frame_count * samples_per_channel) / 48))
