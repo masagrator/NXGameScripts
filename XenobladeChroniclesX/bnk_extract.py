@@ -66,6 +66,7 @@ for i in range(Blocks_amount):
 				new_file.write(file.read(DUMP["DIDX"][x]["size"]))
 				new_file.close()
 		case b"HIRC":
+			os.makedirs("%s" % Path(sys.argv[1]).stem, exist_ok=True)
 			entries_count = int.from_bytes(file.read(4), "little")
 			HIRC = []
 			for x in range(entries_count):
