@@ -41,6 +41,7 @@ new_file.write(b"sfx\x00")
 
 files_offset = bank_start
 
+print("Sorting bank files in numerical order...")
 new_file.write(len(bank_files).to_bytes(4, "little"))
 BANKS = {}
 for i in range(len(bank_files)):
