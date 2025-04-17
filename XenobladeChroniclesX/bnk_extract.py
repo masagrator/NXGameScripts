@@ -66,7 +66,6 @@ for i in range(Blocks_amount):
 				new_file.write(file.read(DUMP["DIDX"][x]["size"]))
 				new_file.close()
 		case b"HIRC":
-			os.makedirs("%s" % Path(sys.argv[1]).stem, exist_ok=True)
 			entries_count = int.from_bytes(file.read(4), "little")
 			HIRC = []
 			for x in range(entries_count):
@@ -87,7 +86,7 @@ for i in range(Blocks_amount):
 					for y in range(numPlaylistItems):
 						entry2 = {}
 						entry2["TrackID"] = int.from_bytes(file.read(4), "little")
-						entry2["Hash_filename"] = "0x%x" % int.from_bytes(file.read(4), "little")
+						entry2["Hash_filename"] = "0x%08x" % int.from_bytes(file.read(4), "little")
 						entry2["EventID"] = int.from_bytes(file.read(4), "little")
 						entry2["PlayAt"] = struct.unpack('d', file.read(8))[0]
 						entry2["BeginTrimOffset"] = struct.unpack('d', file.read(8))[0]
