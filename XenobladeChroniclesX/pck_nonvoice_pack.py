@@ -62,7 +62,7 @@ for i in range(len(bank_files)):
         sys.exit()
     BANKS[hash] = bank_files[i]
 
-BANKS = dict(sorted(BANKS.items(), key=lambda item: int(item[0])))
+BANKS = dict(sorted(BANKS.items()))
 keys = list(BANKS.keys())
 
 for i in range(len(keys)):
