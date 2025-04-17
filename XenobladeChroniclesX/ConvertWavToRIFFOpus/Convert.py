@@ -17,8 +17,6 @@ size = int.from_bytes(wem_file.read(4), "little")
 assert(frame_size == int.from_bytes(wem_file.read(4), "big"))
 frame_size += 8
 frame_count =  size // frame_size
-print(frame_count)
-print(size // (frame_size - 8))
 wem_file.seek(-4, 1)
 frames = []
 for i in range(frame_count):
