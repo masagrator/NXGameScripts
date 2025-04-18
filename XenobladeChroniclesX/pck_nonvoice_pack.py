@@ -67,16 +67,7 @@ keys = list(BANKS.keys())
 
 for i in range(len(keys)):
     size = os.path.getsize(BANKS[keys[i]])
-    bank_file = open(BANKS[keys[i]], "rb")
-    if (bank_file.read(4) != b"BKHD"):
-        print("%s: Wrong MAGIC! Aborting..." % BANKS[keys[i]])
-        bank_file.close()
-        new_file.close()
-        os.remove("PACKED/%s.pck" % os.path.basename(os.path.normpath(sys.argv[1])))
-        sys.exit()
-    bank_file.seek(0xC)
-    new_file.write(bank_file.read(4))
-    bank_file.close()
+    new_file.write(keys[i].to_bytes(4, "little"))
     offset_multiplier = 0x10
     new_file.write(offset_multiplier.to_bytes(4, "little"))
     new_file.write(size.to_bytes(4, "little"))
@@ -86,12 +77,24 @@ for i in range(len(keys)):
     if (files_offset % 0x10 != 0):
         files_offset += 0x10 - (files_offset % 0x10)
 
+print("Sorting stream files in numerical order...")
+STREAMS = {}
 new_file.write(len(stream_files).to_bytes(4, "little"))
 for i in range(len(stream_files)):
-    size = os.path.getsize(stream_files[i])
     hash = bytes.fromhex(Path(stream_files[i]).stem)
     hash = int.from_bytes(hash, "big")
-    new_file.write(hash.to_bytes(4, "little"))
+    if (hash in STREAMS.keys()):
+        print("Doubled key detected! 0x%x" % hash)
+        print("File: %s" % stream_files[i])
+        print("Already used by: %s" % STREAMS[hash])
+    STREAMS[hash] = stream_files[i]
+
+STREAMS = dict(sorted(STREAMS.items()))
+keys2 = list(STREAMS.keys())
+
+for i in range(len(keys2)):
+    size = os.path.getsize(STREAMS[keys2[i]])
+    new_file.write(keys2[i].to_bytes(4, "little"))
     offset_multiplier = 0x10
     new_file.write(offset_multiplier.to_bytes(4, "little"))
     new_file.write(size.to_bytes(4, "little"))
@@ -114,12 +117,12 @@ for i in range(len(keys)):
     if (new_file.tell() % 0x10 != 0):
         new_file.write(b"\x00" * (0x10 - (new_file.tell() % 0x10)))
 
-for i in range(len(stream_files)):
-    print("Stream file %d/%d" % (i+1, len(stream_files)), end="\r")
-    file = open(stream_files[i], "rb")
+for i in range(len(keys2)):
+    print("Stream file %d/%d" % (i+1, len(keys2)), end="\r")
+    file = open(STREAMS[keys2[i]], "rb")
     new_file.write(file.read())
     file.close()
-    if ((i+1 < len(stream_files)) and (new_file.tell() % 0x10 != 0)):
+    if ((i+1 < len(keys2)) and (new_file.tell() % 0x10 != 0)):
         new_file.write(b"\x00" * (0x10 - (new_file.tell() % 0x10)))
 
 new_file.close()
