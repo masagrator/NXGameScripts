@@ -96,26 +96,11 @@ for i in range(Blocks_amount):
 						entry["PlayListItems"].append(entry2)
 					entry["Data2"] = file.read(0x11).hex()
 					entry["MusicSegmentID"] = int.from_bytes(file.read(4), "little")
-					entry["BitVector"] = file.read(1)[0]
-					numProps = file.read(1)[0]
-					entry["Props"] = []
-					for y in range(numProps):
-						entry2 = file.read(5).hex()
-						entry["Props"].append(entry2)
-					numProps = file.read(1)[0]
-					entry["Props>"] = []
-					for y in range(numProps):
-						entry2 = file.read(5).hex() ##unk
-						entry["Props>"].append(entry2)
-					entry["Data3"] = file.read(10).hex()
-					entry["BelowThresholdBehavior"] = file.read(1)[0]
-					entry["Data4"] = file.read(entrySize - (file.tell() - entryTell)).hex()
+					entry["Data3"] = file.read(entrySize - (file.tell() - entryTell)).hex()
 				elif (entry["HircType"] == 0xA):
 					entry["HircType"] = "MusicSegment"
 					entry["ID"] = int.from_bytes(file.read(4), "little")
-					entry["Data1"] = file.read(10).hex()
-					entry["MusicRanSeqCntrID"] = int.from_bytes(file.read(4), "little")
-					entry["BitVector1"] = file.read(1)[0]
+					entry["Data1"] = file.read(0xF).hex()
 					numProps = file.read(1)[0]
 					entry["Props"] = []
 					for y in range(numProps):
@@ -128,11 +113,9 @@ for i in range(Blocks_amount):
 						entry["Props>"].append(entry2)
 					BitsPositioning = file.read(1)[0]
 					file.seek(-1, 1)
+					entry["Data2"] = file.read(0xC).hex()
 					if (BitsPositioning == 3):
-						entry["Data2"] = file.read(0xB).hex()
-					else: entry["Data2"] = file.read(0xA).hex()
-					entry["BelowThresholdBehavior"] = file.read(1)[0]
-					entry["BitVector2"] = file.read(1)[0]
+						entry["Data2"] += file.read(1).hex()
 					numStateProps = file.read(1)[0]
 					entry["StateProps"] = []
 					for y in range(numStateProps):
@@ -163,61 +146,6 @@ for i in range(Blocks_amount):
 						entry2["Position"] = struct.unpack('d', file.read(8))[0]
 						entry2["Name"] = readString(file)
 						entry["Markers"].append(entry2)
-				elif (entry["HircType"] == 0xD):
-					entry["HircType"] = "MusicRanSeqCntr"
-					entry["ID"] = int.from_bytes(file.read(4), "little")
-					entry["Data1"] = file.read(0xF).hex()
-					numProps = file.read(1)[0]
-					entry["Props"] = []
-					for y in range(numProps):
-						entry2 = file.read(5).hex()
-						entry["Props"].append(entry2)
-					numProps = file.read(1)[0]
-					entry["Props>"] = []
-					for y in range(numProps):
-						entry2 = file.read(5).hex() ##unk
-						entry["Props>"].append(entry2)
-					BitsPositioning = file.read(1)[0]
-					file.seek(-1, 1)
-					if (BitsPositioning == 3):
-						entry["Data2"] = file.read(0xB).hex()
-					else: entry["Data2"] = file.read(0xA).hex()
-					entry["BelowThresholdBehavior"] = file.read(1)[0]
-					entry["BitVector"] = file.read(1)[0]
-					numStateProps = file.read(1)[0]
-					entry["StateProps"] = []
-					for y in range(numStateProps):
-						entry2 = file.read(5).hex() ##unk
-						entry["StateProps"].append(entry2)
-					numStateGroups = file.read(1)[0]
-					entry["StateGroups"] = []
-					for y in range(numStateGroups):
-						entry2 = file.read(5).hex() ##unk
-						entry["StateGroups"].append(entry2)
-					numRTPC = int.from_bytes(file.read(2), "little")
-					entry["RTPC"] = []
-					for y in range(numRTPC):
-						entry2 = file.read(5).hex() ##unk
-						entry["numRTPC"].append(entry2)
-					numChilds = int.from_bytes(file.read(4), "little")
-					entry["Childs"] = []
-					for y in range(numChilds):
-						entry["Childs"].append(int.from_bytes(file.read(4), "little"))
-					entry["Data3"] = file.read(23).hex()
-					numStingers = int.from_bytes(file.read(4), "little")
-					entry["Stingers"] = []
-					for y in range(numStingers):
-						entry2 = file.read(5).hex() ##unk
-						entry["Stingers"].append(entry2)
-					numRules = int.from_bytes(file.read(4), "little")
-					entry["Rules"] = []
-					for y in range(numRules):
-						entry2 = {}
-						entry2["Data1"] = file.read(36).hex()
-						entry2["PlayPostExit"] = bool(file.read(1)[0])
-						entry2["Data2"] = file.read(27).hex()
-						entry["Rules"].append(entry2)
-					entry["Data4"] = file.read(entrySize - (file.tell() - entryTell)).hex()
 				else:
 					entry["raw_data"] = file.read(entrySize).hex()
 				HIRC.append(entry)
