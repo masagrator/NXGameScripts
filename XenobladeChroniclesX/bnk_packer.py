@@ -68,16 +68,7 @@ if (HIRC == True):
                 data.append(struct.pack('d', HIRC[i]["PlayListItems"][x]["SrcDuration"]))
             data.append(bytes.fromhex(HIRC[i]["Data2"]))
             data.append(HIRC[i]["MusicSegmentID"].to_bytes(4, "little"))
-            data.append(HIRC[i]["BitVector"].to_bytes(1, "little"))
-            data.append(len(HIRC[i]["Props"]).to_bytes(1, "little"))
-            for x in range(len(HIRC[i]["Props"])):
-                data.append(bytes.fromhex(HIRC[i]["Props"][x]))
-            data.append(len(HIRC[i]["Props>"]).to_bytes(1, "little"))
-            for x in range(len(HIRC[i]["Props>"])):
-                data.append(bytes.fromhex(HIRC[i]["Props>"][x]))
             data.append(bytes.fromhex(HIRC[i]["Data3"]))
-            data.append(HIRC[i]["BelowThresholdBehavior"].to_bytes(1, "little"))
-            data.append(bytes.fromhex(HIRC[i]["Data4"]))
             data[last_item] = (len(b"".join(data)) - size_start).to_bytes(4, "little")
         elif (HIRC[i]["HircType"] == "MusicSegment"):
             data.append(0xA.to_bytes(1, "little"))
@@ -86,8 +77,6 @@ if (HIRC == True):
             size_start = len(b"".join(data))
             data.append(HIRC[i]["ID"].to_bytes(4, "little"))
             data.append(bytes.fromhex(HIRC[i]["Data1"]))
-            data.append(HIRC[i]["MusicRanSeqCntrID"].to_bytes(4, "little"))
-            data.append(HIRC[i]["BitVector1"].to_bytes(1, "little"))
             data.append(len(HIRC[i]["Props"]).to_bytes(1, "little"))
             for x in range(len(HIRC[i]["Props"])):
                 data.append(bytes.fromhex(HIRC[i]["Props"][x]))
@@ -95,8 +84,6 @@ if (HIRC == True):
             for x in range(len(HIRC[i]["Props>"])):
                 data.append(bytes.fromhex(HIRC[i]["Props>"][x]))
             data.append(bytes.fromhex(HIRC[i]["Data2"]))
-            data.append(HIRC[i]["BelowThresholdBehavior"].to_bytes(1, "little"))
-            data.append(HIRC[i]["BitVector2"].to_bytes(1, "little"))
             data.append(len(HIRC[i]["StateProps"]).to_bytes(1, "little"))
             for x in range(len(HIRC[i]["StateProps"])):
                 data.append(bytes.fromhex(HIRC[i]["StateProps"][x]))
@@ -116,45 +103,6 @@ if (HIRC == True):
                 data.append(HIRC[i]["Markers"][x]["ID"].to_bytes(4, "little"))
                 data.append(struct.pack('d', HIRC[i]["Markers"][x]["Position"]))
                 data.append(HIRC[i]["Markers"][x]["Name"].encode("ascii") + b"\x00")
-            data[last_item] = (len(b"".join(data)) - size_start).to_bytes(4, "little")
-        elif (HIRC[i]["HircType"] == "MusicRanSeqCntr"):
-            data.append(0xD.to_bytes(1, "little"))
-            last_item = len(data)
-            data.append(0x0.to_bytes(4, "little"))
-            size_start = len(b"".join(data))
-            data.append(HIRC[i]["ID"].to_bytes(4, "little"))
-            data.append(bytes.fromhex(HIRC[i]["Data1"]))
-            data.append(len(HIRC[i]["Props"]).to_bytes(1, "little"))
-            for x in range(len(HIRC[i]["Props"])):
-                data.append(bytes.fromhex(HIRC[i]["Props"][x]))
-            data.append(len(HIRC[i]["Props>"]).to_bytes(1, "little"))
-            for x in range(len(HIRC[i]["Props>"])):
-                data.append(bytes.fromhex(HIRC[i]["Props>"][x]))
-            data.append(bytes.fromhex(HIRC[i]["Data2"]))
-            data.append(HIRC[i]["BelowThresholdBehavior"].to_bytes(1, "little"))
-            data.append(HIRC[i]["BitVector"].to_bytes(1, "little"))
-            data.append(len(HIRC[i]["StateProps"]).to_bytes(1, "little"))
-            for x in range(len(HIRC[i]["StateProps"])):
-                data.append(bytes.fromhex(HIRC[i]["StateProps"][x]))
-            data.append(len(HIRC[i]["StateGroups"]).to_bytes(1, "little"))
-            for x in range(len(HIRC[i]["StateGroups"])):
-                data.append(bytes.fromhex(HIRC[i]["StateGroups"][x]))
-            data.append(len(HIRC[i]["RTPC"]).to_bytes(2, "little"))
-            for x in range(len(HIRC[i]["RTPC"])):
-                data.append(bytes.fromhex(HIRC[i]["RTPC"][x]))
-            data.append(len(HIRC[i]["Childs"]).to_bytes(4, "little"))
-            for x in range(len(HIRC[i]["Childs"])):
-                data.append(HIRC[i]["Childs"][x].to_bytes(4, "little"))
-            data.append(bytes.fromhex(HIRC[i]["Data3"])) 
-            data.append(len(HIRC[i]["Stingers"]).to_bytes(4, "little"))
-            for x in range(len(HIRC[i]["Stingers"])):
-                data.append(bytes.fromhex(HIRC[i]["Stingers"][x]))
-            data.append(len(HIRC[i]["Rules"]).to_bytes(4, "little"))
-            for x in range(len(HIRC[i]["Rules"])):
-                data.append(bytes.fromhex(HIRC[i]["Rules"][x]["Data1"]))
-                data.append(int(HIRC[i]["Rules"][x]["PlayPostExit"]).to_bytes(1, "little"))
-                data.append(bytes.fromhex(HIRC[i]["Rules"][x]["Data2"]))
-            data.append(bytes.fromhex(HIRC[i]["Data4"])) 
             data[last_item] = (len(b"".join(data)) - size_start).to_bytes(4, "little")
         else:
             print("Unknown HircType: %s, aborting..." % HIRC[i]["HircType"])
