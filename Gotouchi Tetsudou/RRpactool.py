@@ -2,7 +2,9 @@
 
 """
 Author unknown.
-Modifications made by MasaGratoR
+Modifications made by MasaGratoR:
+- autodetect endianness
+- properly detect entry sizes instead of guessing
 """
 
 import argparse
@@ -66,7 +68,9 @@ def parse_header(data, endian):
     if data[:4] != MAGIC:
         raise ValueError("Invalid PAC magic")
 
-    version = read_u16(data, 0x4, endian)
+    endianness = read_u16(data, 0x4, "little")
+    if (endianness == 0x100): endian = "little"
+    if (endianness == 0x1): endian = "big"
     count_a = read_u16(data, 0x6, endian)
     count_b = read_u16(data, 0x8, endian)
     archive_name = decode_c_string(data[0x10:0x30])
@@ -75,9 +79,9 @@ def parse_header(data, endian):
         print(f"Warning: file count mismatch at header (0x6={count_a}, 0x8={count_b}), using first value")
 
     return {
-        "version": version,
+        "endian": endian,
         "file_count": count_a,
-        "archive_name": archive_name,
+        "archive_name": archive_name
     }
 
 
@@ -108,7 +112,6 @@ def detectEntrySize(data, start):
 
 def parse_name_entries(data, start, file_count, endian):
     entries = []
-    entry_size = 0x20
     pos = start
 
     for index in range(file_count):
@@ -204,6 +207,8 @@ def unpack_pac(input_path, mode, output_dir=None):
         data = f.read()
 
     header = parse_header(data, endian)
+    endian = header["endian"]
+    print(endian)
     offsets, names_start = parse_offset_table(data, header["file_count"], endian)
     name_entries, _ = parse_name_entries(data, names_start, header["file_count"], endian)
     file_regions = parse_file_regions(data, offsets, endian)
@@ -219,7 +224,6 @@ def unpack_pac(input_path, mode, output_dir=None):
         "source_pac": input_path.name,
         "mode": mode,
         "endian": endian,
-        "version": header["version"],
         "archive_name": header["archive_name"],
         "file_count": header["file_count"],
         "name_table_start": names_start,
@@ -290,6 +294,7 @@ def repack_pac(original_pac, input_dir, mode, output_pac=None):
         original_data = f.read()
 
     header = parse_header(original_data, endian)
+    endian = header["endian"]
     offsets, names_start = parse_offset_table(original_data, header["file_count"], endian)
 
     if len(manifest["files"]) != header["file_count"]:
@@ -363,12 +368,10 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     unpack_parser = subparsers.add_parser("unpack", help="Unpack a PAC archive")
-    unpack_parser.add_argument("mode", choices=["switch", "wiiu"], help="switch=little endian, wiiu=big endian")
     unpack_parser.add_argument("input_pac", help="Input PAC file")
     unpack_parser.add_argument("-o", "--output-dir", help="Output directory (default: <input>.pac_out)")
 
     repack_parser = subparsers.add_parser("repack", help="Repack a PAC archive")
-    repack_parser.add_argument("mode", choices=["switch", "wiiu"], help="switch=little endian, wiiu=big endian")
     repack_parser.add_argument("original_pac", help="Original PAC file used as template")
     repack_parser.add_argument("input_dir", help="Directory produced by unpack")
     repack_parser.add_argument("-o", "--output-pac", help="Output PAC path")
@@ -376,9 +379,9 @@ def main():
     args = parser.parse_args()
 
     if args.command == "unpack":
-        unpack_pac(args.input_pac, args.mode, args.output_dir)
+        unpack_pac(args.input_pac, "switch", args.output_dir)
     elif args.command == "repack":
-        repack_pac(args.original_pac, args.input_dir, args.mode, args.output_pac)
+        repack_pac(args.original_pac, args.input_dir, "switch", args.output_pac)
 
 
 if __name__ == "__main__":
