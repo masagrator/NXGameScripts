@@ -16,7 +16,7 @@ DUMP = {}
 
 for i in range(file_count):
     ENTRY = {}
-    ENTRY["KEYWORDS_DESCRIPTIONS"] = []
+    ENTRY["KEYWORDS_DESCRIPTIONS"] = {}
     ENTRY["CHARA_DESCRIPTIONS"] = {}
     file.seek(Offsets[i])
     file.seek(0x10, 1) #Unknown bytes
@@ -40,13 +40,14 @@ for i in range(file_count):
     StringIDs2 = []
     while(True):
         file.seek(nodes_offset[x])
-        x += 1
         section_type = int.from_bytes(file.read(2), "little")
         if (section_type != 0): break
+        x += 1
         file.seek(10, 1)
         stringId = int.from_bytes(file.read(1), "little")
         StringIDs.append(stringId)
         print("0x%x: StringId: %d" % (nodes_offset[x-1], stringId))
+    CHARACTERS = {}
     for x in range(x, len(nodes_offset)):
         if (Counter(StringIDs) == Counter(StringIDs2)): 
             print("Printed strings: %d" % string_count)
@@ -66,7 +67,7 @@ for i in range(file_count):
             M_ENTRY = []
             for y in range(count):
                 file.seek(pos + (y * 0x64))
-                ID = int.from_bytes(file.read(4), "little")
+                M_ID = int.from_bytes(file.read(4), "little")
                 str = b""
                 while(True):
                     char = file.read(1)
@@ -78,7 +79,14 @@ for i in range(file_count):
                 print(string)
                 M_ENTRY.append(string)
                 string_count += 1
-            ENTRY["KEYWORDS_DESCRIPTIONS"].append(M_ENTRY)
+            if (ID not in CHARACTERS.keys()):
+                CHARACTERS[ID] = "ID_%d" % ID
+            if (CHARACTERS[ID] not in ENTRY["KEYWORDS_DESCRIPTIONS"].keys()):
+                ENTRY["KEYWORDS_DESCRIPTIONS"][CHARACTERS[ID]] = M_ENTRY
+            else:
+                for y in range(len(M_ENTRY)):
+                    if (M_ENTRY[y] not in ENTRY["KEYWORDS_DESCRIPTIONS"][CHARACTERS[ID]]):
+                        ENTRY["KEYWORDS_DESCRIPTIONS"][CHARACTERS[ID]].append(M_ENTRY[y])
         else:
             # Character descriptions
             name = ""
@@ -92,6 +100,7 @@ for i in range(file_count):
                     str += char.to_bytes(1, "little")
                 if (len(str) > 0): 
                     string = str.decode("shift_jis_2004")
+                    print(ID)
                     print(string)
                     if (y == 0):
                         name = string
