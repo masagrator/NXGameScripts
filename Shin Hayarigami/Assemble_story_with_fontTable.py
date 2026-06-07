@@ -599,8 +599,9 @@ glyph_widths = load_font_metrics("font/dump.json")
 
 for i in range(0, len(order)):
 	untranslated = False
-	if (int(order[i]) >= 30000):
-		untranslated = True
+	#This script doesn't work correctly with Japanese text, so skip those files that have them
+	#if (int(order[i]) >= 30000):
+	#	untranslated = True
 	json_file = open("json\\%s.json" % order[i], "r", encoding="UTF-8")
 	print(json_file.name)
 	DUMP = json.load(json_file)
