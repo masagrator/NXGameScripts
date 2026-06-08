@@ -2,7 +2,7 @@ import os
 import json
 import sys
 import shutil
-import lzss
+import lzss #pylzss in pip
 
 class Utils:
 	text_counter = 0
