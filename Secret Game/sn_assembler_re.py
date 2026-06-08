@@ -566,7 +566,7 @@ for i in range(0, 145):
 
 size = len(data)
 
-dump = lzss.compress(data, 0)
+dump = lzss.compress(data, 0) # We need lzss0 which means filling table with 0x00 instead of default 0x20
 
 os.makedirs("010022B00AD18000/romfs", exist_ok=True)
 
